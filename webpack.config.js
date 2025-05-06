@@ -3,7 +3,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     entry: {
-        'admin-app': './src/admin/admin-app.js',
+        'topsms-admin-app': './src/admin/topsms-admin-app.js',
     },
     output: {
         filename: '[name].js',
@@ -20,6 +20,14 @@ module.exports = {
                         presets: ['@babel/preset-env', '@babel/preset-react']
                     }
                 }
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    'css-loader',
+                    'postcss-loader'
+                ],
             },
             {
                 test: /\.scss$/,

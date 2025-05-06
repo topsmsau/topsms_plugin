@@ -1,15 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
-      './admin/src/blocks/**/*.{js,jsx}',
-      './admin/partials/**/*.php'
+      "./src/**/*.{js,jsx,ts,tsx,html}",
     ],
     theme: {
-      extend: {
-        colors: {
-          'topsms-orange': '#FF6B00',
-        },
-      },
+      extend: {},
     },
     plugins: [],
   }

@@ -159,13 +159,7 @@ class Topsms {
 
         // Add admin menu
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'add_admin_menu' );
-
-        // // Register blocks
-        // $this->loader->add_action( 'init', $plugin_admin, 'register_blocks' );
         
-        // // Add block categories
-        // $this->loader->add_filter( 'block_categories_all', $plugin_admin, 'register_block_categories' );
-        // $this->loader->add_filter( 'block_categories', $plugin_admin, 'register_block_categories' );
 	}
 
 	/**

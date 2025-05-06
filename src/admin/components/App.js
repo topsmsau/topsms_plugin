@@ -1,7 +1,6 @@
-// src/admin/components/App.js
 import { useState } from '@wordpress/element';
 import Registration from './Registration';
-// import Verification from './Verification';
+import Verification from './Verification';
 // import Welcome from './Welcome';
 
 const App = () => {
@@ -20,7 +19,7 @@ const App = () => {
             case 'registration':
                 return <Registration onComplete={() => handleStepComplete('verification')} />;
             case 'verification':
-            //     return <Verification onComplete={() => handleStepComplete('welcome')} />;
+                return <Verification onComplete={() => handleStepComplete('welcome')} />;
             // case 'welcome':
             //     return <Welcome />;
             default:

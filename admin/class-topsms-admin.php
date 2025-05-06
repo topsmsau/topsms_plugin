@@ -73,22 +73,8 @@ class Topsms_Admin {
 		 */
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
-
-        // Register block editor styles
-        wp_register_style(
-            'topsms-blocks-editor-style',
-            plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css',
-            array( 'wp-edit-blocks' ),
-            $this->version
-        );
-
-        // Register Tailwind CSS for the editor
-        wp_register_style(
-            'topsms-tailwind-style',
-            plugin_dir_url( __FILE__ ) . 'js/blocks/tailwind.css',
-            array(),
-            $this->version
-        );
+        // wp_enqueue_style('wp-components');
+        wp_enqueue_style( 'topsms-admin-style', plugin_dir_url(__FILE__) . 'css/topsms-admin-app.css', array(), time(), 'all');
 
 	}
 
@@ -112,14 +98,20 @@ class Topsms_Admin {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-admin.js', array( 'jquery' ), time(), false );
-
-        // Register the block editor script
-        wp_register_script(
-            'topsms-blocks-editor',
-            plugin_dir_url( __FILE__ ) . 'js/blocks/index.js',
-            array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n', 'wp-api-fetch' ),
-            $this->version
-        );
+        wp_enqueue_script( 
+            'topsms-admin-app', 
+            plugin_dir_url(__FILE__) . 'js/topsms-admin-app.js', 
+            array(
+                'wp-element', 
+                'wp-components', 
+                'wp-i18n',
+                'wp-api-fetch',
+                'wp-blocks',
+                'wp-block-editor'
+            ),
+            time(),
+            true
+        ); 
 
 	}
 
@@ -158,25 +150,6 @@ class Topsms_Admin {
      */
     public function display_setup_page() {
         $current_step = $this->get_current_step();
-        
-        // Register and enqueue scripts/styles directly here
-        wp_register_script(
-            'topsms-admin-app',
-            plugin_dir_url(__FILE__) . 'js/admin-app.js',
-            array('wp-element', 'wp-components'),
-            time(),
-            true
-        );
-        
-        wp_register_style(
-            'topsms-tailwind-style',
-            plugin_dir_url(dirname(dirname(__FILE__))) . 'src/css/tailwind.css',
-            array(),
-            time()
-        );
-        
-        wp_enqueue_script('topsms-admin-app');
-        wp_enqueue_style('topsms-tailwind-style');
         
         // Pass data to JavaScript
         wp_localize_script('topsms-admin-app', 'topsmsData', array(
