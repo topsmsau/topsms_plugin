@@ -1,7 +1,7 @@
 import { useState } from '@wordpress/element';
 import Registration from './Registration';
 import Verification from './Verification';
-// import Welcome from './Welcome';
+import Welcome from './Welcome';
 
 const App = () => {
     const [currentStep, setCurrentStep] = useState(window.topsmsData.currentStep);
@@ -20,8 +20,8 @@ const App = () => {
                 return <Registration onComplete={() => handleStepComplete('verification')} />;
             case 'verification':
                 return <Verification onComplete={() => handleStepComplete('welcome')} />;
-            // case 'welcome':
-            //     return <Welcome />;
+            case 'welcome':
+                return <Welcome />;
             default:
                 return <p>Unknown step: {currentStep}</p>;
         }
