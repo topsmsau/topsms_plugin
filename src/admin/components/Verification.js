@@ -1,6 +1,16 @@
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CardFooter, Button } from '@wordpress/components';
+import { 
+    Card, 
+    CardBody, 
+    CardFooter, 
+    Button, 
+    Flex,
+    __experimentalText as Text,
+    __experimentalHeading as Heading
+} from '@wordpress/components';
 import { useState } from '@wordpress/element';
+
+import StepIndicator from './StepIndicator.js';
 
 const Verification = ({ onComplete }) => {
     const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
@@ -43,7 +53,7 @@ const Verification = ({ onComplete }) => {
     
     // Handle form submission
     const handleSubmit = (e) => {
-        e.preventDefault();
+        e?.preventDefault();
         const code = verificationCode.join('');
         console.log('Verification code submitted:', code);
         // You would typically verify the code with an API here
@@ -64,42 +74,8 @@ const Verification = ({ onComplete }) => {
     };
     
     return (
-        <Card className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm">
-            {/* Step indicator */}
-            <div className="border-b border-gray-200 p-4">
-                <div className="flex items-center justify-center">
-                    <div className="flex items-center">
-                        <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <span className="text-sm mr-2">{__('Register', 'topsms')}</span>
-                    </div>
-                    
-                    <div>
-                        <div className="h-px w-6 bg-gray-300"></div>
-                    </div>
-                    
-                    <div className="flex items-center">
-                        <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                            <span>2</span>
-                        </div>
-                        <span className="text-sm mr-2">{__('Confirm Phone Number', 'topsms')}</span>
-                    </div>
-                    
-                    <div>
-                        <div className="h-px w-6 bg-gray-300"></div>
-                    </div>
-                    
-                    <div className="flex items-center">
-                        <div className="bg-gray-200 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                            <span>3</span>
-                        </div>
-                        <span className="text-sm">{__('Welcome to TopSMS', 'topsms')}</span>
-                    </div>
-                </div>
-            </div>
+        <Card className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-8">
+            <StepIndicator currentStep={1} />
             
             <CardBody className="p-6">
                 {/* Form header with icon */}
@@ -109,13 +85,15 @@ const Verification = ({ onComplete }) => {
                             <path d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 18H4V8L12 13L20 8V18ZM12 11L4 6H20L12 11Z" fill="#FF6B00"/>
                         </svg>
                     </div>
-                    <h3 className="text-xl font-bold">{__('Verify Your Phone Number', 'topsms')}</h3>
-                    <p className="text-gray-600">
+                    <Heading level={3} className="text-xl font-bold mb-2">
+                        {__('Verify Your Phone Number', 'topsms')}
+                    </Heading>
+                    <Text variant="body.medium" className="text-gray-600 text-lg">
                         {__('We have sent a verification code at number', 'topsms')} {' '}
                         <span className="text-blue-600 font-semibold">{phoneNumber}</span>.
                         <br />
                         {__('You can check the SMS you receive', 'topsms')}
-                    </p>
+                    </Text>
                 </div>
                 
                 <form onSubmit={handleSubmit}>
@@ -137,41 +115,41 @@ const Verification = ({ onComplete }) => {
                     </div>
                     
                     {/* Resend code link */}
-                    <div className="text-center mb-4">
-                        <p className="text-gray-500 mb-2">
+                    <Flex align="center" className="mb-4">
+                        <Text variant="body.medium" className="text-gray-500 mb-2" color="gray">
                             {__("Haven't received the OTP code yet?", 'topsms')}
-                        </p>
-                        <button
-                            type="button"
+                        </Text>
+                        <Button
+                            variant="link"
                             className="text-blue-600 font-medium hover:underline"
                             onClick={handleResendCode}
                             disabled={isResending}
+                            isBusy={isResending}
                         >
                             {isResending ? __('Resending...', 'topsms') : __('Resend OTP Code', 'topsms')}
-                        </button>
-                    </div>
-                    
-                    {/* Info box */}
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4">
-                        <p className="text-blue-700">
-                            {__('All new accounts need to be manually verified before you can send campaigns.', 'topsms')}
-                            {' '}
-                            {__('Once you have registered, we will call you within 24 hours or Monday if on the weekend.', 'topsms')}
-                        </p>
-                    </div>
+                        </Button>
+                    </Flex>
+
+                    <Button 
+                        primary
+                        className="topsms-button w-full mt-8"
+                        onClick={handleSubmit}
+                        disabled={verificationCode.some(digit => !digit)}
+                    >
+                        {__('Next', 'topsms')}
+                    </Button>
                 </form>
+
+                {/* Info box */}
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4 mt-8">
+                    <Text variant="body.medium" className="text-blue-700 text-lg" color="rgb(37,99,235)">
+                        {__('All new accounts need to be manually verified before you can send campaigns.', 'topsms')}
+                        {' '}
+                        {__('Once you have registered, we will call you within 24 hours or Monday if on the weekend.', 'topsms')}
+                    </Text>
+                </div>
             </CardBody>
-            
-            <CardFooter className="p-6 bg-gray-50 rounded-b-lg border-t border-gray-200">
-                <Button 
-                    isPrimary
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md"
-                    onClick={handleSubmit}
-                    disabled={verificationCode.some(digit => !digit)}
-                >
-                    {__('Next', 'topsms')}
-                </Button>
-            </CardFooter>
+        
         </Card>
     );
 };

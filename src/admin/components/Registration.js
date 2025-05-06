@@ -6,7 +6,9 @@ import {
     Button, 
     TextControl,
     SelectControl,
-    ToggleControl 
+    ToggleControl, 
+    __experimentalText as Text,
+    __experimentalHeading as Heading
 } from '@wordpress/components';
 import { useState, memo, useCallback } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
@@ -133,14 +135,21 @@ const Registration = ({ onComplete }) => {
                             <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#FF6B00"/>
                         </svg>
                     </div>
-                    <h3 className="text-xl font-bold">{__('Register', 'topsms')}</h3>
-                    <p className="text-gray-600">{__('Lorem ipsum dolor sit amet consectetur. Arcu sed aliquam blandit ut magna nullam magna sagittis.', 'topsms')}</p>
+                    <Heading level={3} className="text-xl font-bold mb-2">
+                        {__('Register', 'topsms')}
+                    </Heading>
+
+                    <Text variant="body.small" className="text-gray-600">
+                        {__('Lorem ipsum dolor sit amet consectetur. Arcu sed aliquam blandit ut magna nullam magna sagittis.', 'topsms')}
+                    </Text>
                 </div>
                 
                 <form onSubmit={handleSubmit}>
                     {/* Profile details section */}
                     <div className="mb-6">
-                        <h4 className="text-base font-semibold mb-4">{__('Profile details', 'topsms')}</h4>
+                        <Heading level={3} className="text-lg font-semibold mb-4">
+                            {__('Profile details', 'topsms')}
+                        </Heading>
                         <hr className="border-gray-200 mb-4" />
                         
                         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -222,7 +231,9 @@ const Registration = ({ onComplete }) => {
                     
                     {/* Business fields section */}
                     <div className="mb-6">
-                        <h4 className="text-base font-semibold mb-4">{__('Business Address', 'topsms')}</h4>
+                        <Heading level={4} className="text-lg font-semibold mb-4">
+                            {__('Business Address', 'topsms')}
+                        </Heading>
                         <hr className="border-gray-200 mb-4" />
                         
                         <CustomInput
@@ -269,7 +280,7 @@ const Registration = ({ onComplete }) => {
                     </div>
                 </form>
 
-                <div className="mt-6 text-center">
+                <div className="mt-8 text-center">
                     <Button 
                         primary
                         className="topsms-button w-full"
@@ -278,14 +289,16 @@ const Registration = ({ onComplete }) => {
                         {__('Register', 'topsms')}
                     </Button>
                     
-                    <div className="mt-4 text-gray-600 text-lg">
-                        {__('Already have an account?', 'topsms')} 
-                        <a 
-                            href="/topsms-login" 
-                            className="text-blue-600 hover:text-blue-800 ml-1 font-medium"
-                        >
-                            {__('Login', 'topsms')}
-                        </a>
+                    <div className="mt-4">
+                        <Text variant="body.small" className="text-gray-600" color="gray">
+                            {__('Already have an account?', 'topsms')} 
+                            <a 
+                                href="/topsms-login" 
+                                className="text-blue-600 hover:text-blue-800 ml-1 font-medium"
+                            >
+                                {__('Login', 'topsms')}
+                            </a>
+                        </Text>
                     </div>
                 </div>
             </CardBody>
