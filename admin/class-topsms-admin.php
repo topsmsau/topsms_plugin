@@ -161,7 +161,6 @@ class Topsms_Admin {
         
         // Container for React app
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('TopSMS Setup', 'topsms') . '</h1>';
         echo '<div id="topsms-admin-app"></div>';
         echo '</div>';
     }

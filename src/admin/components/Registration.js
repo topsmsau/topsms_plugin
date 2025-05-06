@@ -17,7 +17,7 @@ import 'react-phone-input-2/lib/style.css';
 import StepIndicator from './StepIndicator.js';
 
 // Memoize the CustomInput to prevent unnecessary re-renders
-const CustomInput = memo(({ label, value, onChange, ...props }) => (
+const CustomInput = memo(({ label, value, onChange, error, ...props }) => (
     <div className="mb-4">
         <div className="topsms-label">{label}</div>
         <div className="topsms-input">
@@ -28,42 +28,9 @@ const CustomInput = memo(({ label, value, onChange, ...props }) => (
                 {...props}
             />
         </div>
-    </div>
-));
-
-// Password input with toggle visibility
-const PasswordControl = memo(({ label, placeholder, value, onChange, showPassword, setShowPassword, required = false }) => (
-    <div className="mb-4">
-        <div className="topsms-label">{label}</div>
-        <div className="relative topsms-input password-input">
-            <TextControl
-                label=""
-                type={showPassword ? "text" : "password"}
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                required={required}
-            />
-            <button 
-                type="button" 
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                onClick={() => setShowPassword(!showPassword)}
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    {showPassword ? (
-                        <>
-                            <path d="M3 12a9 9 0 0 1 18 0 9 9 0 0 1-18 0z" />
-                            <circle cx="12" cy="12" r="3" />
-                        </>
-                    ) : (
-                        <>
-                            <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </>
-                    )}
-                </svg>
-            </button>
-        </div>
+        {error && (
+            <div className="text-red-500 text-sm mt-1">{error}</div>
+        )}
     </div>
 ));
 
@@ -75,18 +42,16 @@ const Registration = ({ onComplete }) => {
         countryCode: '+1',
         phoneNumber: '',
         email: '',
-        password: '',
-        confirmPassword: '',
+        senderName: '',
         streetAddress: '',
         abnAcn: '',
         city: '',
         state: '',
         postcode: '',
     });
-    
-    const [showBusinessFields, setShowBusinessFields] = useState(true);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // State for validation errors
+    const [errors, setErrors] = useState({});
     
     // Use useCallback to create stable function references
     const handleChange = useCallback((field, value) => {
@@ -94,34 +59,120 @@ const Registration = ({ onComplete }) => {
             ...prevData,
             [field]: value
         }));
-    }, []);
+        
+        // Clear error for this field when user types
+        if (errors[field]) {
+            setErrors(prevErrors => {
+                const newErrors = { ...prevErrors };
+                delete newErrors[field];
+                return newErrors;
+            });
+        }
+    }, [errors]);
+
+    // Form validation function 
+    const validateForm = () =>{
+        const newErrors = {};
+
+        // Required fields validation
+        if (!formData.firstName) newErrors.firstName = __('First name is required', 'topsms');
+        if (!formData.lastName) newErrors.lastName = __('Last name is required', 'topsms');
+        if (!formData.companyName) newErrors.companyName = __('Company name is required', 'topsms');
+        if (!formData.streetAddress) newErrors.streetAddress = __('Street address is required', 'topsms');
+        if (!formData.city) newErrors.city = __('City is required', 'topsms');
+        if (!formData.state) newErrors.state = __('State is required', 'topsms');
+
+        // Phone number validation
+        if (!formData.phoneNumber) {
+            newErrors.phoneNumber = __('Phone number is required', 'topsms');
+        } else {
+            // Remove any non-digit characters 
+            const cleanPhoneNumber = formData.phoneNumber.replace(/\D/g, '');
+
+            // Sanitise the 61
+            let phoneDigits = cleanPhoneNumber;
+            // console.log(cleanPhoneNumber);
+            if (cleanPhoneNumber.startsWith('61')) {
+                // Remove the country code (61) to check just the actual number
+                phoneDigits = cleanPhoneNumber.substring(2);
+            }
+            
+            // Check if it's exactly 9 digits and starts with 4
+            if (phoneDigits.length !== 9) {
+                newErrors.phoneNumber = __('Phone number must be 9 digits', 'topsms');
+            } else if (phoneDigits.charAt(0) !== '4') {
+                newErrors.phoneNumber = __('Phone number must start with 4', 'topsms');
+            }
+        }
+
+        // Email validation
+        if (!formData.email) {
+            newErrors.email = __('Email is required', 'topsms');
+        } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
+            newErrors.email = __('Please enter a valid email address', 'topsms');
+        }
+
+        // Sender name validation
+        if (!formData.senderName) {
+            newErrors.senderName = __('Sender name is required', 'topsms');
+        } else if (formData.senderName.length > 11){
+            newErrors.senderName = __('Sender name must be between 1 and 11 characters.', 'topsms');
+        }
+
+        // ABN/ACN validation
+        if (!formData.abnAcn) {
+            newErrors.abnAcn = __('ABN/ACN is required', 'topsms');
+        } else {
+            // Remove any non-digit characters
+            const cleanAbnAcn = formData.abnAcn.replace(/\D/g, '');
+            
+            // Check if it's between 9-11 digits
+            if (cleanAbnAcn.length < 9 || cleanAbnAcn.length > 11) {
+                newErrors.abnAcn = __('ABN/ACN must be between 9-11 digits', 'topsms');
+            }
+        }
+
+        // Postcode validation
+        if (!formData.postcode) {
+            newErrors.postcode = __('Postcode is required', 'topsms');
+        } else {
+            // Remove any non-digit characters
+            const cleanPostcode = formData.postcode.replace(/\D/g, '');
+            
+            // Check if it's exactly 4 digits
+            if (cleanPostcode.length !== 4) {
+                newErrors.postcode = __('Postcode must be 4 digits', 'topsms');
+            }
+        }
+
+        // Set the errors
+        setErrors(newErrors);
+
+        // Return true if no errors
+        return Object.keys(newErrors).length === 0;
+    }
     
+    // Validate on submit
     const handleSubmit = useCallback((e) => {
         e?.preventDefault();
-        onComplete('verification');
-    }, [onComplete]);
+        
+        // Validate the form before submission
+        if (validateForm()) {
+            onComplete('verification');
+        }
+    }, [onComplete, formData]);
 
     const handleFirstNameChange = useCallback((value) => handleChange('firstName', value), [handleChange]);
     const handleLastNameChange = useCallback((value) => handleChange('lastName', value), [handleChange]);
     const handleCompanyNameChange = useCallback((value) => handleChange('companyName', value), [handleChange]);
     const handlePhoneNumberChange = useCallback((value) => handleChange('phoneNumber', value), [handleChange]);
     const handleEmailChange = useCallback((value) => handleChange('email', value), [handleChange]);
-    const handlePasswordChange = useCallback((value) => handleChange('password', value), [handleChange]);
-    const handleConfirmPasswordChange = useCallback((value) => handleChange('confirmPassword', value), [handleChange]);
+    const handleSenderNameChange = useCallback((value) => handleChange('senderName', value), [handleChange]);
     const handleStreetAddressChange = useCallback((value) => handleChange('streetAddress', value), [handleChange]);
     const handleAbnAcnChange = useCallback((value) => handleChange('abnAcn', value), [handleChange]);
     const handleCityChange = useCallback((value) => handleChange('city', value), [handleChange]);
     const handleStateChange = useCallback((value) => handleChange('state', value), [handleChange]);
     const handlePostcodeChange = useCallback((value) => handleChange('postcode', value), [handleChange]);
-
-    // Toggle password visibility callbacks
-    const togglePasswordVisibility = useCallback(() => {
-        setShowPassword(prev => !prev);
-    }, []);
-    
-    const toggleConfirmPasswordVisibility = useCallback(() => {
-        setShowConfirmPassword(prev => !prev);
-    }, []);
     
     return (
         <Card className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-8">
@@ -159,6 +210,7 @@ const Registration = ({ onComplete }) => {
                                 placeholder={__('Your first name', 'topsms')}
                                 value={formData.firstName}
                                 onChange={handleFirstNameChange}
+                                error={errors.firstName}
                                 required
                             />
                             
@@ -168,6 +220,7 @@ const Registration = ({ onComplete }) => {
                                 placeholder={__('Your last name', 'topsms')}
                                 value={formData.lastName}
                                 onChange={handleLastNameChange}
+                                error={errors.lastName}
                                 required
                             />
                         </div>
@@ -179,6 +232,8 @@ const Registration = ({ onComplete }) => {
                                 placeholder={__('Your company name', 'topsms')}
                                 value={formData.companyName}
                                 onChange={handleCompanyNameChange}
+                                error={errors.companyName}
+                                required
                             />
                             
                             <div className="mb-4">
@@ -190,8 +245,14 @@ const Registration = ({ onComplete }) => {
                                     placeholder={__('0412 345 678', 'topsms')}
                                     containerClass="topsms-phone-container"
                                     inputClass="topsms-phone-input"
-                                    buttonClass="topsms-phone-button"
+                                    onlyCountries={['au']} 
+                                    disableDropdown={true}  
+                                    countryCodeEditable={false}
+                                    required
                                 />
+                                {errors.phoneNumber && (
+                                    <div className="text-red-500 text-sm mt-1">{errors.phoneNumber}</div>
+                                )}
                             </div>
                         </div>
                         
@@ -202,36 +263,24 @@ const Registration = ({ onComplete }) => {
                             type="email"
                             value={formData.email}
                             onChange={handleEmailChange}
+                            error={errors.email}
                             required
                         />
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                            <PasswordControl
-                                key="password-field"
-                                label={__('Password', 'topsms')}
-                                placeholder={__('Create your password', 'topsms')}
-                                value={formData.password}
-                                onChange={handlePasswordChange}
-                                showPassword={showPassword}
-                                setShowPassword={togglePasswordVisibility}
-                                required
-                            />
-                            <PasswordControl
-                                key="confirmPassword-field"
-                                label={__('Confirm Password', 'topsms')}
-                                placeholder={__('Confirm your password', 'topsms')}
-                                value={formData.confirmPassword}
-                                onChange={handleConfirmPasswordChange}
-                                showPassword={showConfirmPassword}
-                                setShowPassword={toggleConfirmPasswordVisibility}
-                                required
-                            />
-                        </div>
+
+                        <CustomInput
+                            key="senderName-field"
+                            label={__('Sender Name', 'topsms')}
+                            placeholder={__('Sender name', 'topsms')}
+                            value={formData.senderName}
+                            onChange={handleSenderNameChange}
+                            error={errors.senderName}
+                            required
+                        />
                     </div>
                     
                     {/* Business fields section */}
                     <div className="mb-6">
-                        <Heading level={4} className="text-lg font-semibold mb-4">
+                        <Heading level={3} className="text-lg font-semibold mb-4">
                             {__('Business Address', 'topsms')}
                         </Heading>
                         <hr className="border-gray-200 mb-4" />
@@ -242,6 +291,8 @@ const Registration = ({ onComplete }) => {
                             placeholder={__('Enter your street address', 'topsms')}
                             value={formData.streetAddress}
                             onChange={handleStreetAddressChange}
+                            error={errors.streetAddress}
+                            required
                         />
                         
                         <CustomInput
@@ -250,6 +301,8 @@ const Registration = ({ onComplete }) => {
                             placeholder={__('Enter your ABN or ACN', 'topsms')}
                             value={formData.abnAcn}
                             onChange={handleAbnAcnChange}
+                            error={errors.abnAcn}
+                            required
                         />
                         
                         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -259,6 +312,8 @@ const Registration = ({ onComplete }) => {
                                 placeholder={__('Your city', 'topsms')}
                                 value={formData.city}
                                 onChange={handleCityChange}
+                                error={errors.city}
+                                required
                             />
                             
                             <CustomInput
@@ -267,6 +322,8 @@ const Registration = ({ onComplete }) => {
                                 placeholder={__('Your state', 'topsms')}
                                 value={formData.state}
                                 onChange={handleStateChange}
+                                error={errors.state}
+                                required
                             />
                         </div>
                         
@@ -276,6 +333,8 @@ const Registration = ({ onComplete }) => {
                             placeholder={__('Your postcode', 'topsms')}
                             value={formData.postcode}
                             onChange={handlePostcodeChange}
+                            error={errors.postcode}
+                            required
                         />
                     </div>
                 </form>
@@ -289,7 +348,7 @@ const Registration = ({ onComplete }) => {
                         {__('Register', 'topsms')}
                     </Button>
                     
-                    <div className="mt-4">
+                    {/* <div className="mt-4">
                         <Text variant="body.small" className="text-gray-600" color="gray">
                             {__('Already have an account?', 'topsms')} 
                             <a 
@@ -299,7 +358,7 @@ const Registration = ({ onComplete }) => {
                                 {__('Login', 'topsms')}
                             </a>
                         </Text>
-                    </div>
+                    </div> */}
                 </div>
             </CardBody>
         </Card>

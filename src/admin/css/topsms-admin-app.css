@@ -82,14 +82,11 @@
 .topsms-phone-input {
     line-height: 2 !important;
     height: auto !important;
-    padding: 8px !important;
+    padding: 8px 0px 8px 60px !important;
     width: 100% !important;
 }
 
-.topsms-phone-button {
-    width: 50px !important;
+.topsms-phone-input .selected-flag .flag {
+    left: 30% !important;
 }
-
-.topsms-phone-button .arrow {
-    left: 60px !important;
-}
+ 
