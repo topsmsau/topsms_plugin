@@ -4,8 +4,22 @@ import { useState } from '@wordpress/element';
 import Registration from './Registration';
 import Verification from './Verification';
 import Welcome from './Welcome'; 
+import Connected from './Connected';
 
-const App = () => {
+const Setup = () => {
+    // Access the connection status from the global topsmsData object
+    const [isConnected, setIsConnected] = useState(
+        window.topsmsData && window.topsmsData.isConnected ? 
+        window.topsmsData.isConnected : 
+        false
+    );
+    console.log("isConnected", isConnected);
+
+    // If connected, show the Connected component
+    if (isConnected === 'true' || isConnected == 1) {
+        return <Connected />;
+    }
+
     const [currentStep, setCurrentStep] = useState('registration');
     const [userData, setUserData] = useState({});
 
@@ -24,7 +38,7 @@ const App = () => {
             {currentStep === 'verification' && (
                 <Verification 
                     onComplete={handleStepComplete} 
-                    phoneNumber={userData.phoneNumber} 
+                    userData={userData} 
                 />
             )}
             
@@ -35,4 +49,4 @@ const App = () => {
     );
 };
 
-export default App;
+export default Setup;

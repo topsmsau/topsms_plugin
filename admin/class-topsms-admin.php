@@ -51,6 +51,14 @@ class Topsms_Admin {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+
+        // Check if we're on the setup page
+        add_action('current_screen', function($screen) {
+            if (is_object($screen) && $screen->base === 'topsms_page_topsms-setup') {
+                // Hide admin menu and header
+                add_filter('admin_head', array($this, 'hide_admin_ui'));
+            }
+        });
 	}
 
 	/**
@@ -117,6 +125,14 @@ class Topsms_Admin {
 
 	}
 
+    public function hide_admin_ui() {
+        echo '<style>
+            #wpcontent { margin-left: 0 !important; }
+            #adminmenumain, #wpadminbar, #wpfooter { display: none !important; }
+            #topsms-admin-app { height: 100vh; }
+        </style>';
+    }
+
     /**
      * Add an admin menu for Topsms
      *
@@ -134,7 +150,6 @@ class Topsms_Admin {
             55
         );
 
-        // Setup submenu
         add_submenu_page(
             'topsms',
             __( 'Setup', 'topsms' ),
@@ -162,6 +177,9 @@ class Topsms_Admin {
             'topsms-settings',
             array( $this, 'display_settings_page' )
         );
+
+        // Remove the duplicated submenu
+        remove_submenu_page( 'topsms', 'topsms'); 
     }
 
     /**
@@ -170,19 +188,18 @@ class Topsms_Admin {
      * @since    1.0.0
      */
     public function display_setup_page() {
-        $current_step = $this->get_current_step();
+        $is_connected = $this->check_topsms_connection();
         
         // Pass data to JavaScript
         wp_localize_script('topsms-admin-app', 'topsmsData', array(
-            'currentStep' => $current_step,
-            'setupSteps' => $this->get_setup_steps(),
             'restUrl' => esc_url_raw(rest_url()),
             'nonce' => wp_create_nonce('wp_rest'),
+            'isConnected' => $is_connected,
         ));
         
         // Container for React app
         echo '<div class="wrap">';
-        echo '<div id="topsms-admin-app"></div>';
+        echo '<div id="topsms-admin-setup"></div>';
         echo '</div>';
     }
 
@@ -218,45 +235,17 @@ class Topsms_Admin {
         echo '</div>';
     }
 
-    /**
-     * Get the setup steps.
-     *
-     * @since    1.0.0
-     * @return   array    Setup steps.
-     */
-    public function get_setup_steps() {
-        return array(
-            'registration' => array(
-                'name' => __( 'Registration', 'topsms' ),
-                'description' => __( 'Register your TopSMS account', 'topsms' ),
-            ),
-            'verification' => array(
-                'name' => __( 'Verification', 'topsms' ),
-                'description' => __( 'Verify your phone number', 'topsms' ),
-            ),
-            'welcome' => array(
-                'name' => __( 'Welcome', 'topsms' ),
-                'description' => __( 'You\'re all set!', 'topsms' ),
-            ),
-        );
-    }
 
     /**
-     * Get the current setup step.
+     * Send otp to the given phone number by calling the topsms api
      *
      * @since    1.0.0
-     * @return   string    Current step.
+     * @return   array JSON response with status of sending the otp
+     *               
      */
-    public function get_current_step() {
-        $current_step = get_option( 'topsms_setup_step', 'registration' );
-        return $current_step;
-    }
-
-
     function topsms_send_otp() {
         // Get phone number from the request
         $phone_number = isset($_POST['phone_number']) ? sanitize_text_field($_POST['phone_number']) : '';
-        
         if (empty($phone_number)) {
             wp_send_json_error(['message' => 'Phone number is required']);
             return;
@@ -281,6 +270,7 @@ class Topsms_Admin {
             ]),
         ]);
         
+        // Check for connection errors
         if (is_wp_error($response)) {
             wp_send_json_error(['message' => $response->get_error_message()]);
             return;
@@ -290,11 +280,136 @@ class Topsms_Admin {
         $data = json_decode($body, true);
         error_log("response data" . print_r($data, true));
         
+        // Check HTTP status code
         if (wp_remote_retrieve_response_code($response) !== 200) {
             wp_send_json_error(['message' => isset($data['message']) ? $data['message'] : 'Failed to send OTP']);
             return;
         }
         
-        wp_send_json_success($data);
+        // Check the status field in the response data
+        if (isset($data['status']) && $data['status'] === 'success') {
+            wp_send_json_success($data);
+        } else {
+            // If status is not success or doesn't exist, send error
+            $error_message = isset($data['message']) ? $data['message'] : 'Failed to send OTP';
+            wp_send_json_error(['message' => $error_message]);
+        }
+    }
+
+    /**
+     * Verifies otp and the given data and registers user in topsms
+     * 
+     * @return array JSON response with verification status
+     */
+    function topsms_verify_otp() {
+        // Get payload from the request
+        $payload_json = isset($_POST['payload']) ? $_POST['payload'] : '';
+        // error_log("payload1:" . print_r($payload_json, true));
+        if (empty($payload_json)) {
+            wp_send_json_error(['message' => 'Verification data is required']);
+            return;
+        }
+        
+        // Decode the payload
+        $payload_json = stripslashes($payload_json);
+        $payload = json_decode($payload_json, true);
+        // error_log("payload2:" . print_r($payload, true));
+        
+        // Format the phone number (remove all non-digits)
+        $formatted_number = preg_replace('/[^0-9]/', '', $payload['phone_number']);
+        
+        // Remove leading 61 if present
+        if (substr($formatted_number, 0, 2) === '61') {
+            $formatted_number = substr($formatted_number, 2);
+        }
+        
+        // Update the payload with formatted number
+        $payload['phone_number'] = $formatted_number;
+        error_log("Verifying OTP for: " . print_r($payload, true));
+        
+        // Make api request to topsms
+        $response = wp_remote_post('https://api.topsms.com.au/functions/v1/verify', [
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
+            'body' => json_encode($payload),
+        ]);
+        
+        // Check for connection errors
+        if (is_wp_error($response)) {
+            error_log("OTP Verification Error: " . $response->get_error_message());
+            wp_send_json_error(['message' => $response->get_error_message()]);
+            return;
+        }
+        
+        // Get and decode the response body
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        
+        // Log the response
+        error_log("OTP Verification Response: " . print_r($data, true));
+        
+        // // Check HTTP status code
+        // $status_code = wp_remote_retrieve_response_code($response);
+        // if ($status_code !== 200) {
+        //     $error_message = isset($data['message']) ? $data['message'] : 'Failed to verify OTP (Status: ' . $status_code . ')';
+        //     wp_send_json_error(['message' => $error_message]);
+        //     return;
+        // }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        error_log("response data" . print_r($data, true));
+        
+        // Check if any error
+        if (isset($data['status']) && $data['status'] === 'error' && isset($data['error'])) {
+            $error_message = $data['error'];
+            wp_send_json_error(['message' => $error_message]);
+        }
+        // Check for the mailchimp nested error 
+        else if (isset($data['mailchimp']['data']['errors']) && is_array($data['mailchimp']['data']['errors']) && !empty($data['mailchimp']['data']['errors'])) {
+            // Get the error
+            $error = $data['mailchimp']['data']['errors'][0];
+            $error_message = isset($error['error_code']) ? $error['error_code'] : 'Unknown error occurred';
+            wp_send_json_error(['message' => $error_message]);
+        } else {
+            // Store tokens
+            $access_token = isset($data['session']['access_token']) ? $data['session']['access_token'] : '';
+            $refresh_token = isset($data['session']['refresh_token']) ? $data['session']['refresh_token'] : '';
+            error_log("access token " . print_r($access_token, true));
+            error_log("refresh token " . print_r($refresh_token, true));
+
+            if (empty($access_token) || empty($refresh_token)) {
+                $error_message = 'Unknown error occurred';
+                wp_send_json_error(['message' => $error_message]);
+            } else {
+                $this->topsms_store_tokens($access_token, $refresh_token);
+                wp_send_json_success($data);
+            }
+        }
+    }
+
+    /**
+     * Store Topsms API tokens (refresh token and access token) in the options table
+     *
+     * @param string $access_token The access token to store
+     * @param string $refresh_token The refresh token to store
+     */
+    private function topsms_store_tokens($access_token, $refresh_token) {
+        // Store tokens in WordPress options table
+        $access_updated = update_option('topsms_access_token', $access_token);
+        $refresh_updated = update_option('topsms_refresh_token', $refresh_token);
+    }
+
+    private function check_topsms_connection() {
+        $access_token = get_option('topsms_access_token');
+        $refresh_token = get_option('topsms_refresh_token');
+
+        // Check if the token exists
+        if (!empty($access_token) || !empty($refresh_token)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

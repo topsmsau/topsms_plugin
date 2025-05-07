@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
     "@wordpress/scripts": "^30.15.0",
     "autoprefixer": "^10.4.21",
     "css-loader": "^7.1.2",

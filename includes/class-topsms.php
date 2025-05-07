@@ -163,6 +163,8 @@ class Topsms {
         // Create ajax action to handle the OTP request
         $this->loader->add_action( 'wp_ajax_send_otp', $plugin_admin, 'topsms_send_otp' );
         $this->loader->add_action( 'wp_ajax_nopriv_send_otp', $plugin_admin, 'topsms_send_otp' );
+        $this->loader->add_action( 'wp_ajax_verify_otp', $plugin_admin, 'topsms_verify_otp' );
+        $this->loader->add_action( 'wp_ajax_nopriv_verify_otp', $plugin_admin, 'topsms_verify_otp' );
         
 	}
 

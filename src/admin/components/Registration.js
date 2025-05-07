@@ -7,14 +7,14 @@ import {
     TextControl,
     SelectControl,
     ToggleControl, 
-    __experimentalText as Text,
-    __experimentalHeading as Heading
+    Icon
 } from '@wordpress/components';
 import { useState, memo, useCallback, useEffect } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
 import StepIndicator from './StepIndicator.js';
+import RegistrationIcon from './icons/RegistrationIcon.svg';
 
 // Memoize the CustomInput to prevent unnecessary re-renders
 const CustomInput = memo(({ label, value, onChange, error, ...props }) => (
@@ -50,8 +50,9 @@ const Registration = ({ onComplete }) => {
         postcode: '',
     });
 
-    // State for validation errors
     const [errors, setErrors] = useState({});
+    const [otpError, setOtpError] = useState(null);
+    const [isSending, setIsSending] = useState(false);
     
     // Use useCallback to create stable function references
     const handleChange = useCallback((field, value) => {
@@ -152,15 +153,55 @@ const Registration = ({ onComplete }) => {
         return Object.keys(newErrors).length === 0;
     }
     
+    // Send otp to the server using rest api
+    const sendOTP = async (phoneNumber) => {
+        setIsSending(true);
+        setOtpError(null);
+        
+        try {
+            // Create form data
+            const formData = new FormData();
+            formData.append('action', 'send_otp');
+            formData.append('phone_number', phoneNumber);
+            // console.log("form data:", formData);
+            
+            const response = await fetch(ajaxurl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
+            
+            console.log('OTP sent successfully');
+        } catch (err) {
+            setOtpError(`Failed to send OTP: ${err.message || 'Unknown error'}`);
+            console.error('Error sending OTP:', err);
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+
     // Validate on submit
-    const handleSubmit = useCallback((e) => {
+    const handleSubmit = useCallback(async (e) => {
         e?.preventDefault();
         
-        // Validate the form before submission
+        // Validate the form and send otp 
+        // Proceed to the next step if sent successfully
         if (validateForm()) {
-            onComplete('verification', { phoneNumber: formData.phoneNumber });
+            // Only send OTP if form is valid
+            try {
+                await sendOTP(formData.phoneNumber);
+                onComplete('verification', formData);
+            } catch (err) {
+                console.error('Failed to proceed:', err);
+            }
         }
-    }, [onComplete, formData, validateForm]);
+    }, [onComplete, formData, validateForm, formData.phoneNumber]);
 
     const handleFirstNameChange = useCallback((value) => handleChange('firstName', value), [handleChange]);
     const handleLastNameChange = useCallback((value) => handleChange('lastName', value), [handleChange]);
@@ -181,26 +222,24 @@ const Registration = ({ onComplete }) => {
             <CardBody className="p-8">
                 {/* Form header with icon */}
                 <div className="text-center mb-8">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#FF6B00"/>
-                        </svg>
+                    <div className="mx-auto mb-4 flex items-center justify-center">
+                        <Icon icon={RegistrationIcon} size={32} />
                     </div>
-                    <Heading level={3} className="text-xl font-bold mb-2">
+                    <h3 className="text-xl font-bold mb-2">
                         {__('Register', 'topsms')}
-                    </Heading>
+                    </h3>
 
-                    <Text variant="body.small" className="text-gray-600">
+                    <p className="text-gray-600 ">
                         {__('Lorem ipsum dolor sit amet consectetur. Arcu sed aliquam blandit ut magna nullam magna sagittis.', 'topsms')}
-                    </Text>
+                    </p>
                 </div>
                 
                 <form onSubmit={handleSubmit}>
                     {/* Profile details section */}
                     <div className="mb-6">
-                        <Heading level={3} className="text-lg font-semibold mb-4">
+                        <h3 className="text-lg font-semibold mb-4">
                             {__('Profile details', 'topsms')}
-                        </Heading>
+                        </h3>
                         <hr className="border-gray-200 mb-4" />
                         
                         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -242,13 +281,14 @@ const Registration = ({ onComplete }) => {
                                     country={'au'}
                                     value={formData.phoneNumber}
                                     onChange={handlePhoneNumberChange}
-                                    placeholder={__('0412 345 678', 'topsms')}
+                                    placeholder={__('412 345 678', 'topsms')}
                                     containerClass="topsms-phone-container"
                                     inputClass="topsms-phone-input"
                                     onlyCountries={['au']} 
                                     disableDropdown={true}  
                                     countryCodeEditable={false}
                                     required
+                                    masks={{au: '... ... ...'}}
                                 />
                                 {errors.phoneNumber && (
                                     <div className="text-red-500 text-sm mt-1">{errors.phoneNumber}</div>
@@ -280,9 +320,9 @@ const Registration = ({ onComplete }) => {
                     
                     {/* Business fields section */}
                     <div className="mb-6">
-                        <Heading level={3} className="text-lg font-semibold mb-4">
+                        <h3 className="text-lg font-semibold mb-4">
                             {__('Business Address', 'topsms')}
-                        </Heading>
+                        </h3>
                         <hr className="border-gray-200 mb-4" />
                         
                         <CustomInput
@@ -340,13 +380,18 @@ const Registration = ({ onComplete }) => {
                 </form>
 
                 <div className="mt-8 text-center">
-                    <Button 
-                        primary
-                        className="topsms-button w-full"
-                        onClick={handleSubmit}
-                    >
-                        {__('Register', 'topsms')}
-                    </Button>
+                {otpError && (
+                    <div className="text-red-500 text-sm mb-3">{otpError}</div>
+                )}
+
+                <Button 
+                    primary
+                    className={`topsms-button w-full ${isSending ? 'animate-pulse' : ''}`}
+                    onClick={handleSubmit}
+                    disabled={isSending}
+                >
+                    {isSending ? __('Registering...', 'topsms') : __('Register', 'topsms')}
+                </Button>
                     
                     {/* <div className="mt-4">
                         <Text variant="body.small" className="text-gray-600" color="gray">

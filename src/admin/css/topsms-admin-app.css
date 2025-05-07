@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
+/* Custom css */
 /* Custom label above inputs */
 .topsms-label {
   display: block;
@@ -12,7 +15,7 @@
   font-weight: 600;
 }
 
-/* Hide WordPress default labels */
+/* Hide wp default labels */
 .components-base-control__label {
   display: none !important;
 }
@@ -24,8 +27,8 @@
   padding: 0.5rem;
   width: 100%;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  min-height: 46px;
 }
-
 .topsms-input .components-text-control__input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 1px #3b82f6;
@@ -39,7 +42,6 @@
   padding: 0.5rem;
   width: 100%;
 }
-
 .topsms-select .components-select-control__input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 1px #3b82f6;
@@ -60,7 +62,6 @@
 
 /* Button styling */
 .topsms-button {
-  width: 100%;
   background-color: #2563eb !important;
   color: white !important;
   border: none !important;
@@ -68,24 +69,23 @@
   border-radius: 1.5rem !important;
   font-weight: 500 !important;
   transition: background-color 0.2s !important;
+  justify-content: center !important;
 }
-
 .topsms-button:hover:not(:disabled) {
   background-color: #1d4ed8 !important;
 }
-
 .topsms-button:disabled {
   background-color: #93c5fd !important;
   cursor: not-allowed !important;
 }
 
+/* Phone input field */
 .topsms-phone-input {
   line-height: 2 !important;
   height: auto !important;
   padding: 8px 0px 8px 60px !important;
   width: 100% !important;
 }
-
 .topsms-phone-input .selected-flag .flag {
   left: 30% !important;
 }

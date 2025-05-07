@@ -5,18 +5,21 @@ import {
     CardFooter, 
     Button, 
     Flex,
-    __experimentalText as Text,
-    __experimentalHeading as Heading
+    Icon
 } from '@wordpress/components';
 import { useState, useCallback, useEffect } from '@wordpress/element';
 
 import StepIndicator from './StepIndicator.js';
+import VerificationIcon from './icons/VerificationIcon.svg';
 
-const Verification = ({ onComplete, phoneNumber }) => {
+const Verification = ({ onComplete, userData }) => {
     const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
     const [isResending, setIsResending] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [countdown, setCountdown] = useState(60);
+    const [phoneNumber, setPhoneNumber] = useState(userData.phoneNumber);
+    const [isVerifying, setIsVerifying] = useState(false);
+
     
     // Handle verification code input change
     const handleCodeChange = (index, value) => {
@@ -52,29 +55,45 @@ const Verification = ({ onComplete, phoneNumber }) => {
         }
     };
 
+    // useEffect(() => {
+    //     // Only send the OTP if we have a phone number
+    //     if (userData.phoneNumber) {
+    //         // Format the phone number - start with 4 (remove the country code)
+    //         let formattedNumber = userData.phoneNumber;
+    //         if (userData.phoneNumber.startsWith('61')) {
+    //             formattedNumber = userData.phoneNumber.substring(2);
+    //         }
+    //         setPhoneNumber(formattedNumber);
+    //         // sendOTP(formattedNumber);
+    //     }
+    // }, [userData.phoneNumber]);
+
+    // Countdown timer to resend otp
     useEffect(() => {
-        // Only send the OTP if we have a phone number
-        if (phoneNumber) {
-          sendOTP();
+        let timer = null;
+        if (countdown > 0) {
+            timer = setInterval(() => {
+                setCountdown(prevCountdown => prevCountdown - 1);
+            }, 1000);
         }
-    }, [phoneNumber]);
+        return () => {
+            if (timer) clearInterval(timer);
+        };
+    }, [countdown]);
+
 
     // Send otp to the server using rest api
-    const sendOTP = async () => {
-        setIsLoading(true);
+    const sendOTP = async (number) => {
         setError(null);
 
-        // Format the phone number - start with 4 (remove the country code)
-        if (phoneNumber.startsWith('61')) {
-            phoneNumber = phoneNumber.substring(2);
-        }
+        const phoneNumber_ = number || phoneNumber;
         
         try {
             // Create form data
             const formData = new FormData();
             formData.append('action', 'send_otp');
-            formData.append('phone_number', phoneNumber);
-            console.log("form data:", formData);
+            formData.append('phone_number', phoneNumber_);
+            // console.log("form data:", formData);
             
             const response = await fetch(ajaxurl, {
                 method: 'POST',
@@ -84,38 +103,113 @@ const Verification = ({ onComplete, phoneNumber }) => {
             const data = await response.json();
             
             if (!data.success) {
-                throw new Error(data.data.message || 'Failed to send OTP');
+                throw new Error(data.data.message || 'Unknown error');
             }
             
             console.log('OTP sent successfully');
         } catch (err) {
-            setError(err.message || 'Failed to send OTP');
+            setError(`Failed to send OTP: ${err.message || 'Unknown error'}`);
             console.error('Error sending OTP:', err);
-        } finally {
-            setIsLoading(false);
-        }
+        } 
     };
+
+    // Verify otp 
+    const verifyOTP = async (otp) => {
+        setIsVerifying(true);
+        setError(null);
+        
+        try {
+            // Create the payload object as required by the API
+            const payload = {
+                phone_number: phoneNumber,
+                otp: otp,
+                email: userData.email || '',
+                company: userData.companyName || '',
+                address: userData.streetAddress || '',
+                first_name: userData.firstName || '',
+                last_name: userData.lastName || '',
+                city: userData.city || '',
+                state: userData.state || '',
+                postcode: userData.postcode || '',
+                abn: userData.abnAcn || '',
+                sender: userData.senderName || ''
+            };
+            
+            // Send request to backend 
+            const formData = new FormData();
+            formData.append('action', 'verify_otp');
+            formData.append('payload', JSON.stringify(payload));
+            
+            const response = await fetch(ajaxurl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
+            
+            console.log('OTP verified successfully');
+            return true;
+        } catch (err) {
+            setError(`Failed to verify OTP: ${err.message || 'Unknown error'}`);
+            console.error('Error verifying OTP:', err);
+            return false;
+        } finally {
+            setIsVerifying(false);
+        }
+    }
     
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e?.preventDefault();
         const code = verificationCode.join('');
+        // Check valid code
+        if (code.length !== 6) {
+            setError('Please enter the complete 6-digit verification code');
+            return;
+        }
+
         console.log('Verification code submitted:', code);
-        // You would typically verify the code with an API here
-        onComplete('welcome');
+
+        // Verify the OTP with the backend, go to the next page if successful
+        const verified = await verifyOTP(code);
+        if (verified) {
+            // Move to the next step if verification was successful
+            onComplete('welcome');
+        } else {
+            setVerificationCode(['', '', '', '', '', '']);
+            // Focus on the first input field to let the user try again
+            const firstInput = document.getElementById('code-input-0');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }
     };
     
     // Handle code resend
     const handleResendCode = () => {
         setIsResending(true);
         
-        // Simulate API request
-        setTimeout(() => {
-            // Reset verification code
-            setVerificationCode(['', '', '', '', '', '']);
-            setIsResending(false);
-            console.log('Verification code resent');
-        }, 1500);
+        // Resend otp
+        sendOTP()
+            .then(() => {
+                // Reset verification code
+                setVerificationCode(['', '', '', '', '', '']);
+                // Set countdown to 60 seconds (1 minute)
+                setCountdown(60);
+                // console.log('Verification code resent');
+            })
+            .finally(() => {
+                setIsResending(false);
+            });
+    };
+    
+    // Format remaining time
+    const formatTime = (seconds) => {
+        return `${seconds}s`;
     };
     
     return (
@@ -125,20 +219,18 @@ const Verification = ({ onComplete, phoneNumber }) => {
             <CardBody className="p-6">
                 {/* Form header with icon */}
                 <div className="text-center mb-8">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 18H4V8L12 13L20 8V18ZM12 11L4 6H20L12 11Z" fill="#FF6B00"/>
-                        </svg>
+                    <div className="mx-auto mb-4 flex items-center justify-center">
+                        <Icon icon={VerificationIcon} size={32} />
                     </div>
-                    <Heading level={3} className="text-xl font-bold mb-2">
+                    <h3 className="text-xl font-bold mb-2">
                         {__('Verify Your Phone Number', 'topsms')}
-                    </Heading>
-                    <Text variant="body.medium" className="text-gray-600 text-lg">
+                    </h3>
+                    <p className="text-gray-600">
                         {__('We have sent a verification code at number', 'topsms')} {' '}
                         <span className="text-blue-600 font-semibold">{phoneNumber}</span>.
                         <br />
                         {__('You can check the SMS you receive', 'topsms')}
-                    </Text>
+                    </p>
                 </div>
                 
                 <form onSubmit={handleSubmit}>
@@ -158,40 +250,53 @@ const Verification = ({ onComplete, phoneNumber }) => {
                             />
                         ))}
                     </div>
+
+                    {/* Error message */}
+                    {error && (
+                        <div className="text-red-500 text-center mb-4 font-medium">
+                            {error}
+                        </div>
+                    )}
                     
                     {/* Resend code link */}
                     <Flex align="center" className="mb-4">
-                        <Text variant="body.medium" className="text-gray-500 mb-2" color="gray">
+                        <p className="text-gray-500 mb-2">
                             {__("Haven't received the OTP code yet?", 'topsms')}
-                        </Text>
-                        <Button
-                            variant="link"
-                            className="text-blue-600 font-medium hover:underline"
-                            onClick={handleResendCode}
-                            disabled={isResending}
-                            isBusy={isResending}
-                        >
-                            {isResending ? __('Resending...', 'topsms') : __('Resend OTP Code', 'topsms')}
-                        </Button>
+                        </p>
+                        {countdown > 0 ? (
+                            <p className="text-blue-400 font-medium ml-2">
+                                {__('Resend code in', 'topsms')} {formatTime(countdown)}
+                            </p>
+                        ) : (
+                            <Button
+                                variant="link"
+                                className="text-blue-600 font-medium hover:underline"
+                                onClick={handleResendCode}
+                                disabled={isResending || countdown > 0}
+                                isBusy={isResending}
+                            >
+                                {isResending ? __('Resending...', 'topsms') : __('Resend OTP Code', 'topsms')}
+                            </Button>
+                        )}
                     </Flex>
 
                     <Button 
                         primary
-                        className="topsms-button w-full mt-8"
+                        className={`topsms-button w-full mt-8 ${isVerifying ? 'animate-pulse' : ''}`}
                         onClick={handleSubmit}
                         disabled={verificationCode.some(digit => !digit)}
                     >
-                        {__('Next', 'topsms')}
+                        {isVerifying ? __('Verifying...', 'topsms') : __('Next', 'topsms')}
                     </Button>
                 </form>
 
                 {/* Info box */}
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4 mt-8">
-                    <Text variant="body.medium" className="text-blue-700 text-lg" color="rgb(37,99,235)">
+                    <p className="text-blue-700">
                         {__('All new accounts need to be manually verified before you can send campaigns.', 'topsms')}
                         {' '}
                         {__('Once you have registered, we will call you within 24 hours or Monday if on the weekend.', 'topsms')}
-                    </Text>
+                    </p>
                 </div>
             </CardBody>
         

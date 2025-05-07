@@ -478,8 +478,14 @@ video {
   margin-top: 2rem;
   margin-bottom: 2rem;
 }
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
 .mb-2 {
   margin-bottom: 0.5rem;
+}
+.mb-3 {
+  margin-bottom: 0.75rem;
 }
 .mb-4 {
   margin-bottom: 1rem;
@@ -492,6 +498,9 @@ video {
 }
 .ml-1 {
   margin-left: 0.25rem;
+}
+.ml-2 {
+  margin-left: 0.5rem;
 }
 .mt-1 {
   margin-top: 0.25rem;
@@ -517,9 +526,6 @@ video {
 .h-14 {
   height: 3.5rem;
 }
-.h-20 {
-  height: 5rem;
-}
 .h-8 {
   height: 2rem;
 }
@@ -529,9 +535,6 @@ video {
 .w-14 {
   width: 3.5rem;
 }
-.w-20 {
-  width: 5rem;
-}
 .w-8 {
   width: 2rem;
 }
@@ -540,6 +543,14 @@ video {
 }
 .max-w-4xl {
   max-width: 56rem;
+}
+@keyframes pulse {
+  50% {
+    opacity: .5;
+  }
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -591,10 +602,6 @@ video {
   --tw-bg-opacity: 1;
   background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
 }
-.bg-gray-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
-}
 .bg-gray-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
@@ -611,6 +618,26 @@ video {
 }
 .p-8 {
   padding: 2rem;
+}
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+.pb-0 {
+  padding-bottom: 0px;
+}
+.pb-2 {
+  padding-bottom: 0.5rem;
+}
+.pt-4 {
+  padding-top: 1rem;
+}
+.pt-6 {
+  padding-top: 1.5rem;
 }
 .text-center {
   text-align: center;
@@ -639,6 +666,10 @@ video {
 }
 .font-semibold {
   font-weight: 600;
+}
+.text-blue-400 {
+  --tw-text-opacity: 1;
+  color: rgb(96 165 250 / var(--tw-text-opacity, 1));
 }
 .text-blue-600 {
   --tw-text-opacity: 1;
@@ -683,6 +714,9 @@ video {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+
+
+/* Custom css */
 /* Custom label above inputs */
 .topsms-label {
   display: block;
@@ -692,7 +726,7 @@ video {
   font-weight: 600;
 }
 
-/* Hide WordPress default labels */
+/* Hide wp default labels */
 .components-base-control__label {
   display: none !important;
 }
@@ -704,8 +738,8 @@ video {
   padding: 0.5rem;
   width: 100%;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  min-height: 46px;
 }
-
 .topsms-input .components-text-control__input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 1px #3b82f6;
@@ -719,7 +753,6 @@ video {
   padding: 0.5rem;
   width: 100%;
 }
-
 .topsms-select .components-select-control__input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 1px #3b82f6;
@@ -740,7 +773,6 @@ video {
 
 /* Button styling */
 .topsms-button {
-  width: 100%;
   background-color: #2563eb !important;
   color: white !important;
   border: none !important;
@@ -748,33 +780,30 @@ video {
   border-radius: 1.5rem !important;
   font-weight: 500 !important;
   transition: background-color 0.2s !important;
+  justify-content: center !important;
 }
-
 .topsms-button:hover:not(:disabled) {
   background-color: #1d4ed8 !important;
 }
-
 .topsms-button:disabled {
   background-color: #93c5fd !important;
   cursor: not-allowed !important;
 }
 
+/* Phone input field */
 .topsms-phone-input {
   line-height: 2 !important;
   height: auto !important;
   padding: 8px 0px 8px 60px !important;
   width: 100% !important;
 }
-
 .topsms-phone-input .selected-flag .flag {
   left: 30% !important;
 }
-
 .hover\:text-blue-800:hover {
   --tw-text-opacity: 1;
   color: rgb(30 64 175 / var(--tw-text-opacity, 1));
 }
-
 .hover\:underline:hover {
   text-decoration-line: underline;
 }

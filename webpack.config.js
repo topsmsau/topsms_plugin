@@ -38,6 +38,16 @@ module.exports = {
                     'sass-loader',
                 ],
             },
+            {
+                test: /\.svg$/,
+                issuer: /\.[jt]sx?$/,
+                use: ['@svgr/webpack'],
+            },
+            {
+                test: /\.svg$/,
+                issuer: /\.(css|scss)$/,
+                type: 'asset/resource',
+            },
         ]
     },
     plugins: [

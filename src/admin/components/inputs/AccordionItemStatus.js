@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import StatusToggleControl from './StatusToggleControl';
 import VerticalStrokeIcon from './../icons/VerticalStrokeIcon';
 import SettingsIcon from './../icons/SettingsIcon';
@@ -29,7 +30,7 @@ const AccordionItemStatus = ({ title, description, statusKey, children }) => {
         draft: true,
     });
 
-	// Function to handle toggle changes
+    // Function to handle toggle changes
     const handleToggleChange = () => {
         setStatuses((prevState) => ({
             ...prevState,
@@ -43,8 +44,8 @@ const AccordionItemStatus = ({ title, description, statusKey, children }) => {
                 <span className={`status status-${statusKey}`}></span>
                 <div className="status-detail-wrap">
                     <div className="status-detail">
-                        <h5>{title}</h5>
-                        <span>{description}</span>
+                        <h5>{__(title, 'topsms')}</h5>
+                        <span>{__(description, 'topsms')}</span>
                     </div>
                     <div className="status-control">
                         {/* <div className="status-toggle-wrap">
