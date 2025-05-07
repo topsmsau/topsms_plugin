@@ -16,14 +16,32 @@ const Settings = () => {
 
   // List of top-up options
   const topUpOptions = [
-    { amount: 5, sms: 100 },
-    { amount: 10, sms: 220 },
-    { amount: 25, sms: 600 },
-    { amount: 50, sms: 1300 },
-    { amount: 100, sms: 2800 },
-    { amount: 250, sms: 7500 },
-    { amount: 500, sms: 16000 },
-    { amount: 1000, sms: 35000 },
+    { amount: 45, sms: 500, link: 'https://buy.stripe.com/6oE5kZc3c3lI2Aw3cc' },
+    {
+      amount: 225,
+      sms: 2500,
+      link: 'https://buy.stripe.com/28ofZD3wG4pMb72eUV',
+    },
+    {
+      amount: 400,
+      sms: 5000,
+      link: 'https://buy.stripe.com/28oeVz0ku8G2a2Y9AC',
+    },
+    {
+      amount: 700,
+      sms: 10000,
+      link: 'https://buy.stripe.com/14k7t71oy3lIejeeUX',
+    },
+    {
+      amount: 1500,
+      sms: 50000,
+      link: 'https://buy.stripe.com/7sI9Bfc3c8G21wsdQU',
+    },
+    {
+      amount: 2500,
+      sms: 100000,
+      link: 'https://buy.stripe.com/bIYaFj6IS2hEeje8wB',
+    },
   ];
 
   // Function to handle toggle changes
@@ -35,9 +53,11 @@ const Settings = () => {
   };
 
   // Handle click event on top-up items
-  const handleTopUpClick = (amount) => {
+  const handleTopUpClick = (amount, link) => {
     setSelectedAmount(amount); // Update selected amount
-    setIsPaymentVisible(true); // Show the payment form
+
+    window.open(link, '_blank');
+    // setIsPaymentVisible(true);  // Show the payment form
   };
 
   return (
@@ -77,31 +97,20 @@ const Settings = () => {
               <span>Select an amount to add to your account</span>
             </div>
             <div className='topup-amount-list'>
-              {topUpOptions
-                .reduce((acc, { amount, sms }, index) => {
-                  // Start a new group every 4 items
-                  if (index % 4 === 0) {
-                    acc.push([]);
-                  }
-                  acc[acc.length - 1].push({ amount, sms });
-                  return acc;
-                }, [])
-                .map((group, groupIndex) => (
-                  <div className='topup-amount-items' key={groupIndex}>
-                    {group.map(({ amount, sms }) => (
-                      <div
-                        key={amount}
-                        className={`topup-item ${
-                          selectedAmount === amount ? 'active' : ''
-                        }`}
-                        onClick={() => handleTopUpClick(amount)}
-                      >
-                        <span className='topup-amount'>${amount}</span>
-                        <span className='topup-message'>{sms} SMS</span>
-                      </div>
-                    ))}
+              <div className='topup-amount-items'>
+                {topUpOptions.map(({ amount, sms, link }) => (
+                  <div
+                    key={amount}
+                    className={`topup-item ${
+                      selectedAmount === amount ? 'active' : ''
+                    }`}
+                    onClick={() => handleTopUpClick(amount, link)}
+                  >
+                    <span className='topup-amount'>${amount}</span>
+                    <span className='topup-message'>{sms} SMS</span>
                   </div>
                 ))}
+              </div>
             </div>
           </div>
           <div className='topup-payment-wrapper'>
