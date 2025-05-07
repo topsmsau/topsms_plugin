@@ -159,6 +159,10 @@ class Topsms {
 
         // Add admin menu
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'add_admin_menu' );
+
+        // Create ajax action to handle the OTP request
+        $this->loader->add_action( 'wp_ajax_send_otp', $plugin_admin, 'topsms_send_otp' );
+        $this->loader->add_action( 'wp_ajax_nopriv_send_otp', $plugin_admin, 'topsms_send_otp' );
         
 	}
 

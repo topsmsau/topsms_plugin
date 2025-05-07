@@ -10,7 +10,7 @@ import {
     __experimentalText as Text,
     __experimentalHeading as Heading
 } from '@wordpress/components';
-import { useState, memo, useCallback } from '@wordpress/element';
+import { useState, memo, useCallback, useEffect } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
@@ -158,9 +158,9 @@ const Registration = ({ onComplete }) => {
         
         // Validate the form before submission
         if (validateForm()) {
-            onComplete('verification');
+            onComplete('verification', { phoneNumber: formData.phoneNumber });
         }
-    }, [onComplete, formData]);
+    }, [onComplete, formData, validateForm]);
 
     const handleFirstNameChange = useCallback((value) => handleChange('firstName', value), [handleChange]);
     const handleLastNameChange = useCallback((value) => handleChange('lastName', value), [handleChange]);

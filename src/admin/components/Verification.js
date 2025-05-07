@@ -8,14 +8,15 @@ import {
     __experimentalText as Text,
     __experimentalHeading as Heading
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useState, useCallback, useEffect } from '@wordpress/element';
 
 import StepIndicator from './StepIndicator.js';
 
-const Verification = ({ onComplete }) => {
+const Verification = ({ onComplete, phoneNumber }) => {
     const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
     const [isResending, setIsResending] = useState(false);
-    const [phoneNumber, setPhoneNumber] = useState('+3249587757'); // This would come from your app state
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
     
     // Handle verification code input change
     const handleCodeChange = (index, value) => {
@@ -50,6 +51,50 @@ const Verification = ({ onComplete }) => {
             }
         }
     };
+
+    useEffect(() => {
+        // Only send the OTP if we have a phone number
+        if (phoneNumber) {
+          sendOTP();
+        }
+    }, [phoneNumber]);
+
+    // Send otp to the server using rest api
+    const sendOTP = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        // Format the phone number - start with 4 (remove the country code)
+        if (phoneNumber.startsWith('61')) {
+            phoneNumber = phoneNumber.substring(2);
+        }
+        
+        try {
+            // Create form data
+            const formData = new FormData();
+            formData.append('action', 'send_otp');
+            formData.append('phone_number', phoneNumber);
+            console.log("form data:", formData);
+            
+            const response = await fetch(ajaxurl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.data.message || 'Failed to send OTP');
+            }
+            
+            console.log('OTP sent successfully');
+        } catch (err) {
+            setError(err.message || 'Failed to send OTP');
+            console.error('Error sending OTP:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
     
     // Handle form submission
     const handleSubmit = (e) => {
@@ -75,7 +120,7 @@ const Verification = ({ onComplete }) => {
     
     return (
         <Card className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-8">
-            <StepIndicator currentStep={1} />
+            <StepIndicator currentStep={2} />
             
             <CardBody className="p-6">
                 {/* Form header with icon */}

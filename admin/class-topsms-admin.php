@@ -199,4 +199,50 @@ class Topsms_Admin {
         $current_step = get_option( 'topsms_setup_step', 'registration' );
         return $current_step;
     }
+
+
+    function topsms_send_otp() {
+        // Get phone number from the request
+        $phone_number = isset($_POST['phone_number']) ? sanitize_text_field($_POST['phone_number']) : '';
+        
+        if (empty($phone_number)) {
+            wp_send_json_error(['message' => 'Phone number is required']);
+            return;
+        }
+        
+        // Format the phone number (remove all non-digits)
+        $formatted_number = preg_replace('/[^0-9]/', '', $phone_number);
+        
+        // Remove leading 61 if present
+        if (substr($formatted_number, 0, 2) === '61') {
+            $formatted_number = substr($formatted_number, 2);
+        }
+        error_log("phone number" . print_r($formatted_number, true));
+        
+        // Make api request to TopSMS
+        $response = wp_remote_post('https://api.topsms.com.au/functions/v1/send-otp', [
+            'headers' => [
+            'Content-Type' => 'application/json',
+            ],
+            'body' => json_encode([
+            'phone_number' => $formatted_number
+            ]),
+        ]);
+        
+        if (is_wp_error($response)) {
+            wp_send_json_error(['message' => $response->get_error_message()]);
+            return;
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        error_log("response data" . print_r($data, true));
+        
+        if (wp_remote_retrieve_response_code($response) !== 200) {
+            wp_send_json_error(['message' => isset($data['message']) ? $data['message'] : 'Failed to send OTP']);
+            return;
+        }
+        
+        wp_send_json_success($data);
+    }
 }
