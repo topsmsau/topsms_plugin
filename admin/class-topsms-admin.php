@@ -75,6 +75,7 @@ class Topsms_Admin {
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
         // wp_enqueue_style('wp-components');
         wp_enqueue_style( 'topsms-admin-style', plugin_dir_url(__FILE__) . 'css/topsms-admin-app.css', array(), time(), 'all');
+        wp_enqueue_style( 'wp-components' );
 
 	}
 
@@ -105,6 +106,7 @@ class Topsms_Admin {
                 'wp-element', 
                 'wp-components', 
                 'wp-i18n',
+                'wp-data',
                 'wp-api-fetch',
                 'wp-blocks',
                 'wp-block-editor'
@@ -141,6 +143,25 @@ class Topsms_Admin {
             'topsms-setup',
             array( $this, 'display_setup_page' )
         );
+
+        add_submenu_page(
+            'topsms',
+            __( 'Automation', 'topsms' ),
+            __( 'Automation', 'topsms' ),
+            'manage_options',
+            'topsms-automations',
+            array( $this, 'display_automations_page' )
+        );
+
+
+        add_submenu_page(
+            'topsms',
+            __( 'Settings', 'topsms' ),
+            __( 'Settings', 'topsms' ),
+            'manage_options',
+            'topsms-settings',
+            array( $this, 'display_settings_page' )
+        );
     }
 
     /**
@@ -165,6 +186,37 @@ class Topsms_Admin {
         echo '</div>';
     }
 
+
+    public function display_automations_page() {
+        
+        // Pass data to JavaScript
+        wp_localize_script('topsms-admin-app', 'topsmsData', array(
+            'restUrl' => esc_url_raw(rest_url()),
+            'nonce' => wp_create_nonce('wp_rest'),
+            'pluginUrl' => TOPSMS_MANAGER_PLUGIN_URL
+        ));
+        
+        // Container for React app
+        echo '<div class="wrap">';
+        echo '<div id="topsms-admin-automations"></div>';
+        echo '</div>';
+    }
+
+
+    public function display_settings_page() {
+        
+        // Pass data to JavaScript
+        wp_localize_script('topsms-admin-app', 'topsmsData', array(
+            'restUrl' => esc_url_raw(rest_url()),
+            'nonce' => wp_create_nonce('wp_rest'),
+            'pluginUrl' => TOPSMS_MANAGER_PLUGIN_URL
+        ));
+        
+        // Container for React app
+        echo '<div class="wrap">';
+        echo '<div id="topsms-admin-settings"></div>';
+        echo '</div>';
+    }
 
     /**
      * Get the setup steps.
