@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@wordpress/icons": "^10.22.0",
+    "lucide-react": "^0.508.0",
     "react-international-phone": "^4.5.0",
     "react-phone-input-2": "^2.15.1"
   }

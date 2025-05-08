@@ -1,18 +1,20 @@
 import { useState, useRef, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import StatusToggleControl from './StatusToggleControl';
+import { ToggleControl } from '@wordpress/components';
+
 import VerticalStrokeIcon from './../icons/VerticalStrokeIcon';
 import SettingsIcon from './../icons/SettingsIcon';
 
 const AccordionItemStatus = ({ title, description, statusKey, children }) => {
     const [isOpen, setIsOpen] = useState(false);
 
-    const contentRef = useRef(null); // Reference to content div
-    const [height, setHeight] = useState("0px"); // Default closed height
+    // Reference to content div
+    const contentRef = useRef(null); 
+    const [height, setHeight] = useState("0px"); 
 
     useEffect(() => {
         if (isOpen) {
-            setHeight(`${contentRef.current.scrollHeight}px`); // Get actual height
+            setHeight(`${contentRef.current.scrollHeight}px`); 
         } else {
             setHeight("0px");
         }
@@ -34,32 +36,27 @@ const AccordionItemStatus = ({ title, description, statusKey, children }) => {
     const handleToggleChange = () => {
         setStatuses((prevState) => ({
             ...prevState,
-            [statusKey]: !prevState[statusKey], // Toggle only the specific key
+            [statusKey]: !prevState[statusKey], 
         }));
     };
 
     return (
         <>
-            <div className="topsms-status-wrap">
-                <span className={`status status-${statusKey}`}></span>
-                <div className="status-detail-wrap">
-                    <div className="status-detail">
-                        <h5>{__(title, 'topsms')}</h5>
+            <div className="topsms-status-wrap items-center self-stretch bg-white rounded-xl flex gap-3">
+                <span className={`status status-${statusKey} bg-[#727a8d] rounded-full h-8 w-[3px]`}></span>
+                <div className="status-detail-wrap items-center flex flex-1 gap-2">
+                    <div className="status-detail items-start flex flex-1 flex-col gap-[2px] justify-center">
+                        <h5 className="text-gray-600 font-bold text-lg">{__(title, 'topsms')}</h5>
                         <span>{__(description, 'topsms')}</span>
                     </div>
-                    <div className="status-control">
-                        {/* <div className="status-toggle-wrap">
-                            <input type="checkbox" id="processing" className="changestatus" value="processing" />
-                            <label></label>
-                        </div> */}
-                        <StatusToggleControl
+                    <div className="status-control items-center flex gap-[12px]">
+                        <ToggleControl
+                            __nextHasNoMarginBottom
                             label=""
-                            value={statuses[statusKey]}
+                            checked={statuses[statusKey]}
                             onChange={handleToggleChange}
                         />
-
                         <VerticalStrokeIcon />
-                        
                         <div
                             className={`open-settings ${isOpen ? 'open' : ''}`} 
                             onClick={() => setIsOpen(!isOpen)}
@@ -69,7 +66,8 @@ const AccordionItemStatus = ({ title, description, statusKey, children }) => {
                     </div>
                 </div>
             </div>
-            {/* {isOpen && <div className={`topsms-accordion-body-wrap ${isOpen ? 'open' : ''}`}>{children}</div>} */}
+
+
             {/* Accordion Body with Dynamic Height */}
             <div
                 className="topsms-accordion-body-wrap"

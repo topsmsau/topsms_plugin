@@ -89,3 +89,27 @@
 .topsms-phone-input .selected-flag .flag {
   left: 30% !important;
 }
+
+/* Automation settings */
+.topsms-status-wrap span.status.status-processing,
+.topsms-status-wrap span.status.status-draft {
+  background: #17a34a;
+}
+.topsms-status-wrap span.status.status-completed {
+  background: #365aed;
+}
+.topsms-status-wrap span.status.status-failed,
+.topsms-status-wrap span.status.status-cancelled,
+.topsms-status-wrap span.status.status-onhold {
+  background: #ff3a44;
+}
+.topsms-status-wrap span.status.status-refunded {
+  background: #6a6f7a;
+}
+.topsms-status-wrap span.status.status-pendingpayment {
+  background: #f90;
+}
+
+.status-control .open-settings svg {
+    cursor: pointer;
+} 
