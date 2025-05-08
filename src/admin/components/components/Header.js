@@ -39,6 +39,9 @@ const Header = () => {
                     {/* Balance Info */}
                     <FlexItem>
                         <BalanceCard />
+                        <p variant="muted" className="text-xs text-gray-500 text-center">
+                            {__('Approximately', 'topsms')} <span className="text-blue-500 font-medium">95 SMS</span> {__('messages remaining', 'topsms')}
+                        </p>
                     </FlexItem>
                 </Flex>
             </CardBody>

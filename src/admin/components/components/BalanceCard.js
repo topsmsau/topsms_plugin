@@ -52,10 +52,6 @@ const BalanceCard = () => {
                         {__('Top up', 'topsms')}
                     </TopupButton>
                 </Flex>
-
-                {/* <p variant="muted" className="text-xs text-gray-500">
-                    {__('Approximately', 'topsms')} <span className="text-blue-500 font-medium">95 SMS</span> {__('messages remaining', 'topsms')}
-                </p> */}
             </CardBody>
         </Card>
     )
