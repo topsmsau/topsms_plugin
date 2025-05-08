@@ -7,8 +7,8 @@ import {
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
-import StepIndicator from './StepIndicator.js';
-import WelcomeIcon from './icons/WelcomeIcon.svg';
+import StepIndicator from '../components/StepIndicator.js';
+import WelcomeIcon from '../icons/WelcomeIcon.svg';
 
 const Welcome = ({ onComplete }) => {
     const handleClick = () => {

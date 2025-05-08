@@ -1,5 +1,5 @@
 import { useState } from '@wordpress/element';
-import Layout from './Layout';
+import Layout from './components/Layout';
 import StatusToggleControl from './inputs/StatusToggleControl';
 import PaymentForm from './PaymentForm';
 import { Button } from '@wordpress/components';

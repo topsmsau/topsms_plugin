@@ -1,10 +1,10 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 
-import Registration from './Registration';
-import Verification from './Verification';
-import Welcome from './Welcome'; 
-import Connected from './Connected';
+import Registration from './setup/Registration';
+import Verification from './setup/Verification';
+import Welcome from './setup/Welcome'; 
+import Connected from './setup/Connected';
 
 const Setup = () => {
     // Access the connection status from the global topsmsData object

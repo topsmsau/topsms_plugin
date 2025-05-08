@@ -7,7 +7,7 @@ import {
     Icon
 } from '@wordpress/components';
 
-import WelcomeIcon from './icons/WelcomeIcon.svg';
+import WelcomeIcon from '../icons/WelcomeIcon.svg';
 
 const Connected = () => {
     const handleClick = () => {

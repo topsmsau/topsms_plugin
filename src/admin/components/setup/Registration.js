@@ -13,8 +13,8 @@ import { useState, memo, useCallback, useEffect } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
-import StepIndicator from './StepIndicator.js';
-import RegistrationIcon from './icons/RegistrationIcon.svg';
+import StepIndicator from '../components/StepIndicator.js';
+import RegistrationIcon from '../icons/RegistrationIcon.svg';
 
 // Memoize the CustomInput to prevent unnecessary re-renders
 const CustomInput = memo(({ label, value, onChange, error, ...props }) => (

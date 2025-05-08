@@ -90,26 +90,19 @@
   left: 30% !important;
 }
 
-/* Automation settings */
-.topsms-status-wrap span.status.status-processing,
-.topsms-status-wrap span.status.status-draft {
-  background: #17a34a;
-}
-.topsms-status-wrap span.status.status-completed {
-  background: #365aed;
-}
-.topsms-status-wrap span.status.status-failed,
-.topsms-status-wrap span.status.status-cancelled,
-.topsms-status-wrap span.status.status-onhold {
-  background: #ff3a44;
-}
-.topsms-status-wrap span.status.status-refunded {
-  background: #6a6f7a;
-}
-.topsms-status-wrap span.status.status-pendingpayment {
-  background: #f90;
+/* Header */
+.topsms-header {
+    background-color: transparent !important;
+    box-shadow: none !important;
 }
 
+/* Automation settings */
 .status-control .open-settings svg {
     cursor: pointer;
 } 
+.topsms-balance-card-body {
+    padding: 0.75rem !important;
+}
+.topsms-header-card-body {
+    padding: 0 !important;
+}

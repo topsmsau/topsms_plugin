@@ -3,14 +3,7 @@ import {
     Card, 
     CardBody,
     Button,
-    TextareaControl,
-    FormToggle,
-    Panel,
-    PanelBody,
-    PanelRow,
     Icon,
-    Tooltip,
-    TabPanel
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { chevronRight } from '@wordpress/icons';
@@ -18,7 +11,7 @@ import { chevronRight } from '@wordpress/icons';
 // Template Tag Component
 const TemplateTag = ({ tag, onClick }) => (
     <button 
-        className="automation-tag-button px-3 py-1 mx-1 my-1 bg-gray-100 border border-gray-300 rounded text-sm"
+        className="automation-tag-button px-3 py-1 mx-1 my-1 bg-gray-100 rounded-full text-sm text-gray-600"
         onClick={() => onClick && onClick(tag)}
     >
         {tag}
@@ -27,8 +20,7 @@ const TemplateTag = ({ tag, onClick }) => (
 
 const AutomationSettingsDetail = ({ status }) => {
     const [smsMessage, setSmsMessage] = useState("Hello [f_name], your order with ID [id] has been shipped and is on its way! 📦\nExpected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us.");
-    const [isProcessingEnabled, setIsProcessingEnabled] = useState(true);
-    const [characterCount, setCharacterCount] = useState(352);
+    const [characterCount, setCharacterCount] = useState(smsMessage.length);
     // const [activeTab, setActiveTab] = useState('shipping');
 
     const handleMessageChange = (value) => {
@@ -41,18 +33,18 @@ const AutomationSettingsDetail = ({ status }) => {
         setCharacterCount(smsMessage.length + tag.length);
     };
 
-    const tabs = [
-        {
-            name: 'shipping',
-            title: __('Shipping', 'topsms'),
-            className: 'automation-tab'
-        },
-        {
-            name: 'pickup',
-            title: __('Pickup', 'topsms'),
-            className: 'automation-tab'
-        }
-    ];
+    // const tabs = [
+    //     {
+    //         name: 'shipping',
+    //         title: __('Shipping', 'topsms'),
+    //         className: 'automation-tab'
+    //     },
+    //     {
+    //         name: 'pickup',
+    //         title: __('Pickup', 'topsms'),
+    //         className: 'automation-tab'
+    //     }
+    // ];
 
     return (
         <Card className="automation-card">
@@ -101,7 +93,7 @@ const AutomationSettingsDetail = ({ status }) => {
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="automation-actions flex justify-between space-x-4 mt-4">
+                                            <div className="automation-actions flex justify-between space-x-4 mt-12">
                                                 <Button 
                                                     variant="secondary" 
                                                     className="automation-button-reset px-6 py-2 border border-gray-300 rounded-full"

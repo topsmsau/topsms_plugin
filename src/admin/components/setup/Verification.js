@@ -9,8 +9,8 @@ import {
 } from '@wordpress/components';
 import { useState, useCallback, useEffect } from '@wordpress/element';
 
-import StepIndicator from './StepIndicator.js';
-import VerificationIcon from './icons/VerificationIcon.svg';
+import StepIndicator from '../components/StepIndicator.js';
+import VerificationIcon from '../icons/VerificationIcon.svg';
 
 const Verification = ({ onComplete, userData }) => {
     const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
