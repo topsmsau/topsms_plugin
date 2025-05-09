@@ -2,18 +2,15 @@ import { __ } from '@wordpress/i18n';
 import { 
     Card, 
     CardBody, 
-    CardFooter, 
     Button, 
     TextControl,
-    SelectControl,
-    ToggleControl, 
     Icon
 } from '@wordpress/components';
 import { useState, memo, useCallback, useEffect } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
-import StepIndicator from '../components/StepIndicator.js';
+import StepIndicator from './StepIndicator.js';
 import RegistrationIcon from '../icons/RegistrationIcon.svg';
 
 // Memoize the CustomInput to prevent unnecessary re-renders
@@ -159,16 +156,30 @@ const Registration = ({ onComplete }) => {
         setOtpError(null);
         
         try {
-            // Create form data
-            const formData = new FormData();
-            formData.append('action', 'send_otp');
-            formData.append('phone_number', phoneNumber);
+            // Get the nonce from WordPress
+            const nonce = window.wpApiSettings?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                return;
+            }
+            // Data to send 
+            const sendData = {
+                phoneNumber: phoneNumber
+            }
             // console.log("form data:", formData);
             
-            const response = await fetch(ajaxurl, {
+            const response = await fetch("/wp-json/topsms/v2/send-otp/", {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce,
+                },
+                body: JSON.stringify(sendData)
             });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch status settings: ${response.status}`);
+            }
             
             const data = await response.json();
             

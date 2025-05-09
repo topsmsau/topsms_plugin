@@ -3,7 +3,7 @@ import { __ } from '@wordpress/i18n';
 import Layout from './components/Layout';
 import AccordionItemStatus from './automations/AccordionItemStatus';
 import AutomationSettingsDetail from './automations/AutomationSettingsDetail';
-import ReviewCard from './components/ReviewCard';
+import ReviewCard from './automations/ReviewCard';
 
 import BannerIcon1 from './icons/AutomationBannerIcon1.svg';
 import BannerIcon2 from './icons/AutomationBannerIcon2.svg';
@@ -101,8 +101,8 @@ const Automation = () => {
                 </div>
             </div>
             <div className='page-details'>
-                <div className='topsms-automation-status-wrap flex flex-col items-start self-stretch gap-2'>
-                    <div className='topsms-accordion-wrap border border-black/[0.07] flex flex-col gap-4 p-3 pr-4 w-full'>
+                <div className='topsms-automation-status-wrap flex flex-col items-start self-stretch gap-1'>
+                    <div className='topsms-accordion-wrap flex flex-col gap-3 p-3 pr-4 w-full'>
                         {/* Map through the orderStatuses array to create an AccordionItemStatus for each */}
                         {orderStatuses.map((status) => (
                         <AccordionItemStatus
@@ -119,7 +119,7 @@ const Automation = () => {
                 </div>
 
                 {/* Review Cards */}
-                <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-3 gap-4 mb-4 pr-4 p-3">
                     {/* <ReviewCard
                         icon=''
                         title='Customisation Services'

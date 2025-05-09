@@ -8,7 +8,7 @@ import {
 import { useState } from '@wordpress/element';
 import { chevronRight } from '@wordpress/icons';
 
-import TemplateTag from '../components/SmsTemplateTag';
+import TemplateTag from './SmsTemplateTag';
 
 const AutomationSettingsDetail = ({ status }) => {
     const [smsMessage, setSmsMessage] = useState("Hello [f_name], your order with ID [id] has been shipped and is on its way! 📦\nExpected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us.");

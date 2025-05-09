@@ -90,10 +90,14 @@
   left: 30% !important;
 }
 
-/* Header */
+/* Header, main content and footer */
 .topsms-header {
     background-color: transparent !important;
     box-shadow: none !important;
+}
+.topsms-page-content, .topsms-footer-wrap {
+    background-color: #fff;
+    padding: 1.25rem;
 }
 
 /* Automation settings */
@@ -108,5 +112,7 @@
 }
 .topsms-review-card {
     background-color: #f0f3ff !important;
-
+}
+.topsms-status-wrap {
+    background-color: transparent;
 }

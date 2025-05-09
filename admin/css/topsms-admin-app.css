@@ -642,6 +642,9 @@ video {
 .justify-between {
   justify-content: space-between;
 }
+.gap-1 {
+  gap: 0.25rem;
+}
 .gap-2 {
   gap: 0.5rem;
 }
@@ -656,6 +659,9 @@ video {
 }
 .gap-\[2px\] {
   gap: 2px;
+}
+.gap-\[2rem\] {
+  gap: 2rem;
 }
 .space-x-1 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
@@ -787,6 +793,9 @@ video {
 }
 .p-8 {
   padding: 2rem;
+}
+.p-\[0\.75rem\] {
+  padding: 0.75rem;
 }
 .px-3 {
   padding-left: 0.75rem;
@@ -1020,10 +1029,14 @@ video {
   left: 30% !important;
 }
 
-/* Header */
+/* Header, main content and footer */
 .topsms-header {
     background-color: transparent !important;
     box-shadow: none !important;
+}
+.topsms-page-content, .topsms-footer-wrap {
+    background-color: #fff;
+    padding: 1.25rem;
 }
 
 /* Automation settings */
@@ -1038,7 +1051,9 @@ video {
 }
 .topsms-review-card {
     background-color: #f0f3ff !important;
-
+}
+.topsms-status-wrap {
+    background-color: transparent;
 }
 .hover\:bg-gray-100:hover {
   --tw-bg-opacity: 1;

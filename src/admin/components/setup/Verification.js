@@ -9,7 +9,7 @@ import {
 } from '@wordpress/components';
 import { useState, useCallback, useEffect } from '@wordpress/element';
 
-import StepIndicator from '../components/StepIndicator.js';
+import StepIndicator from './StepIndicator.js';
 import VerificationIcon from '../icons/VerificationIcon.svg';
 
 const Verification = ({ onComplete, userData }) => {
@@ -89,16 +89,30 @@ const Verification = ({ onComplete, userData }) => {
         const phoneNumber_ = number || phoneNumber;
         
         try {
-            // Create form data
-            const formData = new FormData();
-            formData.append('action', 'send_otp');
-            formData.append('phone_number', phoneNumber_);
+            // Get the nonce from WordPress
+            const nonce = window.wpApiSettings?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                return;
+            }
+            // Data to send 
+            const sendData = {
+                phoneNumber: phoneNumber_
+            }
             // console.log("form data:", formData);
-            
-            const response = await fetch(ajaxurl, {
+
+            const response = await fetch("/wp-json/topsms/v2/send-otp/", {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce,
+                },
+                body: JSON.stringify(sendData)
             });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch status settings: ${response.status}`);
+            }
             
             const data = await response.json();
             
@@ -119,8 +133,15 @@ const Verification = ({ onComplete, userData }) => {
         setError(null);
         
         try {
-            // Create the payload object as required by the API
-            const payload = {
+            // Get the nonce from WordPress
+            const nonce = window.wpApiSettings?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                return;
+            }
+
+            // Form data 
+            const newData = {
                 phone_number: phoneNumber,
                 otp: otp,
                 email: userData.email || '',
@@ -134,16 +155,24 @@ const Verification = ({ onComplete, userData }) => {
                 abn: userData.abnAcn || '',
                 sender: userData.senderName || ''
             };
+            // Data to send 
+            const sendData = {
+                payload: newData
+            }
+    
             
-            // Send request to backend 
-            const formData = new FormData();
-            formData.append('action', 'verify_otp');
-            formData.append('payload', JSON.stringify(payload));
-            
-            const response = await fetch(ajaxurl, {
+            const response = await fetch("/wp-json/topsms/v2/verify-otp/", {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce,
+                },
+                body: JSON.stringify(sendData)
             });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch status settings: ${response.status}`);
+            }
             
             const data = await response.json();
             

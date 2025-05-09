@@ -7,13 +7,13 @@ import {
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
-import StepIndicator from '../components/StepIndicator.js';
+import StepIndicator from './StepIndicator.js';
 import WelcomeIcon from '../icons/WelcomeIcon.svg';
 
 const Welcome = ({ onComplete }) => {
     const handleClick = () => {
-        // Navigate to automations page or next step
-        onComplete('automations');
+        // Navigate to the automations page
+        window.location.href = '/wp-admin/admin.php?page=topsms-automations';
     };
     
     return (

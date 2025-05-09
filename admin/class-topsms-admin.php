@@ -123,6 +123,9 @@ class Topsms_Admin {
             true
         ); 
 
+        wp_localize_script( 'wp-api', 'wpApiSettings', array( 'root' => esc_url_raw( rest_url() ), 'nonce' => wp_create_nonce( 'wp_rest' ) ) );
+        wp_enqueue_script('wp-api');
+
 	}
 
     public function hide_admin_ui() {
@@ -195,6 +198,7 @@ class Topsms_Admin {
             'restUrl' => esc_url_raw(rest_url()),
             'nonce' => wp_create_nonce('wp_rest'),
             'isConnected' => $is_connected,
+            // 'isConnected' => 'false',
         ));
         
         // Container for React app
@@ -235,6 +239,25 @@ class Topsms_Admin {
         echo '</div>';
     }
 
+    public function topsms_register_routes() {
+        // Api route for sending otp
+        register_rest_route('topsms/v2', '/send-otp', array(
+            'methods'  => 'POST',
+            'callback' => array($this, 'topsms_send_otp'),
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
+        ));
+
+        // Api route for verifying otp
+        register_rest_route('topsms/v2', '/verify-otp', array(
+            'methods'  => 'POST',
+            'callback' => array($this, 'topsms_verify_otp'),
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
+        ));
+    }
 
     /**
      * Send otp to the given phone number by calling the topsms api
@@ -243,9 +266,12 @@ class Topsms_Admin {
      * @return   array JSON response with status of sending the otp
      *               
      */
-    function topsms_send_otp() {
+    function topsms_send_otp(WP_REST_Request $request) {
+        $body_params = $request->get_json_params();
+        // error_log("body params: " . print_r($body_params, true));
+
         // Get phone number from the request
-        $phone_number = isset($_POST['phone_number']) ? sanitize_text_field($_POST['phone_number']) : '';
+        $phone_number = $body_params['phoneNumber'];
         if (empty($phone_number)) {
             wp_send_json_error(['message' => 'Phone number is required']);
             return;
@@ -301,20 +327,16 @@ class Topsms_Admin {
      * 
      * @return array JSON response with verification status
      */
-    function topsms_verify_otp() {
+    function topsms_verify_otp(WP_REST_Request $request) {
         // Get payload from the request
-        $payload_json = isset($_POST['payload']) ? $_POST['payload'] : '';
-        // error_log("payload1:" . print_r($payload_json, true));
-        if (empty($payload_json)) {
+        $body_params = $request->get_json_params();
+        $payload = $body_params['payload'];
+        // error_log("payload:" . print_r($payload, true));
+        if (empty($payload)) {
             wp_send_json_error(['message' => 'Verification data is required']);
             return;
         }
-        
-        // Decode the payload
-        $payload_json = stripslashes($payload_json);
-        $payload = json_decode($payload_json, true);
-        // error_log("payload2:" . print_r($payload, true));
-        
+
         // Format the phone number (remove all non-digits)
         $formatted_number = preg_replace('/[^0-9]/', '', $payload['phone_number']);
         
