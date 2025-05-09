@@ -193,7 +193,7 @@
 }
 
 /* Sidebar CSS */
-.topsms-page-wrap {
+/* .topsms-page-wrap {
   align-items: flex-start;
   align-self: stretch;
   background: #ffffff;
@@ -205,15 +205,15 @@
 }
 .topsms-sidebar .topsms-sidebar-wrap {
   align-items: center;
-  align-self: stretch;
+  align-self: stretch; */
   /*border-right: 0.8px solid rgba(0, 0, 0, 0.10);*/
-  background: #fff;
+  /* background: #fff;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 28px 20px;
+  padding: 28px 20px; */
   /*width: 240px;*/
-}
+/* }
 .topsms-sidebar-wrap .topsms-sidebar-innerwrap {
   align-items: flex-start;
   align-self: stretch;
@@ -280,7 +280,7 @@
 .sidebar-menulist .menuitems-wrap.active a.menuitem,
 .sidebar-menulist .menuitems-wrap:hover a.menuitem {
   color: #335cff;
-}
+} */
 
 /* Page Content CSS */
 .topsms-page-wrap .topsms-page-content {

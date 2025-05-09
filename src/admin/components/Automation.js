@@ -61,15 +61,15 @@ const Automation = () => {
     <Layout>
         <div className='px-6 py-4'>
             <div className='mb-6'>
-            <h2 className='text-2xl font-bold mb-1'>
-                {__('Automation Settings', 'topsms')}
-            </h2>
-            <p className='text-gray-600'>
-                {__(
-                'Configure SMS notifications for different order statuses',
-                'topsms'
-                )}
-            </p>
+                <h2 className='text-2xl font-bold mb-1'>
+                    {__('Automation Settings', 'topsms')}
+                </h2>
+                <p className='text-gray-600'>
+                    {__(
+                    'Configure SMS notifications for different order statuses',
+                    'topsms'
+                    )}
+                </p>
             </div>
         </div>
         <div className='page-details'>
