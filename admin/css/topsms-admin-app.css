@@ -604,6 +604,9 @@ video {
 .flex-shrink-0 {
   flex-shrink: 0;
 }
+.grow {
+  flex-grow: 1;
+}
 @keyframes pulse {
   50% {
     opacity: .5;
@@ -1033,6 +1036,10 @@ video {
 .topsms-header-card-body {
     padding: 0 !important;
 }
+.topsms-review-card {
+    background-color: #f0f3ff !important;
+
+}
 .hover\:bg-gray-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
@@ -1057,4 +1064,3 @@ video {
     width: 50%;
   }
 }
-

@@ -1,34 +1,17 @@
 import { useState } from '@wordpress/element';
 import { 
-    Button,
     ToggleControl,
     Card,
     CardBody,
-    CardHeader,
     Flex,
-    FlexItem,
-    FlexBlock,
-    Icon,
     Panel,
     PanelBody
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { shield } from '@wordpress/icons';
+
 
 import Layout from './components/Layout';
-
-// Custom Button Component 
-const CustomButton = ({ children, onClick, isSelected, className = '' }) => {
-    return (
-        <button 
-            className={`flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 bg-transparent hover:bg-gray-50 transition-colors cursor-pointer ${isSelected ? 'border-blue-500 bg-blue-50' : ''} ${className}`}
-            type="button"
-            onClick={onClick}
-        >
-            {children}
-        </button>
-    );
-};
+import TopupBalanceButton from './components/TopupBalanceButton';
 
 const Settings = () => {
     // State for toggles
@@ -136,14 +119,14 @@ const Settings = () => {
                             {/* Top Up Options */}
                             <div className="grid grid-cols-3 gap-4">
                                 {topUpOptions.map(({ amount, sms, link }) => (
-                                    <CustomButton
+                                    <TopupBalanceButton
                                         key={amount}
                                         isSelected={selectedAmount === amount}
                                         onClick={() => handleTopUpClick(amount, link)}
                                     >
                                         <span className="text-xl font-bold mb-1">${amount}</span>
                                         <span className="text-sm text-gray-600">{sms} SMS</span>
-                                    </CustomButton>
+                                    </TopupBalanceButton>
                                 ))}
                             </div>
                         </Flex>
