@@ -7,11 +7,14 @@ import SettingsIcon from '../icons/SettingsIcon';
 
 const AccordionItemStatus = ({ title, description, statusKey, statusColor, children }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isEnabled, setIsEnabled] = useState(true); 
 
     // Reference to content div
     const contentRef = useRef(null); 
     const [height, setHeight] = useState("0px"); 
 
+    // Open the details - dynamic height render
     useEffect(() => {
         if (isOpen) {
             setHeight(`${contentRef.current.scrollHeight}px`); 
@@ -20,49 +23,38 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
         }
     }, [isOpen]);
 
-    // State for toggles
-    const [statuses, setStatuses] = useState({
-        processing: false,
-        completed: true,
-        failed: true,
-        refunded: true,
-        pending_payment: true,
-        cancelled: true,
-        onhold: true,
-        draft: true,
-    });
-
     // Initial status settings on load (fetched from db)
     useEffect(() => {
-        fetchStatusSettings();
+        if (statusKey) {
+            fetchStatusSettings();
+        }
     }, [statusKey]);
 
     // Handle toggle changes
     const handleToggleChange = () => {
-        const newValue = !statuses[statusKey];
-        
+        const newValue = !isEnabled;
+
         // Update local state immediately
-        setStatuses(prevState => ({
-            ...prevState,
-            [statusKey]: newValue
-        }));
-        
+        setIsEnabled(newValue);
+
         // Save to database
-        saveStatusSettings(newValue);
+        saveStatusEnabled(newValue);
     };
 
-    // Fetch current status settings from the database
+    // Fetch current status enabled settings from db
     const fetchStatusSettings = async () => {
+        setIsLoading(true);
         try {
             // Get the nonce from WordPress
             const nonce = window.wpApiSettings?.nonce;
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
+                setIsLoading(false);
                 return;
             }
 
-            // Fetch status settings
-            const response = await fetch(`/wp-json/topsms/v1/settings/status/${statusKey}`, {
+            // Fetch status settings from backend
+            const response = await fetch(`/wp-json/topsms/v1/automations/status/${statusKey}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,27 +62,35 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                 }
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch status settings: ${response.status}`);
-            }
+            // // Check if success 
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message || 
+            //         `Failed to fetch status settings: ${response.status}`
+            //     );
+            // }
 
             const data = await response.json();
-            
-            // Update local state with the fetched data
-            if (data && data.enabled !== undefined) {
-                setStatuses(prevState => ({
-                    ...prevState,
-                    [statusKey]: data.enabled
-                }));
+            console.log(`Status settings for ${statusKey}:`, data);
+
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
             }
 
+            // Get the enabled settings and get it reflected on the frontend
+            const enabled = data.data.enabled;
+            setIsEnabled(enabled);
+            // console.log(`Status ${statusKey} enabled:  ${enabled}`);
         } catch (error) {
             console.error('Error fetching status settings:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Save status settings to the database
-    const saveStatusSettings = async (isEnabled) => {
+    // Save status enabled setting to the database
+    const saveStatusEnabled = async (isEnabled) => {
         try {
             // Get the nonce from WordPress
             const nonce = window.wpApiSettings?.nonce;
@@ -101,11 +101,12 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             // Data to send 
             const sendData = {
                 status_key: statusKey,
-                    enabled: isEnabled
-            }
+                enabled: isEnabled
+            };
+            // console.log(`Saving ${statusKey} enabled setting:`, sendData);
 
-            // Save status settings
-            const response = await fetch('/wp-json/topsms/v1/settings/status', {
+            // Save status enabled option to backend
+            const response = await fetch('/wp-json/topsms/v1/automations/status/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -114,33 +115,32 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                 body: JSON.stringify(sendData)
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => null);
-                throw new Error(
-                    errorData?.message || 
-                    `Failed to save status settings: ${response.status}`
-                );
-            }
+            // // Check if success
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message || 
+            //         `Failed to save status settings: ${response.status}`
+            //     );
+            // }
 
             const data = await response.json();
-            console.log('Status settings saved successfully:', data);
+            console.log('Status enabled setting saved successfully:', data);
+
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
             
-            // If saved status is toggled off, close the accordion
+            // If status is disabled, close the accordion
             if (!isEnabled) {
                 setIsOpen(false);
             }
-
         } catch (error) {
-            console.error('Error saving status settings:', error);
-            
+            console.error('Error saving status enabled setting:', error);
             // Revert the toggle if saving failed
-            setStatuses(prevState => ({
-                ...prevState,
-                [statusKey]: !isEnabled
-            }));
+            setIsEnabled(!isEnabled);
         }
     };
-
 
     return (
         <>
@@ -152,16 +152,20 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                         <span>{__(description, 'topsms')}</span>
                     </div>
                     <div className="status-control items-center flex gap-[12px]">
-                        <ToggleControl
-                            __nextHasNoMarginBottom
-                            label=""
-                            checked={statuses[statusKey]}
-                            onChange={handleToggleChange}
-                        />
+                        {isLoading ? (
+                            <div className="animate-pulse bg-gray-300 h-5 w-9 rounded"></div>
+                        ) : (
+                            <ToggleControl
+                                __nextHasNoMarginBottom
+                                label=""
+                                checked={isEnabled}
+                                onChange={handleToggleChange}
+                            />
+                        )}
                         <VerticalStrokeIcon />
                         <div
-                            className={`open-settings ${isOpen ? 'open' : ''}`} 
-                            onClick={() => setIsOpen(!isOpen)}
+                            className={`open-settings ${isOpen ? 'open' : ''} ${!isEnabled ? 'opacity-50 pointer-events-none' : ''}`} 
+                            onClick={() => isEnabled && setIsOpen(!isOpen)}
                         >
                             <SettingsIcon />
                         </div>
@@ -169,20 +173,21 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                 </div>
             </div>
 
-
-            {/* Accordion Body with Dynamic Height */}
-            <div
-                className="topsms-accordion-body-wrap"
-                ref={contentRef}
-                style={{
-                    maxHeight: height,
-                    opacity: isOpen ? 1 : 0,
-                    transition: "max-height 0.5s ease-in-out, opacity 0.5s ease-in-out",
-                    overflow: "hidden",
-                }}
-            >
-                {children}
-            </div>
+            {/* Accordion Body with Dynamic Height - Only show if enabled */}
+            {isEnabled && (
+                <div
+                    className="topsms-accordion-body-wrap"
+                    ref={contentRef}
+                    style={{
+                        maxHeight: height,
+                        opacity: isOpen ? 1 : 0,
+                        transition: "max-height 0.5s ease-in-out, opacity 0.5s ease-in-out",
+                        overflow: "hidden",
+                    }}
+                >
+                    {children}
+                </div>
+            )}
         </>
     );
 };

@@ -18,48 +18,56 @@ const Automation = () => {
             title: 'Processing',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#17a34a', 
+            defaultTemplate: "Hello [f_name], your order with ID [id] has been shipped and is on its way! 📦\nExpected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us."
         },
         {
             key: 'completed',
             title: 'Completed',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#365aed', 
+            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
         },
         {
             key: 'failed',
             title: 'Failed',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#ff3a44', 
+            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
         },
         {
             key: 'refunded',
             title: 'Refunded',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#6a6f7a', 
+            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
         }, 
         {
             key: 'pending_payment',
             title: 'Pending Payment',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#f90', 
+            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
         },
         {
             key: 'cancelled',
             title: 'Cancelled',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#ff3a44',
+            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
         },
         {
             key: 'onhold',
             title: 'On Hold',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#ff3a44',
+            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
         },
         {
             key: 'draft',
             title: 'Draft',
             description: 'lorem ipsum dolor sit amet condecture',
-            color: '#17a34a', 
+            color: '#17a34a',
+            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture" 
         }
     ];
 
@@ -112,7 +120,11 @@ const Automation = () => {
                             statusKey={status.key}
                             statusColor={status.color}
                         >
-                            <AutomationSettingsDetail status={status.title} />
+                            <AutomationSettingsDetail 
+                                status={status.title} 
+                                statusKey={status.key}
+                                defaultTemplate={status.defaultTemplate}
+                            />
                         </AccordionItemStatus>
                         ))}
                     </div>

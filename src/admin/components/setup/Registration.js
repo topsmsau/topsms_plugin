@@ -168,7 +168,7 @@ const Registration = ({ onComplete }) => {
             }
             // console.log("form data:", formData);
             
-            const response = await fetch("/wp-json/topsms/v2/send-otp/", {
+            const response = await fetch("/wp-json/topsms/v1/send-otp/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -177,16 +177,19 @@ const Registration = ({ onComplete }) => {
                 body: JSON.stringify(sendData)
             });
             
-            if (!response.ok) {
-                throw new Error(`Failed to fetch status settings: ${response.status}`);
-            }
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message || 
+            //         `Failed to send OTP: ${response.status}`
+            //     );
+            // }
             
             const data = await response.json();
             
             if (!data.success) {
                 throw new Error(data.data.message || 'Unknown error');
             }
-            
             console.log('OTP sent successfully');
         } catch (err) {
             setOtpError(`Failed to send OTP: ${err.message || 'Unknown error'}`);

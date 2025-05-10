@@ -101,7 +101,7 @@ const Verification = ({ onComplete, userData }) => {
             }
             // console.log("form data:", formData);
 
-            const response = await fetch("/wp-json/topsms/v2/send-otp/", {
+            const response = await fetch("/wp-json/topsms/v1/send-otp/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -110,9 +110,13 @@ const Verification = ({ onComplete, userData }) => {
                 body: JSON.stringify(sendData)
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch status settings: ${response.status}`);
-            }
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message || 
+            //         `Failed to send OTP: ${response.status}`
+            //     );
+            // }
             
             const data = await response.json();
             
@@ -161,7 +165,7 @@ const Verification = ({ onComplete, userData }) => {
             }
     
             
-            const response = await fetch("/wp-json/topsms/v2/verify-otp/", {
+            const response = await fetch("/wp-json/topsms/v1/verify-otp/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -170,9 +174,13 @@ const Verification = ({ onComplete, userData }) => {
                 body: JSON.stringify(sendData)
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch status settings: ${response.status}`);
-            }
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message || 
+            //         `Failed to verify OTP: ${response.status}`
+            //     );
+            // }
             
             const data = await response.json();
             
@@ -201,7 +209,7 @@ const Verification = ({ onComplete, userData }) => {
             return;
         }
 
-        console.log('Verification code submitted:', code);
+        // console.log('Verification code submitted:', code);
 
         // Verify the OTP with the backend, go to the next page if successful
         const verified = await verifyOTP(code);

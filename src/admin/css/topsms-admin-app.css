@@ -5,7 +5,7 @@
 
 
 
-/* Custom css */
+/******************************************** Custom css ***********************************************/
 /* Custom label above inputs */
 .topsms-label {
   display: block;
@@ -116,3 +116,6 @@
 .topsms-status-wrap {
     background-color: transparent;
 }
+
+
+/**************************************** End of Custom css ********************************************/

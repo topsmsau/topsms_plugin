@@ -13,7 +13,7 @@ const Setup = () => {
         window.topsmsData.isConnected : 
         false
     );
-    console.log("isConnected", isConnected);
+    // console.log("isConnected", isConnected);
 
     // If connected, show the Connected component
     if (isConnected === 'true' || isConnected == 1) {

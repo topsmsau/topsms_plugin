@@ -5,24 +5,34 @@ import {
     Button,
     Icon,
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { chevronRight } from '@wordpress/icons';
 
 import TemplateTag from './SmsTemplateTag';
 
-const AutomationSettingsDetail = ({ status }) => {
-    const [smsMessage, setSmsMessage] = useState("Hello [f_name], your order with ID [id] has been shipped and is on its way! 📦\nExpected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us.");
+const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
+    const [smsMessage, setSmsMessage] = useState(defaultTemplate);
     const [characterCount, setCharacterCount] = useState(smsMessage.length);
     // const [activeTab, setActiveTab] = useState('shipping');
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+
+    // Fetch saved status template from the db
+    useEffect(() => {
+        fetchTemplateSettings();
+    }, [status]);
 
     const handleMessageChange = (value) => {
         setSmsMessage(value);
         setCharacterCount(value.length);
+        setSaveSuccess(false);
     };
 
+    // Insert sms template tag to the template
     const insertTag = (tag) => {
         setSmsMessage(smsMessage + tag);
         setCharacterCount(smsMessage.length + tag.length);
+        setSaveSuccess(false);
     };
 
     // const tabs = [
@@ -37,6 +47,121 @@ const AutomationSettingsDetail = ({ status }) => {
     //         className: 'automation-tab'
     //     }
     // ];
+
+    // Fetch status saved template from db
+    const fetchTemplateSettings = async () => {
+        try {
+            // Get the nonce from WordPress
+            const nonce = window.wpApiSettings?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                return;
+            }
+
+            // Fetch status template from backend
+            const response = await fetch(`/wp-json/topsms/v1/automations/status/${statusKey}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce
+                }
+            });
+
+            // // Check if success 
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message || 
+            //         `Failed to fetch status settings: ${response.status}`
+            //     );
+            // }
+
+            const data = await response.json();
+            // console.log(`Status settings for ${statusKey}:`, data);
+
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
+
+            // Get the status template and get it reflected on the frontend
+            const template = data.data.template;
+            // console.log(`Status ${statusKey} template:  ${template}`);
+
+             // Update the template and save default template for reset functionality
+            setSmsMessage(template || smsMessage);
+            // setDefaultTemplate(template || smsMessage);
+            setCharacterCount((template || smsMessage).length);
+        } catch (error) {
+            console.error('Error fetching status settings:', error);
+        } 
+    };
+
+    // Save status template to db
+    const saveTemplate = async () => {
+        setIsSaving(true);
+        
+        try {
+            // Get the nonce from WordPress
+            const nonce = window.wpApiSettings?.nonce;
+            if (!nonce) {
+                throw new Error('WordPress REST API nonce not available');
+            }
+
+            // Data to send 
+            const sendData = {
+                status_key: statusKey,
+                template: smsMessage
+            };
+            console.log(`Saving ${statusKey} template:`, sendData);
+
+            // Save status template to backend
+            const response = await fetch('/wp-json/topsms/v1/automations/status/save-template', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce
+                },
+                body: JSON.stringify(sendData)
+            });
+
+            // // Check if success
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message || 
+            //         `Failed to save status settings: ${response.status}`
+            //     );
+            // }
+
+            const data = await response.json();
+            console.log('Status template saved successfully:', data);
+
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
+
+            setSaveSuccess(true);
+
+            // // Update the default template
+            // setDefaultTemplate(smsMessage);
+
+            // Show success message for 3 seconds
+            setTimeout(() => {
+                setSaveSuccess(false);
+            }, 3000);
+        } catch (error) {
+            console.error('Error saving status template:', error);
+            setIsSaving(false);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Reset template to default
+    const resetTemplate = () => {
+        setSmsMessage(defaultTemplate);
+        setCharacterCount(defaultTemplate.length);
+    };
 
     return (
         <Card className="automation-card">
@@ -84,19 +209,30 @@ const AutomationSettingsDetail = ({ status }) => {
                                                 <TemplateTag tag="[order_date]" onClick={insertTag} />
                                             </div>
 
+                                            {/* Success Message */}
+                                            {saveSuccess && (
+                                                <div className="text-blue-500 mb-4">
+                                                    {__('Template saved successfully', 'topsms')}
+                                                </div>
+                                            )}
+
                                             {/* Action Buttons */}
                                             <div className="automation-actions flex justify-between space-x-4 mt-12">
                                                 <Button 
                                                     variant="secondary" 
                                                     className="automation-button-reset px-6 py-2 border border-gray-300 rounded-full"
+                                                    onClick={resetTemplate}
                                                 >
                                                     {__('Reset to Default', 'topsms')}
                                                 </Button>
                                                 <Button 
                                                     variant="primary" 
                                                     className="automation-button-save px-6 py-2 bg-blue-500 text-white rounded-full"
+                                                    onClick={saveTemplate}
+                                                    isBusy={isSaving}
+                                                    disabled={isSaving}
                                                 >
-                                                    {__('Save Settings', 'topsms')}
+                                                    {isSaving ? __('Saving...', 'topsms') : __('Save Settings', 'topsms')}
                                                 </Button>
                                             </div>
                                         </div>

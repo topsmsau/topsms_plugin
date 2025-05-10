@@ -30,7 +30,45 @@ class Topsms_Activator {
 	 * @since    1.0.0
 	 */
 	public static function activate() {
-    
+        add_option('topsms_settings_processing', [
+            'enabled' => true,
+            'template' => ''
+        ]);
+        
+        add_option('topsms_settings_completed', [
+            'enabled' => true,
+            'template' => ''
+        ]);
+        
+        add_option('topsms_settings_failed', [
+            'enabled' => true,
+            'template' => ''
+        ]);
+        
+        add_option('topsms_settings_refunded', [
+            'enabled' => true,
+            'template' => ''
+        ]);
+        
+        add_option('topsms_settings_pending_payment', [
+            'enabled' => true,
+            'template' => ''
+        ]);
+        
+        add_option('topsms_settings_cancelled', [
+            'enabled' => true,
+            'template' => ''
+        ]);
+        
+        add_option('topsms_settings_onhold', [
+            'enabled' => true,
+            'template' => ''
+        ]);
+        
+        add_option('topsms_settings_draft', [
+            'enabled' => true,
+            'template' => ''
+        ]);
 	}
 
 }

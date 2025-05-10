@@ -162,13 +162,6 @@ class Topsms {
 
         // Actions for rest api routes
         $this->loader->add_action( 'rest_api_init', $plugin_admin, 'topsms_register_routes' );
-
-        // // Create ajax action to handle the OTP request
-        // $this->loader->add_action( 'wp_ajax_send_otp', $plugin_admin, 'topsms_send_otp' );
-        // $this->loader->add_action( 'wp_ajax_nopriv_send_otp', $plugin_admin, 'topsms_send_otp' );
-        // $this->loader->add_action( 'wp_ajax_verify_otp', $plugin_admin, 'topsms_verify_otp' );
-        // $this->loader->add_action( 'wp_ajax_nopriv_verify_otp', $plugin_admin, 'topsms_verify_otp' );
-        
 	}
 
 	/**
