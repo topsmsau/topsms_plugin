@@ -1,97 +1,94 @@
 import { __ } from '@wordpress/i18n';
-import { 
-    Card,
-    CardBody,
-    Flex,
-    FlexItem,
-    Icon,
-} from '@wordpress/components';
+import { Card, CardBody, Flex, FlexItem, Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 
 import TopsmsIcon from '../icons/TopsmsLogo.svg';
 import BalanceCard from './BalanceCard';
 
 const Header = () => {
-    const {balance, setBalance} = useState(0);
+  const { balance, setBalance } = useState(0);
 
-    // Fetch current balance on load (fetched from db)
-        useEffect(() => {
-            fetchBalance();
-        }, []);
+  // Fetch current balance on load (fetched from db)
+  useEffect(() => {
+    fetchBalance();
+  }, []);
 
-    // Fetch current status enabled settings from db
-    const fetchBalance = async () => {
-        try {
-            // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
-            if (!nonce) {
-                console.error('WordPress REST API nonce not available');
-                setIsLoading(false);
-                return;
-            }
+  // Fetch current status enabled settings from db
+  const fetchBalance = async () => {
+    try {
+      // Get the nonce from WordPress
+      const nonce = window.wpApiSettings?.nonce;
+      if (!nonce) {
+        console.error('WordPress REST API nonce not available');
+        setIsLoading(false);
+        return;
+      }
 
-            // Fetch user data from backend
-            const response = await fetch(`/wp-json/topsms/v1/user`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': nonce
-                }
-            });
+      // Fetch user data from backend
+      const response = await fetch(`/wp-json/topsms/v1/user`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-WP-Nonce': nonce,
+        },
+      });
 
-            const data = await response.json();
-            console.log('User data:', data);
+      const data = await response.json();
+      console.log('User data:', data);
 
-            if (!data.success) {
-                throw new Error(data.data.message || 'Unknown error');
-            }
+      if (!data.success) {
+        throw new Error(data.data.message || 'Unknown error');
+      }
 
-            // Get the user balance
-            const userData = data.data.userData;
-            const balance_ = userData[0].balance;
-            setBalance(balance_);
-            console.log('User current balance:', balance_);
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        } 
-    };
-    
-    return (
-        <Card className="topsms-header mb-4 border-0 shadow-none">
-            <CardBody className="topsms-header-card-body p-0">
-                <Flex align="center" gap={4}>
-                    <FlexItem gap={2}>
-                        <Flex>
-                            {/* Logo */}
-                            <FlexItem>
-                                <div className="topsms-logo-container bg-gray-800 rounded-full w-12 h-12 flex items-center justify-center">
-                                    <Icon icon={TopsmsIcon} size={32} />
-                                </div>
-                            </FlexItem>
+      // Get the user balance
+      const userData = data.data.userData;
+      const balance_ = userData[0].balance;
+      setBalance(balance_);
+      console.log('User current balance:', balance_);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
 
-                            {/* Header Text */}
-                            <FlexItem>
-                                <h2 className="m-0 text-xl font-semibold">
-                                    {__('TopSMS', 'topsms')}
-                                </h2>
-                                <p variant="muted" className="text-sm text-gray-600">
-                                    {__('Configure automated SMS notifications for your customers', 'topsms')}
-                                </p>
-                            </FlexItem>
-                        </Flex>
-                    </FlexItem>
+  return (
+    <Card className='topsms-header mb-4 border-0 shadow-none'>
+      <CardBody className='topsms-header-card-body p-0'>
+        <Flex align='center' gap={4}>
+          <FlexItem gap={2}>
+            <Flex>
+              {/* Logo */}
+              <FlexItem>
+                <div className='topsms-logo-container bg-gray-800 rounded-full w-12 h-12 flex items-center justify-center'>
+                  <Icon icon={TopsmsIcon} size={32} />
+                </div>
+              </FlexItem>
 
-                    {/* Balance Info */}
-                    <FlexItem>
-                        <BalanceCard balance={balance}/>
-                        <p variant="muted" className="text-xs text-gray-500 text-center">
+              {/* Header Text */}
+              <FlexItem>
+                <h2 className='m-0 text-xl font-semibold'>
+                  {__('TopSMS', 'topsms')}
+                </h2>
+                <p variant='muted' className='text-sm text-gray-600'>
+                  {__(
+                    'Configure automated SMS notifications for your customers',
+                    'topsms'
+                  )}
+                </p>
+              </FlexItem>
+            </Flex>
+          </FlexItem>
+
+          {/* Balance Info */}
+          <FlexItem>
+            <BalanceCard balance={balance} />
+            {/* <p variant="muted" className="text-xs text-gray-500 text-center">
                             {__('Approximately', 'topsms')} <span className="text-blue-500 font-medium">95 SMS</span> {__('messages remaining', 'topsms')}
-                        </p>
-                    </FlexItem>
-                </Flex>
-            </CardBody>
-        </Card>
-    );
+                        </p> */}
+          </FlexItem>
+        </Flex>
+      </CardBody>
+    </Card>
+  );
 };
 
 export default Header;

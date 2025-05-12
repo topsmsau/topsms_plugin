@@ -368,4 +368,187 @@ class Topsms_Admin {
             return false;
         }
     }
+
+
+
+
+    public function topsms_activation_redirect() {
+        // Check if our transient is set and we're on the plugins page
+     if (get_transient('topsms_activation_redirect') && is_admin()) {
+         // Delete the transient
+         delete_transient('topsms_activation_redirect');
+         
+         // Check if tokens exist
+         $access_token = get_option('topsms_access_token', true);
+ 
+         
+         // Only redirect if both tokens exist and user has admin permissions
+         if ($access_token === 1 || $access_token === true) {
+             // Important: exit after redirect to stop further execution
+             wp_safe_redirect(admin_url('admin.php?page=topsms-setup'));
+             exit;
+         }
+     }
+     }
+ 
+ 
+ 
+     // Register custom cron interval (55 minutes)
+ public function topsms_add_cron_interval($schedules) {
+     $schedules['every_55_minutes'] = array(
+         'interval' => 55 * 60,
+         'display'  => 'Every 55 Minutes'
+     );
+     return $schedules;
+ }
+ 
+ // Function to refresh TopSMS tokens
+ public function topsms_refresh_tokens() {
+     // Get the current refresh token
+     $refresh_token = get_option('topsms_refresh_token', true);
+     
+     if (!$refresh_token) {
+         error_log('TopSMS refresh token not found');
+         return false;
+     }
+     
+     // Prepare the request
+     $response = wp_remote_post('https://api.topsms.com.au/functions/v1/refresh', array(
+         'headers' => array(
+             'Content-Type' => 'application/json'
+         ),
+         'body' => json_encode(array(
+             'refresh_token' => $refresh_token
+         )),
+         'timeout' => 30
+     ));
+     
+     // Check for errors
+     if (is_wp_error($response)) {
+         error_log('TopSMS API Error: ' . $response->get_error_message());
+         return false;
+     }
+     
+     // Get the response body and decode it
+     $body = wp_remote_retrieve_body($response);
+     $data = json_decode($body, true);
+     
+     // Check if we received valid data
+     if (!isset($data['access_token']) || !isset($data['refresh_token'])) {
+         error_log('TopSMS API Error: Invalid response format');
+         return false;
+     }
+     
+     // Save the new tokens
+     update_option('topsms_access_token', $data['access_token']);
+     update_option('topsms_refresh_token', $data['refresh_token']);
+     
+     return true;
+ }
+ 
+ 
+ 
+ // Schedule the cron job if it's not already scheduled
+ public function topsms_schedule_token_refresh() {
+     if (!wp_next_scheduled('topsms_refresh_tokens_hook')) {
+         wp_schedule_event(time(), 'every_55_minutes', 'topsms_refresh_tokens_hook');
+     }
+ }
+ 
+ 
+ 
+ function topsms_order_status_changed($order_id, $status_from, $status_to, $order) {
+
+     // Check if the customer consent is enabled
+     $consent_enabled = get_post_meta($order_id, 'topsms_customer_consent', true);
+        
+     // Only show the checkbox if this setting is enabled; Return if disabled
+     if (!$consent_enabled || $consent_enabled == 'no') {
+         return; 
+     }
+
+     global $wpdb;
+     
+     // Remove 'wc-' prefix if present in status
+     $status_to = str_replace('wc-', '', $status_to);
+     
+     // Get configuration from options table
+     $access_token = get_option('topsms_access_token');
+     $sender = get_option('topsms_sender');
+     $is_enabled = get_option('topsms_order_' . $status_to . '_enabled');
+     $message_template = get_option('topsms_order_' . $status_to . '_message');
+     
+     // Check if SMS is enabled for this status
+     if ($is_enabled !== '1' && $is_enabled !== true) {
+         return;
+     }
+     
+     // Get customer phone number
+     $phone = $order->get_billing_phone();
+     if (empty($phone)) {
+         return; // No phone number available
+     }
+     
+     // Check if message template exists
+     if (empty($message_template)) {
+         return; // No message template configured
+     }
+     
+     // Replace placeholders
+     $replacements = array(
+         '[id]' => $order->get_order_number(),
+         '[f_name]' => $order->get_billing_first_name(),
+         '[l_name]' => $order->get_billing_last_name(),
+         '[order_date]' => $order->get_date_created()->date_i18n(get_option('date_format'))
+     );
+     $message = str_replace(array_keys($replacements), array_values($replacements), $message_template);
+     
+     // Send SMS
+     $url = 'https://api.topsms.com.au/functions/v1/sms';
+     $body = array(
+         'phone_number' => $phone,
+         'from' => $sender,
+         'message' => $message,
+         'link' => ''
+     );
+     
+     $response = wp_remote_post($url, array(
+         'headers' => array(
+             'Authorization' => 'Bearer ' . $access_token,
+             'Content-Type' => 'application/json'
+         ),
+         'body' => json_encode($body),
+         'timeout' => 45
+     ));
+     
+     // Determine API status
+     if (is_wp_error($response)) {
+         $api_status = 'ERROR: ' . $response->get_error_message();
+     } else {
+         $response_code = wp_remote_retrieve_response_code($response);
+         $api_status = ($response_code == 200) ? 'SUCCESS' : 'ERROR: ' . $response_code;
+     }
+     
+     // Log to topsms_logs table
+     $table_name = $wpdb->prefix . 'topsms_logs';
+     $wpdb->insert(
+         $table_name,
+         array(
+             'order_id' => $order_id,
+             'order_status' => $status_to,
+             'phone' => $phone,
+             'creation_date' => current_time('mysql'),
+             'status' => $api_status
+         ),
+         array(
+             '%d',
+             '%s',
+             '%s',
+             '%s',
+             '%s'
+         )
+     );
+ }
+ 
+ 
 }

@@ -162,6 +162,16 @@ class Topsms {
 
         // Actions for rest api routes
         $this->loader->add_action( 'rest_api_init', $plugin_admin, 'topsms_register_routes' );
+
+
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'topsms_activation_redirect' );
+
+
+		$this->loader->add_filter( 'cron_schedules', $plugin_admin, 'topsms_add_cron_interval' );
+		$this->loader->add_action( 'topsms_refresh_tokens_hook', $plugin_admin, 'topsms_refresh_tokens' );
+		$this->loader->add_action( 'wp_loaded', $plugin_admin, 'topsms_schedule_token_refresh' );
+		$this->loader->add_action( 'woocommerce_order_status_changed', $plugin_admin, 'topsms_order_status_changed', 10, 4);
+		
 	}
 
 	/**
