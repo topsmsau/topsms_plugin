@@ -28,7 +28,7 @@ const TopupButton = ({ icon, children, onClick, className = '' }) => {
     );
 };
 
-const BalanceCard = () => {
+const BalanceCard = ({ balance }) => {
     return (
         <Card className="topsms-balance-card m-0 shadow-none">
             <CardBody className="p-1 topsms-balance-card-body">
@@ -41,7 +41,7 @@ const BalanceCard = () => {
                         </div>
                         <div className="flex items-center">
                             <p className="font-bold text-base">
-                                $0.98
+                                ${balance}
                             </p>
                         </div>
                     </Flex>
@@ -54,7 +54,7 @@ const BalanceCard = () => {
                 </Flex>
             </CardBody>
         </Card>
-    )
+    );
 };
 
 export default BalanceCard;

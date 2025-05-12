@@ -23,8 +23,9 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
     }, [status]);
 
     const handleMessageChange = (value) => {
-        setSmsMessage(value);
-        setCharacterCount(value.length);
+        const cleanText = removeEmojis(value);
+        setSmsMessage(cleanText);
+        setCharacterCount(cleanText.length);
         setSaveSuccess(false);
     };
 
@@ -34,6 +35,13 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
         setCharacterCount(smsMessage.length + tag.length);
         setSaveSuccess(false);
     };
+
+    const removeEmojis = (text) => {
+    return text.replace(
+        /([\u203C-\u3299]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]|[\u200D\uFE0F])/g,
+        ''
+    );
+};
 
     // const tabs = [
     //     {
@@ -203,10 +211,9 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
                                             </div>
 
                                             <div className="automation-tags flex flex-wrap mb-4">
-                                                <TemplateTag tag="[id]" onClick={insertTag} />
-                                                <TemplateTag tag="[f_name]" onClick={insertTag} />
-                                                <TemplateTag tag="[l_name]" onClick={insertTag} />
-                                                <TemplateTag tag="[order_date]" onClick={insertTag} />
+                                                <TemplateTag tag="[order_id]" onClick={insertTag} />
+                                                <TemplateTag tag="[first_name]" onClick={insertTag} />
+                                                <TemplateTag tag="[last_name]" onClick={insertTag} />
                                             </div>
 
                                             {/* Success Message */}

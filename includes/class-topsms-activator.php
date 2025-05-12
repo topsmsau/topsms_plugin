@@ -30,46 +30,41 @@ class Topsms_Activator {
 	 * @since    1.0.0
 	 */
 	public static function activate() {
-        add_option('topsms_settings_processing', [
-            'enabled' => true,
-            'template' => ''
-        ]);
-        
-        add_option('topsms_settings_completed', [
-            'enabled' => true,
-            'template' => ''
-        ]);
-        
-        add_option('topsms_settings_failed', [
-            'enabled' => true,
-            'template' => ''
-        ]);
-        
-        add_option('topsms_settings_refunded', [
-            'enabled' => true,
-            'template' => ''
-        ]);
-        
-        add_option('topsms_settings_pending_payment', [
-            'enabled' => true,
-            'template' => ''
-        ]);
-        
-        add_option('topsms_settings_cancelled', [
-            'enabled' => true,
-            'template' => ''
-        ]);
-        
-        add_option('topsms_settings_onhold', [
-            'enabled' => true,
-            'template' => ''
-        ]);
-        
-        add_option('topsms_settings_draft', [
-            'enabled' => true,
-            'template' => ''
-        ]);
+        // Options for storing wc order data for topsms
+        // Processing
+        add_option('topsms_order_processing_enabled', true);
+        add_option('topsms_order_processing_message', '');
 
+        // Completed
+        add_option('topsms_order_completed_enabled', true);
+        add_option('topsms_order_completed_message', '');
+
+        // Failed
+        add_option('topsms_order_failed_enabled', true);
+        add_option('topsms_order_failed_message', '');
+
+        // Refunded
+        add_option('topsms_order_refunded_enabled', true);
+        add_option('topsms_order_refunded_message', '');
+
+        // Pending payment
+        add_option('topsms_order_pending_payment_enabled', true);
+        add_option('topsms_order_pending_payment_message', '');
+
+        // Cancelled
+        add_option('topsms_order_cancelled_enabled', true);
+        add_option('topsms_order_cancelled_message', '');
+
+        // Onhold
+        add_option('topsms_order_onhold_enabled', true);
+        add_option('topsms_order_onhold_message', '');
+
+        // Draft
+        add_option('topsms_order_draft_enabled', true);
+        add_option('topsms_order_draft_message', '');
+
+
+        // Options for storing general topsms settings data
         add_option('topsms_settings_low_balance_alert', true);
         add_option('topsms_settings_customer_consent', true);
         add_option('topsms_settings_sms_surcharge', true);

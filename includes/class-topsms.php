@@ -178,6 +178,8 @@ class Topsms {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
         
+        $this->loader->add_action('woocommerce_review_order_before_submit', $plugin_public, 'add_topsms_customer_consent_checkout_checkbox', 20);
+        $this->loader->add_action('woocommerce_checkout_update_order_meta', $plugin_public, 'save_topsms_customer_consent_checkout_checkbox');
 	}
 
 	/**

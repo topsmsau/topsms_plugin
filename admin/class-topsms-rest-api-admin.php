@@ -219,6 +219,8 @@ class Topsms_Rest_Api_Admin {
                 ), 400);
             } else {
                 $this->topsms_store_tokens($access_token, $refresh_token);
+                $this->topsms_store_registration_data($payload);
+
                 return new WP_REST_Response(array(
                     'success' => true,
                     'data' => $data
@@ -240,6 +242,36 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
+     * Store Topsms registration data  in the options table
+     *
+     * @param string $data The user registration data
+     */
+    private function topsms_store_registration_data($data) {
+        // Sanitise the data and add timestamp
+        $data_ = [
+            'phone_number' => isset($data['phone_number']) ? sanitize_text_field($data['phone_number']) : '',
+            'otp' => isset($data['otp']) ? sanitize_text_field($data['otp']) : '',
+            'email' => isset($data['email']) ? sanitize_email($data['email']) : '',
+            'company' => isset($data['company']) ? sanitize_text_field($data['company']) : '',
+            'address' => isset($data['address']) ? sanitize_text_field($data['address']) : '',
+            'first_name' => isset($data['first_name']) ? sanitize_text_field($data['first_name']) : '',
+            'last_name' => isset($data['last_name']) ? sanitize_text_field($data['last_name']) : '',
+            'city' => isset($data['city']) ? sanitize_text_field($data['city']) : '',
+            'state' => isset($data['state']) ? sanitize_text_field($data['state']) : '',
+            'postcode' => isset($data['postcode']) ? sanitize_text_field($data['postcode']) : '',
+            'abn' => isset($data['abn']) ? sanitize_text_field($data['abn']) : '',
+            'sender' => isset($data['sender']) ? sanitize_text_field($data['sender']) : '',
+            'connected_at' => current_time('mysql') // Connected timestamp
+        ];
+
+        // Store the entire registration data
+        update_option('topsms_registration_data', $data_);
+
+        // Store sender separately
+        update_option('topsms_sender', $data_['sender']);
+    }
+
+    /**
      * Get topsms automations woocommerce status settings, including enabled option and sms template
      * from the options table
      * 
@@ -256,24 +288,28 @@ class Topsms_Rest_Api_Admin {
             ), 400);
         }
 
-        // Get settings for this status
-        $option_name = 'topsms_settings_' . $status_key;
-        $settings = get_option($option_name);
+        // Get enabled setting for this status
+        $enabled_option_name = 'topsms_order_' . $status_key . '_enabled';
+        $enabled = get_option($enabled_option_name);
+        // Set default to true (enabled)
+        if (false === $enabled) {
+            $enabled = true; 
+        }
         
-        // If no settings exist yet, return defaults
-        if (false === $settings) {
-            $settings = [
-                'enabled' => true,
-                'template' => ''
-            ];
+        // Get sms template for this status
+        $message_option_name = 'topsms_order_' . $status_key . '_message';
+        $template = get_option($message_option_name);
+        // Set default to empty string
+        if (false === $template) {
+            $template = ''; 
         }
 
         return new WP_REST_Response([
             'success' => true,
             'data' => [
                 'status_key' => $status_key,
-                'enabled' => (bool) $settings['enabled'],
-                'template' => $settings['template']
+                'enabled' => (bool) $enabled,
+                'template' => $template
             ]
         ], 200);
     }
@@ -299,20 +335,9 @@ class Topsms_Rest_Api_Admin {
         $status_key = sanitize_text_field($body_params['status_key']);
         $enabled = (bool) $body_params['enabled'];
         
-        // Get current settings from the options
-        $option_name = 'topsms_settings_' . $status_key;
-        $settings = get_option($option_name);
-        
-        // If settings don't exist yet, create a default array
-        if (false === $settings) {
-            $settings = [
-                'template' => ''
-            ];
-        }
-        
-        // Update the enabled setting
-        $settings['enabled'] = $enabled;
-        update_option($option_name, $settings);
+        // Update the enabled setting 
+        $enabled_option_name = 'topsms_order_' . $status_key . '_enabled';
+        update_option($enabled_option_name, $enabled);
         
         return new WP_REST_Response([
             'success' => true,
@@ -345,20 +370,10 @@ class Topsms_Rest_Api_Admin {
         $status_key = sanitize_text_field($body_params['status_key']);
         $template = sanitize_text_field($body_params['template']);
         
-        // Get current settings from the options
-        $option_name = 'topsms_settings_' . $status_key;
-        $settings = get_option($option_name);
-        
-        // If settings don't exist yet, create a default array
-        if (false === $settings) {
-            $settings = [
-                'enabled' => true
-            ];
-        }
-        
-        // Update the template 
-        $settings['template'] = $template;
-        update_option($option_name, $settings);
+        // Update the template
+        $message_option_name = 'topsms_order_' . $status_key . '_message';
+        update_option($message_option_name, $template);
+    
         
         return new WP_REST_Response([
             'success' => true,
@@ -455,5 +470,52 @@ class Topsms_Rest_Api_Admin {
                 'enabled' => $enabled
             ]
         ], 200);
+    }
+
+    /**
+     * Get the user data, identified by the topsms access token in the options
+     * 
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
+     */
+    public function topsms_get_user_data(WP_REST_Request $request) {
+        $access_token = get_option('topsms_access_token');
+        error_log("topsms access token" . print_r($access_token, true));
+        
+        // Make api request to Topsms
+        $response = wp_remote_post('https://api.topsms.com.au/functions/v1/user', [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token
+            ],
+        ]);
+        
+        // Check for connection errors
+        if (is_wp_error($response)) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'data' => array('message' => $response->get_error_message())
+            ), 500);
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        error_log("response data" . print_r($data, true));
+        
+        // Check the status field in the response data
+        if (isset($data['status']) && $data['status'] === 'success') {
+            // wp_send_json_success format: { "success": true, "data": ... }
+            return new WP_REST_Response(array(
+                'success' => true,
+                'data' => $data
+            ), 200);
+        } else {
+            // If status is not success or doesn't exist, send error
+            $error_message = isset($data['message']) ? $data['message'] : 'Failed to fetch user data';
+            return new WP_REST_Response(array(
+                'success' => false,
+                'data' => array('message' => $error_message)
+            ), 400);
+        }
     }
 }

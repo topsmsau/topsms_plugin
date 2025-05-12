@@ -19,32 +19,44 @@ const Settings = () => {
     const topUpOptions = [
         { 
             amount: 45, 
-            sms: 500, 
+            sms: 500,
+            pricePerSms: '0.09',
+            discount: null,
             link: 'https://buy.stripe.com/6oE5kZc3c3lI2Aw3cc' 
         },
         { 
             amount: 225, 
-            sms: 2500, 
+            sms: 2500,
+            pricePerSms: '0.09',
+            discount: null,
             link: 'https://buy.stripe.com/28ofZD3wG4pMb72eUV' 
         },
         { 
             amount: 400, 
-            sms: 5000, 
+            sms: 5000,
+            pricePerSms: '0.08',
+            discount: '25%',
             link: 'https://buy.stripe.com/28oeVz0ku8G2a2Y9AC' 
         },
         { 
             amount: 700, 
-            sms: 10000, 
+            sms: 10000,
+            pricePerSms: '0.07',
+            discount: '25%',
             link: 'https://buy.stripe.com/14k7t71oy3lIejeeUX' 
         },
         { 
             amount: 1500, 
-            sms: 50000, 
+            sms: 50000,
+            pricePerSms: '0.06',
+            discount: '25%',
             link: 'https://buy.stripe.com/7sI9Bfc3c8G21wsdQU' 
         },
-        { amount: 
-            2500, 
-            sms: 100000, 
+        { 
+            amount: 2500, 
+            sms: 100000,
+            pricePerSms: '0.05',
+            discount: '25%',
             link: 'https://buy.stripe.com/bIYaFj6IS2hEeje8wB' 
         },
     ];
@@ -87,18 +99,21 @@ const Settings = () => {
                             </div>
 
                             {/* Top Up Options */}
-                            <div className="grid grid-cols-3 gap-4">
-                                {topUpOptions.map(({ amount, sms, link }) => (
+                            <Flex justify="space-between">
+                                {topUpOptions.map(({ amount, sms, pricePerSms, discount, link }) => (
                                     <TopupBalanceButton
                                         key={amount}
                                         isSelected={selectedAmount === amount}
                                         onClick={() => handleTopUpClick(amount, link)}
+                                        discount={discount}
+                                        className="w-[15%]"
                                     >
                                         <span className="text-xl font-bold mb-1">${amount}</span>
                                         <span className="text-sm text-gray-600">{sms} SMS</span>
+                                        <span className="text-xs text-gray-600">{pricePerSms}c per SMS</span>
                                     </TopupBalanceButton>
                                 ))}
-                            </div>
+                            </Flex>
                         </Flex>
                     </CardBody>
                 </Card>

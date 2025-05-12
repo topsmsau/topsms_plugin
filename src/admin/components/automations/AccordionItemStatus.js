@@ -72,7 +72,7 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             // }
 
             const data = await response.json();
-            console.log(`Status settings for ${statusKey}:`, data);
+            // console.log(`Status settings for ${statusKey}:`, data);
 
             if (!data.success) {
                 throw new Error(data.data.message || 'Unknown error');
@@ -125,16 +125,17 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             // }
 
             const data = await response.json();
-            console.log('Status enabled setting saved successfully:', data);
+            // console.log('Status enabled setting saved successfully:', data);
 
             if (!data.success) {
                 throw new Error(data.data.message || 'Unknown error');
             }
             
-            // If status is disabled, close the accordion
-            if (!isEnabled) {
-                setIsOpen(false);
-            }
+            // Can open the body regardless of enable/disabled
+            // // If status is disabled, close the accordion
+            // if (!isEnabled) {
+            //     setIsOpen(false);
+            // }
         } catch (error) {
             console.error('Error saving status enabled setting:', error);
             // Revert the toggle if saving failed
@@ -153,7 +154,7 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                     </div>
                     <div className="status-control items-center flex gap-[12px]">
                         {isLoading ? (
-                            <div className="animate-pulse bg-gray-300 h-5 w-9 rounded"></div>
+                            <div className="animate-pulse bg-gray-300 h-5 w-9 rounded-full"></div>
                         ) : (
                             <ToggleControl
                                 __nextHasNoMarginBottom
@@ -174,20 +175,18 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             </div>
 
             {/* Accordion Body with Dynamic Height - Only show if enabled */}
-            {isEnabled && (
-                <div
-                    className="topsms-accordion-body-wrap"
-                    ref={contentRef}
-                    style={{
-                        maxHeight: height,
-                        opacity: isOpen ? 1 : 0,
-                        transition: "max-height 0.5s ease-in-out, opacity 0.5s ease-in-out",
-                        overflow: "hidden",
-                    }}
-                >
-                    {children}
-                </div>
-            )}
+            <div
+                className="topsms-accordion-body-wrap"
+                ref={contentRef}
+                style={{
+                    maxHeight: height,
+                    opacity: isOpen ? 1 : 0,
+                    transition: "max-height 0.5s ease-in-out, opacity 0.5s ease-in-out",
+                    overflow: "hidden",
+                }}
+            >
+                {children}
+            </div>
         </>
     );
 };

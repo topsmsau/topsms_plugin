@@ -470,11 +470,20 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .relative {
   position: relative;
 }
+.topsms-app .right-0 {
+  right: 0px;
+}
+.topsms-app .top-0 {
+  top: 0px;
+}
 .topsms-app .z-10 {
   z-index: 10;
 }
 .topsms-app .m-0 {
   margin: 0px;
+}
+.topsms-app .m-\[3px\] {
+  margin: 3px;
 }
 .topsms-app .-mx-4 {
   margin-left: -1rem;
@@ -597,6 +606,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .w-9 {
   width: 2.25rem;
+}
+.topsms-app .w-\[15\%\] {
+  width: 15%;
 }
 .topsms-app .w-\[3px\] {
   width: 3px;
@@ -737,6 +749,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
 }
+.topsms-app .bg-\[\#F25F7A\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(242 95 122 / var(--tw-bg-opacity, 1));
+}
 .topsms-app .bg-blue-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));
@@ -808,6 +824,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .p-\[0\.75rem\] {
   padding: 0.75rem;
+}
+.topsms-app .px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 .topsms-app .px-3 {
   padding-left: 0.75rem;

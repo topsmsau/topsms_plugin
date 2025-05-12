@@ -124,7 +124,7 @@ const Verification = ({ onComplete, userData }) => {
                 throw new Error(data.data.message || 'Unknown error');
             }
             
-            console.log('OTP sent successfully');
+            // console.log('OTP sent successfully');
         } catch (err) {
             setError(`Failed to send OTP: ${err.message || 'Unknown error'}`);
             console.error('Error sending OTP:', err);
@@ -188,7 +188,7 @@ const Verification = ({ onComplete, userData }) => {
                 throw new Error(data.data.message || 'Unknown error');
             }
             
-            console.log('OTP verified successfully');
+            // console.log('OTP verified successfully');
             return true;
         } catch (err) {
             setError(`Failed to verify OTP: ${err.message || 'Unknown error'}`);

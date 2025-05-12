@@ -18,7 +18,7 @@ const Automation = () => {
             title: 'Processing',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#17a34a', 
-            defaultTemplate: "Hello [f_name], your order with ID [id] has been shipped and is on its way! 📦\nExpected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us."
+            defaultTemplate: "Hello [first_name], your order with ID [id] has been shipped and is on its way! Expected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us."
         },
         {
             key: 'completed',

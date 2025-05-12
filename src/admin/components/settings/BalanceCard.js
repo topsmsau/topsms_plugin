@@ -199,7 +199,7 @@ const BalanceCard = () => {
                                 </p>
                             </div>
                             {settings.lowBalanceAlert.loading ? (
-                                <div className="animate-pulse bg-gray-300 h-5 w-9 rounded"></div>
+                                <div className="animate-pulse bg-gray-300 h-5 w-9 rounded-full"></div>
                             ) : (
                                 <ToggleControl
                                     __nextHasNoMarginBottom
@@ -225,7 +225,7 @@ const BalanceCard = () => {
                                 </p>
                             </div>
                             {settings.customerConsent.loading ? (
-                                <div className="animate-pulse bg-gray-300 h-5 w-9 rounded"></div>
+                                <div className="animate-pulse bg-gray-300 h-5 w-9 rounded-full"></div>
                             ) : (
                                 <ToggleControl
                                     __nextHasNoMarginBottom
@@ -251,7 +251,7 @@ const BalanceCard = () => {
                                 </p>
                             </div>
                             {settings.smsSurcharge.loading ? (
-                                <div className="animate-pulse bg-gray-300 h-5 w-9 rounded"></div>
+                                <div className="animate-pulse bg-gray-300 h-5 w-9 rounded-full"></div>
                             ) : (
                                 <ToggleControl
                                     __nextHasNoMarginBottom

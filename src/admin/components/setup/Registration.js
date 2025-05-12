@@ -6,7 +6,7 @@ import {
     TextControl,
     Icon
 } from '@wordpress/components';
-import { useState, memo, useCallback, useEffect } from '@wordpress/element';
+import { useState, memo, useCallback } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
@@ -190,7 +190,7 @@ const Registration = ({ onComplete }) => {
             if (!data.success) {
                 throw new Error(data.data.message || 'Unknown error');
             }
-            console.log('OTP sent successfully');
+            // console.log('OTP sent successfully');
         } catch (err) {
             setOtpError(`Failed to send OTP: ${err.message || 'Unknown error'}`);
             console.error('Error sending OTP:', err);

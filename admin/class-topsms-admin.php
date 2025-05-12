@@ -214,6 +214,15 @@ class Topsms_Admin {
                 return current_user_can('manage_options');
             },
         ));
+
+        // Get user data
+        register_rest_route('topsms/v1', '/user', array(
+            'methods'  => 'GET',
+            'callback' => array($this->rest_api, 'topsms_get_user_data'),
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
+        ));
     }
 
     /**
@@ -225,13 +234,22 @@ class Topsms_Admin {
         $is_connected = $this->check_topsms_connection();
         // $is_connected = false;
 
+        $icon = file_get_contents(plugin_dir_path(__FILE__) . 'assets/topsms-icon.svg');
+        // error_log("icon path:" . $icon);
+
+        if ($icon) {
+            $icon_data = 'data:image/svg+xml;base64,' . base64_encode($icon);
+        } else {
+            $icon_data = 'dashicons-smartphone';
+        }
+
         add_menu_page(
             __('TopSMS', 'topsms'),
             __('TopSMS', 'topsms'),
             'manage_options',
             $is_connected ? 'topsms' : 'topsms-setup', 
             $is_connected ? array($this, 'display_automations_page') : array($this, 'display_setup_page'),
-            'dashicons-chat',
+            $icon_data,
             55
         );
 
