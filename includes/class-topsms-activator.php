@@ -69,6 +69,10 @@ class Topsms_Activator {
             'enabled' => true,
             'template' => ''
         ]);
+
+        add_option('topsms_settings_low_balance_alert', true);
+        add_option('topsms_settings_customer_consent', true);
+        add_option('topsms_settings_sms_surcharge', true);
 	}
 
 }

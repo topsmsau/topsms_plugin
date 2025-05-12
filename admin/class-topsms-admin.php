@@ -196,6 +196,24 @@ class Topsms_Admin {
                 return current_user_can('manage_options');
             },
         ));
+
+        // Fetching settings (general)
+        register_rest_route('topsms/v1', '/settings/(?P<key>[a-zA-Z0-9_-]+)', array(
+            'methods'  => 'GET',
+            'callback' => array($this->rest_api, 'topsms_get_settings'),
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
+));
+
+        // Saving settings (general)
+        register_rest_route('topsms/v1', '/settings/save', array(
+            'methods'  => 'POST',
+            'callback' => array($this->rest_api, 'topsms_save_settings'),
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
+        ));
     }
 
     /**

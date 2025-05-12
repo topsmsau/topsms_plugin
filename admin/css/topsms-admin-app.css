@@ -550,6 +550,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .hidden {
   display: none;
 }
+.topsms-app .h-10 {
+  height: 2.5rem;
+}
 .topsms-app .h-12 {
   height: 3rem;
 }
@@ -761,10 +764,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .bg-gray-300 {
   --tw-bg-opacity: 1;
   background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1));
-}
-.topsms-app .bg-gray-50 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
 }
 .topsms-app .bg-gray-800 {
   --tw-bg-opacity: 1;

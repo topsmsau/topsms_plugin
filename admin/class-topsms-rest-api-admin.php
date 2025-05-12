@@ -55,11 +55,10 @@ class Topsms_Rest_Api_Admin {
 	}
 
     /**
-     * Send otp to the given phone number by calling the topsms api
-     *
-     * @since    1.0.0
-     * @return   array JSON response with status of sending the otp
-     *               
+     * Send otp to the given phone number
+     * 
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
      */
     public function topsms_send_otp(WP_REST_Request $request) {
         $body_params = $request->get_json_params();
@@ -131,9 +130,10 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Verifies otp and the given data and registers user in topsms
+     * Verify otp according to the phone and registers the user in topsms
      * 
-     * @return array JSON response with verification status
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
      */
     public function topsms_verify_otp(WP_REST_Request $request) {
         // Get payload from the request
@@ -239,6 +239,13 @@ class Topsms_Rest_Api_Admin {
         $refresh_updated = update_option('topsms_refresh_token', $refresh_token);
     }
 
+    /**
+     * Get topsms automations woocommerce status settings, including enabled option and sms template
+     * from the options table
+     * 
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
+     */
     public function topsms_get_automations_status_settings(WP_REST_Request $request) {
         // Get status key from the url params
         $status_key = $request->get_param('status_key');
@@ -271,6 +278,12 @@ class Topsms_Rest_Api_Admin {
         ], 200);
     }
     
+    /**
+     * Save topsms automation woocommerce status enabled option 
+     * 
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
+     */
     public function topsms_save_automations_status_enabled(WP_REST_Request $request) {
         // Get status key and enabled option
         $body_params = $request->get_json_params();
@@ -311,6 +324,12 @@ class Topsms_Rest_Api_Admin {
         ], 200);
     }
 
+    /**
+     * Save topsms automation woocommerce status sms template
+     * 
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
+     */
     public function topsms_save_automations_status_template(WP_REST_Request $request) {
         // Get status key and enabled option
         $body_params = $request->get_json_params();
@@ -347,6 +366,93 @@ class Topsms_Rest_Api_Admin {
                 'message' => 'Status settings saved successfully',
                 'status_key' => $status_key,
                 'template' => $template
+            ]
+        ], 200);
+    }
+
+    /**
+     * Get topsms general setting from the options table
+     * 
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
+     */
+    public function topsms_get_settings(WP_REST_Request $request) {
+        // Get key from request
+        $key = $request->get_param('key');
+        
+        if (empty($key)) {
+            return new WP_REST_Response([
+                'success' => false,
+                'data' => [
+                    'message' => 'Setting key is required'
+                ]
+            ], 400);
+        }
+        
+        // Get option name
+        $option_name = 'topsms_settings_' . $key;
+        $settings = get_option($option_name, true);
+        
+        // Set default value if not found
+        if (false === $settings) {
+            $enabled = true;
+        } else {
+            $enabled = $settings;
+            
+            // // If the value is a string 'true' or 'false', convert it to boolean
+            // if ($settings === 'true') {
+            //     $enabled = true;
+            // } else if ($settings === 'false') {
+            //     $enabled = false;
+            // } 
+            // else if (is_bool($settings)) {
+            //     $enabled = $settings;
+            // }
+        }
+        
+        return new WP_REST_Response([
+            'success' => true,
+            'data' => [
+                'key' => $key,
+                'enabled' => $enabled,
+            ]
+        ], 200);
+    }
+
+    /**
+     * Save topsms general settings 
+     * 
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
+     */
+    public function topsms_save_settings(WP_REST_Request $request) {
+        // Get data from request
+        $body_params = $request->get_json_params();
+        error_log("save setting:" . print_r($body_params, true));
+        
+        // Validate required parameters
+        if (!isset($body_params['key']) || !isset($body_params['enabled'])) {
+            return new WP_REST_Response([
+                'success' => false,
+                'data' => [
+                    'message' => 'Missing required parameters: key and enabled'
+                ]
+            ], 400);
+        }
+        
+        $key = sanitize_text_field($body_params['key']);
+        $enabled = (bool) $body_params['enabled'];
+        
+        // Get option name and update the settings to options
+        $option_name = 'topsms_settings_' . $key;
+        update_option($option_name, $enabled);
+        
+        return new WP_REST_Response([
+            'success' => true,
+            'data' => [
+                'message' => 'Setting saved successfully',
+                'key' => $key,
+                'enabled' => $enabled
             ]
         ], 200);
     }
