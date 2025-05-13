@@ -5,10 +5,12 @@ import { ToggleControl } from '@wordpress/components';
 import VerticalStrokeIcon from '../icons/VerticalStrokeIcon';
 import SettingsIcon from '../icons/SettingsIcon';
 
-const AccordionItemStatus = ({ title, description, statusKey, statusColor, children }) => {
+const AccordionItemStatus = ({ title, description, statusKey, statusColor, children, onSuccessMessage  }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isEnabled, setIsEnabled] = useState(true); 
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [isCogHovered, setIsCogHovered] = useState(false);
 
     // Reference to content div
     const contentRef = useRef(null); 
@@ -29,6 +31,20 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             fetchStatusSettings();
         }
     }, [statusKey]);
+
+    useEffect(() => {
+    if (saveSuccess) {
+        // Send the success message to the parent component
+        if (onSuccessMessage) {
+            onSuccessMessage(__(`${title} status ${isEnabled ? 'enabled' : 'disabled'} successfully`, 'topsms'));
+        }
+        
+        // Reset local success state after notifying parent
+        setTimeout(() => {
+            setSaveSuccess(false);
+        }, 100);
+    }
+}, [saveSuccess, onSuccessMessage, title, isEnabled]);
 
     // Handle toggle changes
     const handleToggleChange = () => {
@@ -131,6 +147,9 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                 throw new Error(data.data.message || 'Unknown error');
             }
             
+            // Set success state to notify parent
+            setSaveSuccess(true);
+            
             // Can open the body regardless of enable/disabled
             // // If status is disabled, close the accordion
             // if (!isEnabled) {
@@ -167,6 +186,13 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                         <div
                             className={`open-settings ${isOpen ? 'open' : ''} ${!isEnabled ? 'opacity-50 pointer-events-none' : ''}`} 
                             onClick={() => isEnabled && setIsOpen(!isOpen)}
+                            onMouseEnter={() => setIsCogHovered(true)}
+                            onMouseLeave={() => setIsCogHovered(false)}
+                            style={{
+                                transition: 'transform 0.3s ease',
+                                transform: isCogHovered ? 'rotate(90deg)' : 'rotate(0deg)',
+                                cursor: isEnabled ? 'pointer' : 'default'
+                            }}
                         >
                             <SettingsIcon />
                         </div>

@@ -32,45 +32,45 @@ class Topsms_Activator {
 	public static function activate() {
         // Options for storing wc order data for topsms
         // Processing
-        add_option('topsms_order_processing_enabled', true);
+        add_option('topsms_order_processing_enabled', 'yes');
         add_option('topsms_order_processing_message', '');
 
         // Completed
-        add_option('topsms_order_completed_enabled', true);
+        add_option('topsms_order_completed_enabled', 'yes');
         add_option('topsms_order_completed_message', '');
 
         // Failed
-        add_option('topsms_order_failed_enabled', true);
+        add_option('topsms_order_failed_enabled', 'yes');
         add_option('topsms_order_failed_message', '');
 
         // Refunded
-        add_option('topsms_order_refunded_enabled', true);
+        add_option('topsms_order_refunded_enabled', 'yes');
         add_option('topsms_order_refunded_message', '');
 
         // Pending payment
-        add_option('topsms_order_pending_payment_enabled', true);
+        add_option('topsms_order_pending_payment_enabled', 'yes');
         add_option('topsms_order_pending_payment_message', '');
 
         // Cancelled
-        add_option('topsms_order_cancelled_enabled', true);
+        add_option('topsms_order_cancelled_enabled', 'yes');
         add_option('topsms_order_cancelled_message', '');
 
         // Onhold
-        add_option('topsms_order_onhold_enabled', true);
+        add_option('topsms_order_onhold_enabled', 'yes');
         add_option('topsms_order_onhold_message', '');
 
         // Draft
-        add_option('topsms_order_draft_enabled', true);
+        add_option('topsms_order_draft_enabled', 'yes');
         add_option('topsms_order_draft_message', '');
 
 
         // Options for storing general topsms settings data
-        add_option('topsms_settings_low_balance_alert', true);
-        add_option('topsms_settings_customer_consent', true);
-        add_option('topsms_settings_sms_surcharge', true);
+        add_option('topsms_settings_low_balance_alert', 'yes');
+        add_option('topsms_settings_customer_consent', 'yes');
+        add_option('topsms_settings_sms_surcharge', 'yes');
+        add_option('topsms_settings_sms_surcharge_amount', '');
 
-
-
+        
         set_transient('topsms_activation_redirect', true, 30);
 
         global $wpdb;

@@ -10,18 +10,44 @@ import { chevronRight } from '@wordpress/icons';
 
 import TemplateTag from './SmsTemplateTag';
 
-const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
+const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSuccessMessage }) => {
+    const MAX_CHARS_PER_SMS = 160;
+
     const [smsMessage, setSmsMessage] = useState(defaultTemplate);
     const [characterCount, setCharacterCount] = useState(smsMessage.length);
+    const [smsCount, setSmsCount] = useState(Math.ceil(smsMessage.length / MAX_CHARS_PER_SMS));
     // const [activeTab, setActiveTab] = useState('shipping');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [sender, setSender] = useState('');
 
     // Fetch saved status template from the db
     useEffect(() => {
+        fetchSender();
         fetchTemplateSettings();
     }, [status]);
 
+    // Notify parent when save is successful
+    useEffect(() => {
+        if (saveSuccess) {
+            // Send the success message to the parent component
+            if (onSuccessMessage) {
+                onSuccessMessage(__(`${status} template saved successfully`, 'topsms'));
+            }
+            
+            // Reset local success state after notifying parent
+            setTimeout(() => {
+                setSaveSuccess(false);
+            }, 100);
+        }
+    }, [saveSuccess, onSuccessMessage, status]);
+
+    // Update sms count when character count changes
+    useEffect(() => {
+        setSmsCount(Math.ceil(characterCount / MAX_CHARS_PER_SMS));
+    }, [characterCount]);
+
+    // Handle message/template change
     const handleMessageChange = (value) => {
         const cleanText = removeEmojis(value);
         setSmsMessage(cleanText);
@@ -36,12 +62,13 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
         setSaveSuccess(false);
     };
 
+    // Sanitise the emojis from the text
     const removeEmojis = (text) => {
-    return text.replace(
-        /([\u203C-\u3299]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]|[\u200D\uFE0F])/g,
-        ''
-    );
-};
+        return text.replace(
+            /([\u203C-\u3299]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]|[\u200D\uFE0F])/g,
+            ''
+        );
+    };
 
     // const tabs = [
     //     {
@@ -152,11 +179,6 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
 
             // // Update the default template
             // setDefaultTemplate(smsMessage);
-
-            // Show success message for 3 seconds
-            setTimeout(() => {
-                setSaveSuccess(false);
-            }, 3000);
         } catch (error) {
             console.error('Error saving status template:', error);
             setIsSaving(false);
@@ -170,6 +192,39 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
         setSmsMessage(defaultTemplate);
         setCharacterCount(defaultTemplate.length);
     };
+
+    // Fetch sender name
+    const fetchSender = async () => {
+        try {
+            // Get the nonce from WordPress
+            const nonce = window.wpApiSettings?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                return;
+            }
+
+            // Fetch sender name from backend
+            const response = await fetch('/wp-json/topsms/v1/settings/sender', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce
+                }
+            });
+
+            const data = await response.json();
+            // console.log(`Fetch sender name:  ${data.data.value}`);
+
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
+
+            // Update the sender state
+            setSender(data.data.value || '');
+        } catch (error) {
+            console.error('Error fetching sender name:', error);
+        } 
+    }
 
     return (
         <Card className="automation-card">
@@ -216,13 +271,6 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
                                                 <TemplateTag tag="[last_name]" onClick={insertTag} />
                                             </div>
 
-                                            {/* Success Message */}
-                                            {saveSuccess && (
-                                                <div className="text-blue-500 mb-4">
-                                                    {__('Template saved successfully', 'topsms')}
-                                                </div>
-                                            )}
-
                                             {/* Action Buttons */}
                                             <div className="automation-actions flex justify-between space-x-4 mt-12">
                                                 <Button 
@@ -250,9 +298,12 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
                                             
                                             <div className="automation-preview bg-gray-100 rounded-md p-4 mb-2">
                                                 <div className="automation-preview-header flex space-x-1 mb-2">
-                                                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                                                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                                    <div className="flex space-x-1 mr-2 items-center">
+                                                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                                    </div>
+                                                    <span className="text-sm font-medium text-gray-700">Sender: {sender}</span>
                                                 </div>
                                                 
                                                 <div className="automation-preview-content bg-gray-200 p-4 rounded-md">
@@ -261,7 +312,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate }) => {
                                             </div>
                                             
                                             <div className="automation-character-count text-sm text-gray-500">
-                                                {__('Characters:', 'topsms')} {characterCount}
+                                                {characterCount}/{MAX_CHARS_PER_SMS} characters : {smsCount} {__('SMS', 'topsms')}
                                             </div>
                                         </div>
                                     </div>

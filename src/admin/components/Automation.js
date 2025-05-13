@@ -1,4 +1,6 @@
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
+import { Notice } from '@wordpress/components';
 
 import Layout from './components/Layout';
 import AccordionItemStatus from './automations/AccordionItemStatus';
@@ -11,6 +13,10 @@ import BannerIcon3 from './icons/AutomationBannerIcon3.svg';
 
 
 const Automation = () => {
+    // State for success message
+    const [successMessage, setSuccessMessage] = useState('');
+    const [showSuccessNotice, setShowSuccessNotice] = useState(false);
+
     // Array of WordPress order statuses with their details
     const orderStatuses = [
         {
@@ -93,8 +99,38 @@ const Automation = () => {
         }
     ];
 
+    // Handle success message from AutomationSettingsDetail
+    const handleSuccessMessage = (message) => {
+        setSuccessMessage(message);
+        setShowSuccessNotice(true);
+        
+        // Auto-dismiss the success message after 3 seconds
+        setTimeout(() => {
+            setShowSuccessNotice(false);
+            setSuccessMessage('');
+        }, 3000);
+    };
+    
+    // Handle dismissing the success message
+    const handleDismissSuccess = () => {
+        setShowSuccessNotice(false);
+        setSuccessMessage('');
+    };
+
     return (
         <Layout>
+            {/* Global success notice - at the top of the page */}
+            {showSuccessNotice && successMessage && (
+                <Notice 
+                    status="success" 
+                    isDismissible={true} 
+                    onRemove={handleDismissSuccess}
+                    className="mb-4"
+                >
+                    {successMessage}
+                </Notice>
+            )}
+                
             <div className='px-6 py-4'>
                 <div className='mb-6'>
                     <h2 className='text-2xl font-bold mb-1'>
@@ -119,11 +155,13 @@ const Automation = () => {
                             description={status.description}
                             statusKey={status.key}
                             statusColor={status.color}
+                            onSuccessMessage={handleSuccessMessage}
                         >
                             <AutomationSettingsDetail 
                                 status={status.title} 
                                 statusKey={status.key}
                                 defaultTemplate={status.defaultTemplate}
+                                onSuccessMessage={handleSuccessMessage}
                             />
                         </AccordionItemStatus>
                         ))}

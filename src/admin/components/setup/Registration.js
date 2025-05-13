@@ -328,6 +328,7 @@ const Registration = ({ onComplete }) => {
                             value={formData.senderName}
                             onChange={handleSenderNameChange}
                             error={errors.senderName}
+                            maxLength={11}
                             required
                         />
                     </div>
@@ -356,6 +357,7 @@ const Registration = ({ onComplete }) => {
                             value={formData.abnAcn}
                             onChange={handleAbnAcnChange}
                             error={errors.abnAcn}
+                            maxLength={11}
                             required
                         />
                         
@@ -388,6 +390,7 @@ const Registration = ({ onComplete }) => {
                             value={formData.postcode}
                             onChange={handlePostcodeChange}
                             error={errors.postcode}
+                            maxLength={4}
                             required
                         />
                     </div>

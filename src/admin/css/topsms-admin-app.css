@@ -117,5 +117,15 @@
     background-color: transparent;
 }
 
+/* General settings */
+.surcharge-dollar-sign {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    pointer-events: none;
+}
+
 
 /**************************************** End of Custom css ********************************************/

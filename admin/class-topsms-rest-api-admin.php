@@ -293,7 +293,7 @@ class Topsms_Rest_Api_Admin {
         $enabled = get_option($enabled_option_name);
         // Set default to true (enabled)
         if (false === $enabled) {
-            $enabled = true; 
+            $enabled = 'yes'; 
         }
         
         // Get sms template for this status
@@ -308,7 +308,7 @@ class Topsms_Rest_Api_Admin {
             'success' => true,
             'data' => [
                 'status_key' => $status_key,
-                'enabled' => (bool) $enabled,
+                'enabled' => $enabled === 'yes',
                 'template' => $template
             ]
         ], 200);
@@ -323,7 +323,7 @@ class Topsms_Rest_Api_Admin {
     public function topsms_save_automations_status_enabled(WP_REST_Request $request) {
         // Get status key and enabled option
         $body_params = $request->get_json_params();
-        error_log("save status enabled:" . print_r($body_params, true));
+        // error_log("save status enabled:" . print_r($body_params, true));
 
         if (!isset($body_params['status_key']) || !isset($body_params['enabled'])) {
             return new WP_REST_Response(array(
@@ -333,7 +333,8 @@ class Topsms_Rest_Api_Admin {
         }
         
         $status_key = sanitize_text_field($body_params['status_key']);
-        $enabled = (bool) $body_params['enabled'];
+        // Convert boolean to "yes"/"no" string
+        $enabled = filter_var($body_params['enabled'], FILTER_VALIDATE_BOOLEAN) ? 'yes' : 'no';
         
         // Update the enabled setting 
         $enabled_option_name = 'topsms_order_' . $status_key . '_enabled';
@@ -344,7 +345,7 @@ class Topsms_Rest_Api_Admin {
             'data' => [
                 'message' => 'Status settings saved successfully',
                 'status_key' => $status_key,
-                'enabled' => $enabled
+                'enabled' => $enabled === 'yes'
             ]
         ], 200);
     }
@@ -358,7 +359,7 @@ class Topsms_Rest_Api_Admin {
     public function topsms_save_automations_status_template(WP_REST_Request $request) {
         // Get status key and enabled option
         $body_params = $request->get_json_params();
-        error_log("save status template:" . print_r($body_params, true));
+        // error_log("save status template:" . print_r($body_params, true));
 
         if (!isset($body_params['status_key']) || !isset($body_params['template'])) {
             return new WP_REST_Response(array(
@@ -368,7 +369,8 @@ class Topsms_Rest_Api_Admin {
         }
         
         $status_key = sanitize_text_field($body_params['status_key']);
-        $template = sanitize_text_field($body_params['template']);
+        // $template = sanitize_text_field($body_params['template']);
+        $template = $body_params['template'];
         
         // Update the template
         $message_option_name = 'topsms_order_' . $status_key . '_message';
@@ -399,37 +401,52 @@ class Topsms_Rest_Api_Admin {
             return new WP_REST_Response([
                 'success' => false,
                 'data' => [
-                    'message' => 'Setting key is required'
+                    'message' => 'Missing required parameter: key.'
                 ]
             ], 400);
         }
-        
+
         // Get option name
-        $option_name = 'topsms_settings_' . $key;
-        $settings = get_option($option_name, true);
-        
-        // Set default value if not found
-        if (false === $settings) {
-            $enabled = true;
+        if ($key === 'sender') {
+            $option_name = 'topsms_'. $key;
         } else {
-            $enabled = $settings;
-            
-            // // If the value is a string 'true' or 'false', convert it to boolean
-            // if ($settings === 'true') {
-            //     $enabled = true;
-            // } else if ($settings === 'false') {
-            //     $enabled = false;
-            // } 
-            // else if (is_bool($settings)) {
-            //     $enabled = $settings;
-            // }
+            $option_name = 'topsms_settings_' . $key;
+        }
+        $settings = get_option($option_name, true);
+        // error_log($key . print_r($settings, true));
+        
+        // If option doesn't exist in database
+        if ($settings === false) {
+            return new WP_REST_Response([
+                'success' => true,
+                'data' => [
+                    'key' => $key,
+                    'enabled' => true, // Default for new settings
+                    'value' => ''
+                ]
+            ], 200);
         }
         
+        // For toggle settings
+        if ($settings === 'yes' || $settings === 'no') {
+            error_log("$key is a yes/no setting: $settings");
+            return new WP_REST_Response([
+                'success' => true,
+                'data' => [
+                    'key' => $key,
+                    'enabled' => $settings === 'yes', 
+                    'value' => ''
+                ]
+            ], 200);
+        }
+        
+        // For surcharge amount / sender name
         return new WP_REST_Response([
             'success' => true,
             'data' => [
                 'key' => $key,
-                'enabled' => $enabled,
+                'enabled' => true,
+                'value' => $settings
             ]
         ], 200);
     }
@@ -443,7 +460,7 @@ class Topsms_Rest_Api_Admin {
     public function topsms_save_settings(WP_REST_Request $request) {
         // Get data from request
         $body_params = $request->get_json_params();
-        error_log("save setting:" . print_r($body_params, true));
+        // error_log("save setting:" . print_r($body_params, true));
         
         // Validate required parameters
         if (!isset($body_params['key']) || !isset($body_params['enabled'])) {
@@ -456,7 +473,8 @@ class Topsms_Rest_Api_Admin {
         }
         
         $key = sanitize_text_field($body_params['key']);
-        $enabled = (bool) $body_params['enabled'];
+        // Convert boolean to "yes"/"no" string
+        $enabled = filter_var($body_params['enabled'], FILTER_VALIDATE_BOOLEAN) ? 'yes' : 'no';
         
         // Get option name and update the settings to options
         $option_name = 'topsms_settings_' . $key;
@@ -467,7 +485,50 @@ class Topsms_Rest_Api_Admin {
             'data' => [
                 'message' => 'Setting saved successfully',
                 'key' => $key,
-                'enabled' => $enabled
+                'enabled' => $enabled === 'yes'
+            ]
+        ], 200);
+    }
+
+    /**
+     * Save general input settings to the options 
+     * 
+     * @param WP_REST_Request $request The request object
+     * @return WP_REST_Response The response
+     */
+    public function topsms_save_settings_(WP_REST_Request $request) {
+        // Get data from request
+        $body_params = $request->get_json_params();
+        error_log("save setting input:" . print_r($body_params, true));
+        
+        // Validate required parameters
+        if (!isset($body_params['key']) || !isset($body_params['value'])) {
+            return new WP_REST_Response([
+                'success' => false,
+                'data' => [
+                    'message' => 'Missing required parameters: key and value'
+                ]
+            ], 400);
+        }
+        
+        $key = sanitize_text_field($body_params['key']);
+        $value = $body_params['value'];
+        
+        // Get option name and update the settings to options
+        // Get option name
+        if ($key === 'sender') {
+            $option_name = 'topsms_' . $key;
+        } else {
+            $option_name = 'topsms_settings_' . $key;
+        }
+        update_option($option_name, $value);
+        
+        return new WP_REST_Response([
+            'success' => true,
+            'data' => [
+                'message' => 'Setting saved successfully',
+                'key' => $key,
+                'value' => $value
             ]
         ], 200);
     }
