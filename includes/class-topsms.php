@@ -190,8 +190,16 @@ class Topsms {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
         
-        $this->loader->add_action('woocommerce_review_order_before_submit', $plugin_public, 'add_topsms_customer_consent_checkout_checkbox', 20);
-        $this->loader->add_action('woocommerce_checkout_update_order_meta', $plugin_public, 'save_topsms_customer_consent_checkout_checkbox');
+        // Customer consent checkbox on the checkout page
+        $this->loader->add_action( 'woocommerce_review_order_before_submit', $plugin_public, 'add_topsms_customer_consent_checkout_checkbox', 20 );
+        $this->loader->add_action( 'woocommerce_checkout_update_order_meta', $plugin_public, 'save_topsms_customer_consent_checkout_checkbox' );
+
+        // Add topsms surcharge to cart
+        $this->loader->add_action( 'woocommerce_cart_calculate_fees', $plugin_public, 'add_topsms_surcharge_to_cart' );
+
+        // AJAX handler to update the customer consent in session
+        $this->loader->add_action( 'wp_ajax_topsms_update_consent', $plugin_public, 'topsms_update_customer_consent' );
+        $this->loader->add_action( 'wp_ajax_nopriv_topsms_update_consent', $plugin_public, 'topsms_update_customer_consent' );
 	}
 
 	/**

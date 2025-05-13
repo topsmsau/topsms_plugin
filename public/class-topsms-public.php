@@ -74,7 +74,7 @@ class Topsms_Public {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-public.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-public.css', array(), time(), 'all' );
 
 	}
 
@@ -97,7 +97,7 @@ class Topsms_Public {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-public.js', array( 'jquery' ), time(), false );
 
 	}
 
@@ -160,4 +160,78 @@ class Topsms_Public {
 		    update_user_meta($user_id, 'topsms_customer_consent', 'no');
         }
     }
+
+    public function add_topsms_surcharge_to_cart($cart) {
+        if (is_admin() && !defined('DOING_AJAX')) {
+            return;
+        }
+        error_log(print_r($_POST, true));
+        
+        // Check if the surcharge is enabled in settings
+        $surcharge_enabled = get_option('topsms_settings_sms_surcharge');
+        
+        // Check if customer has consented (ticked the checkbox)
+        $customer_consented = false;
+        
+        // Check if it's in the POST data (during checkout updates)
+        if (isset($_POST['topsms_customer_consent'])) {
+            $customer_consented = true;
+        } 
+        // Check in parsed post_data for AJAX requests
+        elseif (isset($_POST['post_data'])) {
+            parse_str($_POST['post_data'], $parsed_post_data);
+            
+            // Check params in the post_data
+            if (strpos($_POST['post_data'], 'topsms_customer_consent') !== false) {
+                $customer_consented = true;
+            } else {
+                $customer_consented = false;
+                
+                // Also clear session
+                if (WC()->session) {
+                    WC()->session->set('topsms_customer_consent', false);
+                }
+            }
+        }
+
+        // Check the session as a fallback
+        elseif (WC()->session && WC()->session->get('topsms_customer_consent')) {
+            $customer_consented = true;
+        }
+
+        // Only apply if surcharge enabled and if customer consented/ticked the consent checkbox
+        $should_apply_surcharge = $surcharge_enabled === 'yes' && $customer_consented;
+        
+        // Check if the SMS fee already exists or unticked customer consent, remove if so
+        foreach ($cart->get_fees() as $fee_key => $fee) {
+            if ($fee->name === 'SMS Surcharge') {
+                if (!$should_apply_surcharge) {
+                    // Remove the fee already exists
+                    $cart->remove_fee($fee_key);
+                }
+            }
+        }
+        
+        // Add the surcharge 
+        if ($should_apply_surcharge) {
+            // Get the surcharge amount, convert to float if string
+            $surcharge_amount = get_option('topsms_settings_sms_surcharge_amount');
+            if (is_string($surcharge_amount)) {
+                $surcharge_amount = floatval($surcharge_amount);
+            }
+            
+            // Add the surcharge to cart
+            if ($surcharge_amount > 0) {
+                $cart->add_fee(__('SMS Surcharge', 'topsms'), $surcharge_amount, true);
+            }
+        }
+    }
+
+    public function topsms_update_customer_consent() {
+        if (isset($_POST['consent'])) {
+            $consent = $_POST['consent'] === '1' || $_POST['consent'] === 1;
+            WC()->session->set('topsms_customer_consent', $consent);
+        }
+        wp_die();
+    }   
 }
