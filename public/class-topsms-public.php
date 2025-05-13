@@ -144,7 +144,6 @@ class Topsms_Public {
             return; 
         }
 
-
         if (isset($_POST['topsms_customer_consent']) && !empty($_POST['topsms_customer_consent'])) {
             // Update value to order data
             update_post_meta($order_id, 'topsms_customer_consent', 'yes');

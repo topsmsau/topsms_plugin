@@ -26,11 +26,11 @@ const TopupButton = ({ icon, children, className = '' }) => {
     );
 };
 
-const BalanceCard = ({ balance }) => {
+const BalanceCard = ({ balance, isLoading }) => {
     return (
         <Card className='topsms-balance-card m-0 shadow-none'>
             <CardBody className='p-1 topsms-balance-card-body'>
-                <Flex align='center' justify='space-between' gap={16}>
+                <Flex align='center' justify='space-between' gap={10}>
                     <Flex align='flex-start' direction='column' justify='space-between'>
                         <div>
                             <p className='text-gray-600 text-medium font-medium'>
@@ -38,7 +38,16 @@ const BalanceCard = ({ balance }) => {
                             </p>
                         </div>
                         <div className='flex items-center'>
-                            <p className='font-bold text-base'>{balance}</p>
+                            <p className='text-medium'>
+                                {__('Number of SMS: ', 'topsms')}
+                                <span className="inline-block min-w-[50px]">
+                                    {isLoading ? (
+                                        <span className="inline-block animate-pulse bg-gray-300 h-5 w-12 rounded align-middle"></span>
+                                    ) : (
+                                        <span className='font-bold inline-block h-5 align-middle'>{balance}</span>
+                                    )}
+                                </span>
+                            </p>
                         </div>
                     </Flex>
 

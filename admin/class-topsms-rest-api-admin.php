@@ -514,23 +514,109 @@ class Topsms_Rest_Api_Admin {
         $key = sanitize_text_field($body_params['key']);
         $value = $body_params['value'];
         
-        // Get option name and update the settings to options
-        // Get option name
+        // Get option name based on key
         if ($key === 'sender') {
             $option_name = 'topsms_' . $key;
+            
+            // Update sender name in Topsms api
+            return $this->topsms_update_api_sender_name($value, $key, $option_name);
         } else {
             $option_name = 'topsms_settings_' . $key;
+            
+            // Update the option in the database
+            update_option($option_name, $value);
+            
+            // Return success response
+            return new WP_REST_Response([
+                'success' => true,
+                'data' => [
+                    'message' => 'Setting saved successfully',
+                    'key' => $key,
+                    'value' => $value
+                ]
+            ], 200);
         }
-        update_option($option_name, $value);
+    }
+
+    /**
+     * Update sender name in TopSMS API
+     * 
+     * @param string $sender The sender name to update
+     * @param string $key The option key
+     * @param string $option_name The option name in the database
+     * @return WP_REST_Response The response
+     */
+    private function topsms_update_api_sender_name($sender, $key, $option_name) {
+        // Get access token for API request
+        $access_token = get_option('topsms_access_token');
+        error_log("topsms access token: " . print_r($access_token, true));
         
-        return new WP_REST_Response([
-            'success' => true,
-            'data' => [
-                'message' => 'Setting saved successfully',
-                'key' => $key,
-                'value' => $value
-            ]
-        ], 200);
+        if (!$access_token) {
+            return new WP_REST_Response([
+                'success' => false,
+                'data' => [
+                    'message' => 'Access token not found',
+                    'key' => $key,
+                    'value' => $sender
+                ]
+            ], 200);
+        }
+        
+        // Make a put request to the Topsms to update the sender name
+        $response = wp_remote_request('https://api.topsms.com.au/functions/v1/user', [
+            'method' => 'PUT',
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token
+            ],
+            'body' => json_encode([
+                'sender' => $sender
+            ])
+        ]);
+        
+        // Check for connection errors
+        if (is_wp_error($response)) {
+            return new WP_REST_Response([
+                'success' => false, 
+                'data' => [
+                    'message' => 'Error saving sender name: ' . $response->get_error_message(),
+                    'key' => $key,
+                    'value' => $sender
+                ]
+            ], 200);
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        error_log("response data: " . print_r($data, true));
+        
+        // Check the status field in the response data
+        if (isset($data['status']) && $data['status'] === 'success') {
+            // Update in the options
+            update_option($option_name, $sender);
+
+            return new WP_REST_Response([
+                'success' => true,
+                'data' => [
+                    'message' => 'Setting saved successfully',
+                    'key' => $key,
+                    'value' => $sender,
+                    'api_response' => $data
+                ]
+            ], 200);
+        } else {
+            // If API update failed, still return success since we saved locally
+            $error_message = isset($data['message']) ? $data['message'] : 'Failed to update sender on API';
+            
+            return new WP_REST_Response([
+                'success' => false, 
+                'data' => [
+                    'message' => 'Error saving sender name: ' . $error_message,
+                    'key' => $key,
+                    'value' => $sender
+                ]
+            ], 200);
+        }
     }
 
     /**
@@ -542,9 +628,18 @@ class Topsms_Rest_Api_Admin {
     public function topsms_get_user_data(WP_REST_Request $request) {
         $access_token = get_option('topsms_access_token');
         error_log("topsms access token" . print_r($access_token, true));
+
+        if (!$access_token) {
+            return new WP_REST_Response([
+                'success' => false,
+                'data' => [
+                    'message' => 'Access token not found'
+                ]
+            ], 401);
+        }
         
         // Make api request to Topsms
-        $response = wp_remote_post('https://api.topsms.com.au/functions/v1/user', [
+        $response = wp_remote_get('https://api.topsms.com.au/functions/v1/user', [
             'headers' => [
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $access_token

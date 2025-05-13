@@ -170,6 +170,8 @@ class Topsms {
 		$this->loader->add_filter( 'cron_schedules', $plugin_admin, 'topsms_add_cron_interval' );
 		$this->loader->add_action( 'topsms_refresh_tokens_hook', $plugin_admin, 'topsms_refresh_tokens' );
 		$this->loader->add_action( 'wp_loaded', $plugin_admin, 'topsms_schedule_token_refresh' );
+
+        // Send notifications on order status changed
 		$this->loader->add_action( 'woocommerce_order_status_changed', $plugin_admin, 'topsms_order_status_changed', 10, 4);
 		
 	}

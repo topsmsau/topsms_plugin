@@ -6,49 +6,51 @@ import TopsmsIcon from '../icons/TopsmsLogo.svg';
 import BalanceCard from './BalanceCard';
 
 const Header = () => {
-  const { balance, setBalance } = useState(0);
+    const [balance, setBalance] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch current balance on load (fetched from db)
-  useEffect(() => {
-    fetchBalance();
-  }, []);
+    // Fetch current balance on load (fetched from db)
+    useEffect(() => {
+        fetchBalance();
+    }, []);
 
-  // Fetch current status enabled settings from db
-  const fetchBalance = async () => {
-    try {
-      // Get the nonce from WordPress
-      const nonce = window.wpApiSettings?.nonce;
-      if (!nonce) {
-        console.error('WordPress REST API nonce not available');
-        setIsLoading(false);
-        return;
-      }
+    // Fetch current status enabled settings from db
+    const fetchBalance = async () => {
+        try {
+            // Get the nonce from WordPress
+            const nonce = window.wpApiSettings?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                setIsLoading(false);
+                return;
+            }
 
-      // Fetch user data from backend
-      const response = await fetch(`/wp-json/topsms/v1/user`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-WP-Nonce': nonce,
-        },
-      });
+            // Fetch user data from backend
+            const response = await fetch(`/wp-json/topsms/v1/user`, {
+                method: 'GET',
+                headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': nonce,
+                },
+            });
 
-      const data = await response.json();
-      console.log('User data:', data);
+            const data = await response.json();
+            // console.log('User data:', data);
 
-      if (!data.success) {
-        throw new Error(data.data.message || 'Unknown error');
-      }
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
 
-      // Get the user balance
-      const userData = data.data.userData;
-      const balance_ = userData[0].balance;
-      setBalance(balance_);
-      console.log('User current balance:', balance_);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
+            // Get the user balance
+            const balance_ = data.data.data.balance;
+            setBalance(balance_);
+            // console.log('User current balance:', balance_);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
   return (
     <Card className='topsms-header mb-4 border-0 shadow-none'>
@@ -80,11 +82,11 @@ const Header = () => {
 
           {/* Balance Info */}
           <FlexItem>
-            <BalanceCard balance={balance} />
-            {/* <p variant="muted" className="text-xs text-gray-500 text-center">
-                            {__('Approximately', 'topsms')} <span className="text-blue-500 font-medium">95 SMS</span> {__('messages remaining', 'topsms')}
-                        </p> */}
-          </FlexItem>
+            <BalanceCard balance={balance} isLoading={isLoading}/>
+            <p variant="muted" className="text-xs text-gray-500 text-center mt-2">
+                {__('SMS total is an approximation', 'topsms')}
+            </p>
+        </FlexItem>
         </Flex>
       </CardBody>
     </Card>

@@ -553,6 +553,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .mt-8 {
   margin-top: 2rem;
 }
+.topsms-app .inline-block {
+  display: inline-block;
+}
 .topsms-app .flex {
   display: flex;
 }
@@ -618,6 +621,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .w-full {
   width: 100%;
+}
+.topsms-app .min-w-\[50px\] {
+  min-width: 50px;
 }
 .topsms-app .max-w-4xl {
   max-width: 56rem;
@@ -881,13 +887,12 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .text-center {
   text-align: center;
 }
+.topsms-app .align-middle {
+  vertical-align: middle;
+}
 .topsms-app .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
-}
-.topsms-app .text-base {
-  font-size: 1rem;
-  line-height: 1.5rem;
 }
 .topsms-app .text-lg {
   font-size: 1.125rem;
