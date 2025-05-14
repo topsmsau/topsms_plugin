@@ -399,8 +399,8 @@ class Topsms_Admin {
             $access_token = get_option('topsms_access_token', true);
     
             
-            // Only redirect if both tokens exist and user has admin permissions
-            if ($access_token === 1 || $access_token === true) {
+            // Only redirect if woocommerce is activatedboth tokens exist and user has admin permissions
+            if (is_plugin_active('woocommerce/woocommerce.php') && ($access_token === 1 || $access_token === true)) {
                 // Important: exit after redirect to stop further execution
                 wp_safe_redirect(admin_url('admin.php?page=topsms-setup'));
                 exit;
@@ -451,14 +451,14 @@ class Topsms_Admin {
         $data = json_decode($body, true);
         
         // Check if we received valid data
-        if (!isset($data['access_token']) || !isset($data['refresh_token'])) {
+        if (!isset($data['session']['access_token']) || !isset($data['session']['refresh_token'])) {
             error_log('TopSMS API Error: Invalid response format');
             return false;
         }
         
         // Save the new tokens
-        update_option('topsms_access_token', $data['access_token']);
-        update_option('topsms_refresh_token', $data['refresh_token']);
+        update_option('topsms_access_token', $data['session']['access_token']);
+        update_option('topsms_refresh_token', $data['session']['refresh_token']);
         
         return true;
     }
@@ -493,9 +493,13 @@ class Topsms_Admin {
         $sender = get_option('topsms_sender');
         $is_enabled = get_option('topsms_order_' . $status_to . '_enabled');
         $message_template = get_option('topsms_order_' . $status_to . '_message');
+        error_log("is enabled:". print_r($is_enabled, true));
+        error_log("sender:". print_r($sender, true));
+        error_log("message template:". print_r($message_template, true));
+        error_log("access token:". print_r($access_token, true));
         
         // Check if SMS is enabled for this status
-        if ($is_enabled !== '1' && $is_enabled !== true) {
+        if ($is_enabled !== '1' && $is_enabled !== true && $is_enabled !== 'yes') {
             return;
         }
         
@@ -504,6 +508,8 @@ class Topsms_Admin {
         if (empty($phone)) {
             return; // No phone number available
         }
+
+        error_log("phone:". print_r($phone, true));
         
         // Check if message template exists
         if (empty($message_template)) {
@@ -512,10 +518,10 @@ class Topsms_Admin {
         
         // Replace placeholders
         $replacements = array(
-            '[id]' => $order->get_order_number(),
-            '[f_name]' => $order->get_billing_first_name(),
-            '[l_name]' => $order->get_billing_last_name(),
-            '[order_date]' => $order->get_date_created()->date_i18n(get_option('date_format'))
+            '[order_id]' => $order->get_order_number(),
+            '[first_name]' => $order->get_billing_first_name(),
+            '[last_name]' => $order->get_billing_last_name(),
+            // '[order_date]' => $order->get_date_created()->date_i18n(get_option('date_format'))
         );
         $message = str_replace(array_keys($replacements), array_values($replacements), $message_template);
         
@@ -536,6 +542,7 @@ class Topsms_Admin {
             'body' => json_encode($body),
             'timeout' => 45
         ));
+        error_log("response:" . print_r($response, true));
         
         // Determine API status
         if (is_wp_error($response)) {

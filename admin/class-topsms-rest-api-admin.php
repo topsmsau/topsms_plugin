@@ -62,7 +62,7 @@ class Topsms_Rest_Api_Admin {
      */
     public function topsms_send_otp(WP_REST_Request $request) {
         $body_params = $request->get_json_params();
-        // error_log("body params: " . print_r($body_params, true));
+        error_log("body params: " . print_r($body_params, true));
 
         // Get phone number from the request
         $phone_number = $body_params['phoneNumber'];
@@ -249,18 +249,18 @@ class Topsms_Rest_Api_Admin {
     private function topsms_store_registration_data($data) {
         // Sanitise the data and add timestamp
         $data_ = [
-            'phone_number' => isset($data['phone_number']) ? sanitize_text_field($data['phone_number']) : '',
-            'otp' => isset($data['otp']) ? sanitize_text_field($data['otp']) : '',
-            'email' => isset($data['email']) ? sanitize_email($data['email']) : '',
-            'company' => isset($data['company']) ? sanitize_text_field($data['company']) : '',
-            'address' => isset($data['address']) ? sanitize_text_field($data['address']) : '',
-            'first_name' => isset($data['first_name']) ? sanitize_text_field($data['first_name']) : '',
-            'last_name' => isset($data['last_name']) ? sanitize_text_field($data['last_name']) : '',
-            'city' => isset($data['city']) ? sanitize_text_field($data['city']) : '',
-            'state' => isset($data['state']) ? sanitize_text_field($data['state']) : '',
-            'postcode' => isset($data['postcode']) ? sanitize_text_field($data['postcode']) : '',
-            'abn' => isset($data['abn']) ? sanitize_text_field($data['abn']) : '',
-            'sender' => isset($data['sender']) ? sanitize_text_field($data['sender']) : '',
+            'phone_number' => isset($data['phone_number']) ? $data['phone_number'] : '',
+            'otp' => isset($data['otp']) ? $data['otp'] : '',
+            'email' => isset($data['email']) ? $data['email'] : '',
+            'company' => isset($data['company']) ? $data['company'] : '',
+            'address' => isset($data['address']) ? $data['address'] : '',
+            'first_name' => isset($data['first_name']) ? $data['first_name'] : '',
+            'last_name' => isset($data['last_name']) ? $data['last_name'] : '',
+            'city' => isset($data['city']) ? $data['city'] : '',
+            'state' => isset($data['state']) ? $data['state'] : '',
+            'postcode' => isset($data['postcode']) ? $data['postcode'] : '',
+            'abn' => isset($data['abn']) ? $data['abn'] : '',
+            'sender' => isset($data['sender']) ? $data['sender'] : '',
             'connected_at' => current_time('mysql') // Connected timestamp
         ];
 
@@ -291,9 +291,9 @@ class Topsms_Rest_Api_Admin {
         // Get enabled setting for this status
         $enabled_option_name = 'topsms_order_' . $status_key . '_enabled';
         $enabled = get_option($enabled_option_name);
-        // Set default to true (enabled)
+        // Set default to no (disabled)
         if (false === $enabled) {
-            $enabled = 'yes'; 
+            $enabled = 'no'; 
         }
         
         // Get sms template for this status
@@ -412,7 +412,7 @@ class Topsms_Rest_Api_Admin {
         } else {
             $option_name = 'topsms_settings_' . $key;
         }
-        $settings = get_option($option_name, true);
+        $settings = get_option($option_name, 'no');
         // error_log($key . print_r($settings, true));
         
         // If option doesn't exist in database
@@ -421,7 +421,7 @@ class Topsms_Rest_Api_Admin {
                 'success' => true,
                 'data' => [
                     'key' => $key,
-                    'enabled' => true, // Default for new settings
+                    'enabled' => no, // Default for new settings
                     'value' => ''
                 ]
             ], 200);
@@ -429,7 +429,6 @@ class Topsms_Rest_Api_Admin {
         
         // For toggle settings
         if ($settings === 'yes' || $settings === 'no') {
-            error_log("$key is a yes/no setting: $settings");
             return new WP_REST_Response([
                 'success' => true,
                 'data' => [
@@ -445,7 +444,7 @@ class Topsms_Rest_Api_Admin {
             'success' => true,
             'data' => [
                 'key' => $key,
-                'enabled' => true,
+                'enabled' => 'no',
                 'value' => $settings
             ]
         ], 200);

@@ -3,10 +3,9 @@ import {
     Card,
     CardBody,
     Flex,
-    Notice
+    Snackbar
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-
 
 import Layout from './components/Layout';
 import TopupBalanceButton from './settings/TopupBalanceButton';
@@ -15,8 +14,9 @@ import BalanceCard from './settings/BalanceCard';
 const Settings = () => {
     const [selectedAmount, setSelectedAmount] = useState(null);
 
-    const [successMessage, setSuccessMessage] = useState('');
-    const [showSuccessNotice, setShowSuccessNotice] = useState(false);
+    const [showSnackbar, setShowSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarStatus, setSnackbarStatus] = useState('success'); // 'success', 'error', 'info'
 
     // List of top-up options
     const topUpOptions = [
@@ -65,48 +65,66 @@ const Settings = () => {
         window.open(link, '_blank');
     };
 
-    // Handle dismissing the success message
-    const handleDismissSuccess = () => {
-        setShowSuccessNotice(false);
-        setSuccessMessage('');
+    // Handle dismissing the snackbar
+    const handleDismissSnackbar = () => {
+        setShowSnackbar(false);
+        setSnackbarMessage('');
     };
 
     // Handle success message from BalanceCard
     const handleSuccessMessage = (message) => {
-        setSuccessMessage(message);
-        setShowSuccessNotice(true);
+        setSnackbarMessage(message);
+        setSnackbarStatus('success');
+        setShowSnackbar(true);
         
-        // Auto-dismiss the success message after 3 seconds
+        // Auto-dismiss the snackbar after 3 seconds
         setTimeout(() => {
-            setShowSuccessNotice(false);
-            setSuccessMessage('');
+            setShowSnackbar(false);
+            setSnackbarMessage('');
         }, 3000);
     };
     
-    // Clear the notice when the component unmounts
+    // Handle error message from BalanceCard
+    const handleErrorMessage = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarStatus('error');
+        setShowSnackbar(true);
+        
+        // Auto-dismiss the snackbar after 5 seconds (errors stay a bit longer)
+        setTimeout(() => {
+            setShowSnackbar(false);
+            setSnackbarMessage('');
+        }, 5000);
+    };
+    
+    // Handle view autosave action
+    const handleViewAutosave = () => {
+        console.log('View autosave clicked');
+        setShowSnackbar(false);
+    };
+    
+    // Clear the snackbar when the component unmounts
     useEffect(() => {
         return () => {
-            setShowSuccessNotice(false);
-            setSuccessMessage('');
+            setShowSnackbar(false);
+            setSnackbarMessage('');
         };
     }, []);
 
     const getPricePerSms = (smsAmount, smsCount) => {
-        return (smsAmount / smsCount);
+        return (smsAmount / smsCount).toFixed(2);
     }
 
     return (
         <Layout>
-            {/* Global success notice - at the top of the page */}
-            {showSuccessNotice && successMessage && (
-                <Notice 
-                    status="success" 
-                    isDismissible={true} 
-                    onRemove={handleDismissSuccess}
-                    className="mb-4"
+            {/* Snackbar for messages - positioned at bottom left via CSS */}
+            {showSnackbar && (
+                <Snackbar 
+                    onDismiss={handleDismissSnackbar}
+                    className={`topsms-snackbar ${snackbarStatus === 'error' ? 'topsms-snackbar-error' : snackbarStatus === 'info' ? 'topsms-snackbar-info' : ''}`}
                 >
-                    {successMessage}
-                </Notice>
+                    {snackbarMessage}
+                </Snackbar>
             )}
 
             <div className='px-6 py-4'>
@@ -121,8 +139,11 @@ const Settings = () => {
             </div>
 
             <div className='page-details'>
-                {/* Pass the success message handler to BalanceCard */}
-                <BalanceCard onSuccessMessage={handleSuccessMessage} />
+                {/* Pass both success and error message handlers to BalanceCard */}
+                <BalanceCard 
+                    onSuccessMessage={handleSuccessMessage} 
+                    onErrorMessage={handleErrorMessage}
+                />
 
                 {/* Top Up Section */}
                 <Card className="w-full">

@@ -38,17 +38,21 @@ const BalanceCard = ({ balance, isLoading }) => {
                             </p>
                         </div>
                         <div className='flex items-center'>
-                            <p className='text-medium'>
-                                {__('Number of SMS: ', 'topsms')}
-                                <span className="inline-block min-w-[50px]">
+                            <p className='text-medium flex items-center'>
+                                <span>Number of SMS: </span>
+                                <span className="w-16 inline-flex items-center justify-start ml-1">
                                     {isLoading ? (
-                                        <span className="inline-block animate-pulse bg-gray-300 h-5 w-12 rounded align-middle"></span>
+                                        <span className="animate-pulse bg-gray-300 h-6 w-full rounded"></span>
                                     ) : (
-                                        <span className='font-bold inline-block h-5 align-middle'>{balance}</span>
+                                        <span className='font-bold text-medium h-6 flex items-center'>{balance}</span>
                                     )}
                                 </span>
                             </p>
                         </div>
+
+                        <p variant="muted" className="text-gray-500 text-center mt-2" style={{ fontSize:'10px' }}>
+                            {__('SMS total is an approximation', 'topsms')}
+                        </p>
                     </Flex>
 
                     <TopupButton icon={plus}>{__('Top up', 'topsms')}</TopupButton>

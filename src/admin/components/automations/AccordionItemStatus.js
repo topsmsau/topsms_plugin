@@ -5,7 +5,7 @@ import { ToggleControl } from '@wordpress/components';
 import VerticalStrokeIcon from '../icons/VerticalStrokeIcon';
 import SettingsIcon from '../icons/SettingsIcon';
 
-const AccordionItemStatus = ({ title, description, statusKey, statusColor, children, onSuccessMessage  }) => {
+const AccordionItemStatus = ({ title, description, statusKey, statusColor, children, onSuccessMessage, onErrorMessage }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isEnabled, setIsEnabled] = useState(true); 
@@ -33,18 +33,18 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
     }, [statusKey]);
 
     useEffect(() => {
-    if (saveSuccess) {
-        // Send the success message to the parent component
-        if (onSuccessMessage) {
-            onSuccessMessage(__(`${title} status ${isEnabled ? 'enabled' : 'disabled'} successfully`, 'topsms'));
+        if (saveSuccess) {
+            // Send the success message to the parent component
+            if (onSuccessMessage) {
+                onSuccessMessage(__(`${title} status ${isEnabled ? 'enabled' : 'disabled'} successfully`, 'topsms'));
+            }
+            
+            // Reset local success state after notifying parent
+            setTimeout(() => {
+                setSaveSuccess(false);
+            }, 100);
         }
-        
-        // Reset local success state after notifying parent
-        setTimeout(() => {
-            setSaveSuccess(false);
-        }, 100);
-    }
-}, [saveSuccess, onSuccessMessage, title, isEnabled]);
+    }, [saveSuccess, onSuccessMessage, title, isEnabled]);
 
     // Handle toggle changes
     const handleToggleChange = () => {
@@ -100,6 +100,11 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             // console.log(`Status ${statusKey} enabled:  ${enabled}`);
         } catch (error) {
             console.error('Error fetching status settings:', error);
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__(`Failed to load ${title} status settings. Please refresh and try again.`, 'topsms'));
+            }
         } finally {
             setIsLoading(false);
         }
@@ -150,15 +155,19 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             // Set success state to notify parent
             setSaveSuccess(true);
             
-            // Can open the body regardless of enable/disabled
-            // // If status is disabled, close the accordion
-            // if (!isEnabled) {
-            //     setIsOpen(false);
-            // }
+            // If status is disabled, close the accordion
+            if (!isEnabled) {
+                setIsOpen(false);
+            }
         } catch (error) {
             console.error('Error saving status enabled setting:', error);
             // Revert the toggle if saving failed
             setIsEnabled(!isEnabled);
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__(`Failed to ${isEnabled ? 'disable' : 'enable'} ${title} status. Please try again.`, 'topsms'));
+            }
         }
     };
 
@@ -169,7 +178,7 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                 <div className="status-detail-wrap items-center flex flex-1 gap-2">
                     <div className="status-detail items-start flex flex-1 flex-col gap-[2px] justify-center">
                         <h5 className="text-gray-800 font-bold text-medium">{__(title, 'topsms')}</h5>
-                        <span>{__(description, 'topsms')}</span>
+                        {/* <span>{__(description, 'topsms')}</span> */}
                     </div>
                     <div className="status-control items-center flex gap-[12px]">
                         {isLoading ? (

@@ -1,6 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { Notice } from '@wordpress/components';
+import { Snackbar } from '@wordpress/components';
 
 import Layout from './components/Layout';
 import AccordionItemStatus from './automations/AccordionItemStatus';
@@ -13,9 +13,10 @@ import BannerIcon3 from './icons/AutomationBannerIcon3.svg';
 
 
 const Automation = () => {
-    // State for success message
-    const [successMessage, setSuccessMessage] = useState('');
-    const [showSuccessNotice, setShowSuccessNotice] = useState(false);
+    // State for snackbar message
+    const [showSnackbar, setShowSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarStatus, setSnackbarStatus] = useState('success'); // 'success', 'error', 'info'
 
     // Array of WordPress order statuses with their details
     const orderStatuses = [
@@ -24,7 +25,7 @@ const Automation = () => {
             title: 'Processing',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#17a34a', 
-            defaultTemplate: "Hello [first_name], your order with ID [id] has been shipped and is on its way! Expected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us."
+            defaultTemplate: "Hello [first_name], your order with ID [order_id] has been shipped and is on its way! Expected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us."
         },
         {
             key: 'completed',
@@ -87,48 +88,60 @@ const Automation = () => {
         },
         {
             icon: BannerIcon2,
-            title: 'Request a feature',
-            message: "Don't forget to leave us a review — your feedback helps us grow!", 
-            buttonText: 'Leave a review',
+            title: 'Got ideas for new features?',
+            message: "Help shape the future of TopSMS by voting or suggesting new features.", 
+            buttonText: 'Request a feature',
         },
         {
             icon: BannerIcon3,
-            title: 'Customisation Services',
-            message: "Don't forget to leave us a review — your feedback helps us grow!", 
-            buttonText: 'Leave a review',
+            title: 'Need something tailored to your business?',
+            message: "We offer custom development services to make TopSMS work exactly how you need it.", 
+            buttonText: 'Customisation services',
         }
     ];
 
-    // Handle success message from AutomationSettingsDetail
+    // Handle success message from components
     const handleSuccessMessage = (message) => {
-        setSuccessMessage(message);
-        setShowSuccessNotice(true);
+        setSnackbarMessage(message);
+        setSnackbarStatus('success');
+        setShowSnackbar(true);
         
         // Auto-dismiss the success message after 3 seconds
         setTimeout(() => {
-            setShowSuccessNotice(false);
-            setSuccessMessage('');
+            setShowSnackbar(false);
+            setSnackbarMessage('');
         }, 3000);
     };
     
-    // Handle dismissing the success message
-    const handleDismissSuccess = () => {
-        setShowSuccessNotice(false);
-        setSuccessMessage('');
+    // Handle error message from components
+    const handleErrorMessage = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarStatus('error');
+        setShowSnackbar(true);
+        
+        // Auto-dismiss the error message after 5 seconds
+        setTimeout(() => {
+            setShowSnackbar(false);
+            setSnackbarMessage('');
+        }, 5000);
+    };
+    
+    // Handle dismissing the snackbar
+    const handleDismissSnackbar = () => {
+        setShowSnackbar(false);
+        setSnackbarMessage('');
     };
 
     return (
         <Layout>
-            {/* Global success notice - at the top of the page */}
-            {showSuccessNotice && successMessage && (
-                <Notice 
-                    status="success" 
-                    isDismissible={true} 
-                    onRemove={handleDismissSuccess}
-                    className="mb-4"
+            {/* Snackbar for success/error messages - positioned at bottom left via CSS */}
+            {showSnackbar && (
+                <Snackbar 
+                    onDismiss={handleDismissSnackbar}
+                    className={`topsms-snackbar ${snackbarStatus === 'error' ? 'topsms-snackbar-error' : snackbarStatus === 'info' ? 'topsms-snackbar-info' : ''}`}
                 >
-                    {successMessage}
-                </Notice>
+                    {snackbarMessage}
+                </Snackbar>
             )}
                 
             <div className='px-6 py-4'>
@@ -156,12 +169,14 @@ const Automation = () => {
                             statusKey={status.key}
                             statusColor={status.color}
                             onSuccessMessage={handleSuccessMessage}
+                            onErrorMessage={handleErrorMessage}
                         >
                             <AutomationSettingsDetail 
                                 status={status.title} 
                                 statusKey={status.key}
                                 defaultTemplate={status.defaultTemplate}
                                 onSuccessMessage={handleSuccessMessage}
+                                onErrorMessage={handleErrorMessage}
                             />
                         </AccordionItemStatus>
                         ))}

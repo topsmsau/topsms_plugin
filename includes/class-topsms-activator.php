@@ -32,42 +32,42 @@ class Topsms_Activator {
 	public static function activate() {
         // Options for storing wc order data for topsms
         // Processing
-        add_option('topsms_order_processing_enabled', 'yes');
-        add_option('topsms_order_processing_message', '');
+        add_option('topsms_order_processing_enabled', 'no');
+        add_option('topsms_order_processing_message', 'Hello [first_name], your order with ID [order_id] has been shipped and is on its way! Expected delivery within 3-5 business days. If you have any questions, feel free to contact us.');
 
         // Completed
-        add_option('topsms_order_completed_enabled', 'yes');
-        add_option('topsms_order_completed_message', '');
+        add_option('topsms_order_completed_enabled', 'no');
+        add_option('topsms_order_completed_message', 'lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture');
 
         // Failed
-        add_option('topsms_order_failed_enabled', 'yes');
-        add_option('topsms_order_failed_message', '');
+        add_option('topsms_order_failed_enabled', 'no');
+        add_option('topsms_order_failed_message', 'lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture');
 
         // Refunded
-        add_option('topsms_order_refunded_enabled', 'yes');
-        add_option('topsms_order_refunded_message', '');
+        add_option('topsms_order_refunded_enabled', 'no');
+        add_option('topsms_order_refunded_message', 'lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture');
 
         // Pending payment
-        add_option('topsms_order_pending_payment_enabled', 'yes');
-        add_option('topsms_order_pending_payment_message', '');
+        add_option('topsms_order_pending_payment_enabled', 'no');
+        add_option('topsms_order_pending_payment_message', 'lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture');
 
         // Cancelled
-        add_option('topsms_order_cancelled_enabled', 'yes');
-        add_option('topsms_order_cancelled_message', '');
+        add_option('topsms_order_cancelled_enabled', 'no');
+        add_option('topsms_order_cancelled_message', 'lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture');
 
         // Onhold
-        add_option('topsms_order_onhold_enabled', 'yes');
-        add_option('topsms_order_onhold_message', '');
+        add_option('topsms_order_onhold_enabled', 'no');
+        add_option('topsms_order_onhold_message', 'lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture');
 
         // Draft
-        add_option('topsms_order_draft_enabled', 'yes');
-        add_option('topsms_order_draft_message', '');
+        add_option('topsms_order_draft_enabled', 'no');
+        add_option('topsms_order_draft_message', 'lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture');
 
 
         // Options for storing general topsms settings data
-        add_option('topsms_settings_low_balance_alert', 'yes');
-        add_option('topsms_settings_customer_consent', 'yes');
-        add_option('topsms_settings_sms_surcharge', 'yes');
+        add_option('topsms_settings_low_balance_alert', 'no');
+        add_option('topsms_settings_customer_consent', 'no');
+        add_option('topsms_settings_sms_surcharge', 'no');
         add_option('topsms_settings_sms_surcharge_amount', '');
 
         
@@ -136,10 +136,7 @@ class Topsms_Activator {
         //         )
         //     );
         // }
-        
-
-
-        
-	}
+    
+    }
 
 }

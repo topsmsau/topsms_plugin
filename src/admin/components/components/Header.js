@@ -83,9 +83,6 @@ const Header = () => {
           {/* Balance Info */}
           <FlexItem>
             <BalanceCard balance={balance} isLoading={isLoading}/>
-            <p variant="muted" className="text-xs text-gray-500 text-center mt-2">
-                {__('SMS total is an approximation', 'topsms')}
-            </p>
         </FlexItem>
         </Flex>
       </CardBody>

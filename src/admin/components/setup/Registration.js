@@ -4,7 +4,8 @@ import {
     CardBody, 
     Button, 
     TextControl,
-    Icon
+    Icon,
+    SelectControl
 } from '@wordpress/components';
 import { useState, memo, useCallback } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
@@ -13,14 +14,51 @@ import 'react-phone-input-2/lib/style.css';
 import StepIndicator from './StepIndicator.js';
 import RegistrationIcon from '../icons/RegistrationIcon.svg';
 
+// Australian states
+const AUSTRALIAN_STATES = [
+    { value: '', label: __('Select a state', 'topsms') },
+    { value: 'ACT', label: __('Australian Capital Territory', 'topsms') },
+    { value: 'NSW', label: __('New South Wales', 'topsms') },
+    { value: 'NT', label: __('Northern Territory', 'topsms') },
+    { value: 'QLD', label: __('Queensland', 'topsms') },
+    { value: 'SA', label: __('South Australia', 'topsms') },
+    { value: 'TAS', label: __('Tasmania', 'topsms') },
+    { value: 'VIC', label: __('Victoria', 'topsms') },
+    { value: 'WA', label: __('Western Australia', 'topsms') }
+];
+
 // Memoize the CustomInput to prevent unnecessary re-renders
-const CustomInput = memo(({ label, value, onChange, error, ...props }) => (
+const CustomInput = memo(({ label, description, value, onChange, error, ...props }) => (
     <div className="mb-4">
-        <div className="topsms-label">{label}</div>
+        <div className="topsms-label">
+            {label}
+            {description && (
+                <span className="text-xs text-gray-500 ml-2">{description}</span>
+            )}
+        </div>
         <div className="topsms-input">
             <TextControl
                 label=""
                 value={value}
+                onChange={onChange}
+                {...props}
+            />
+        </div>
+        {error && (
+            <div className="text-red-500 text-sm mt-1">{error}</div>
+        )}
+    </div>
+));
+
+// Custom Select component
+const CustomSelect = memo(({ label, value, options, onChange, error, ...props }) => (
+    <div className="mb-4">
+        <div className="topsms-label">{label}</div>
+        <div className="topsms-input">
+            <SelectControl
+                label=""
+                value={value}
+                options={options}
                 onChange={onChange}
                 {...props}
             />
@@ -53,6 +91,14 @@ const Registration = ({ onComplete }) => {
     
     // Use useCallback to create stable function references
     const handleChange = useCallback((field, value) => {
+        // For firstName and lastName, validate letters only
+        if ((field === 'firstName' || field === 'lastName') && value) {
+            // Allow only letters, spaces, hyphens, and apostrophes
+            if (!/^[A-Za-z\s'-]*$/.test(value)) {
+                return; 
+            }
+        }
+
         setFormData(prevData => ({
             ...prevData,
             [field]: value
@@ -69,12 +115,22 @@ const Registration = ({ onComplete }) => {
     }, [errors]);
 
     // Form validation function 
-    const validateForm = () =>{
+    const validateForm = () => {
         const newErrors = {};
 
         // Required fields validation
-        if (!formData.firstName) newErrors.firstName = __('First name is required', 'topsms');
-        if (!formData.lastName) newErrors.lastName = __('Last name is required', 'topsms');
+        if (!formData.firstName) {
+            newErrors.firstName = __('First name is required', 'topsms');
+        } else if (!/^[A-Za-z\s'-]+$/.test(formData.firstName)) {
+            newErrors.firstName = __('First name should contain only letters', 'topsms');
+        }
+
+        if (!formData.lastName) {
+            newErrors.lastName = __('Last name is required', 'topsms');
+        } else if (!/^[A-Za-z\s'-]+$/.test(formData.lastName)) {
+            newErrors.lastName = __('Last name should contain only letters', 'topsms');
+        }
+
         if (!formData.companyName) newErrors.companyName = __('Company name is required', 'topsms');
         if (!formData.streetAddress) newErrors.streetAddress = __('Street address is required', 'topsms');
         if (!formData.city) newErrors.city = __('City is required', 'topsms');
@@ -117,7 +173,7 @@ const Registration = ({ onComplete }) => {
             newErrors.senderName = __('Sender name must be between 1 and 11 characters.', 'topsms');
         }
 
-        // ABN/ACN validation
+        // ABN/ACN validation (9-11 chars)
         if (!formData.abnAcn) {
             newErrors.abnAcn = __('ABN/ACN is required', 'topsms');
         } else {
@@ -142,8 +198,6 @@ const Registration = ({ onComplete }) => {
                 newErrors.postcode = __('Postcode must be 4 digits', 'topsms');
             }
         }
-
-        // Set the errors
         setErrors(newErrors);
 
         // Return true if no errors
@@ -166,7 +220,7 @@ const Registration = ({ onComplete }) => {
             const sendData = {
                 phoneNumber: phoneNumber
             }
-            // console.log("form data:", formData);
+            console.log("form data:", formData);
             
             const response = await fetch("/wp-json/topsms/v1/send-otp/", {
                 method: 'POST',
@@ -215,7 +269,7 @@ const Registration = ({ onComplete }) => {
                 console.error('Failed to proceed:', err);
             }
         }
-    }, [onComplete, formData, validateForm, formData.phoneNumber]);
+    }, [onComplete, formData, validateForm]);
 
     const handleFirstNameChange = useCallback((value) => handleChange('firstName', value), [handleChange]);
     const handleLastNameChange = useCallback((value) => handleChange('lastName', value), [handleChange]);
@@ -256,7 +310,7 @@ const Registration = ({ onComplete }) => {
                         </h3>
                         <hr className="border-gray-200 mb-4" />
                         
-                        <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <CustomInput
                                 key="firstName-field"
                                 label={__('First Name', 'topsms')}
@@ -278,7 +332,7 @@ const Registration = ({ onComplete }) => {
                             />
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <CustomInput
                                 key="companyName-field"
                                 label={__('Company Name', 'topsms')}
@@ -324,6 +378,7 @@ const Registration = ({ onComplete }) => {
                         <CustomInput
                             key="senderName-field"
                             label={__('Sender Name', 'topsms')}
+                            description={__('Max 11 characters', 'topsms')}
                             placeholder={__('Sender name', 'topsms')}
                             value={formData.senderName}
                             onChange={handleSenderNameChange}
@@ -372,11 +427,11 @@ const Registration = ({ onComplete }) => {
                                 required
                             />
                             
-                            <CustomInput
+                            <CustomSelect
                                 key="state-field"
                                 label={__('State / Province', 'topsms')}
-                                placeholder={__('Your state', 'topsms')}
                                 value={formData.state}
+                                options={AUSTRALIAN_STATES}
                                 onChange={handleStateChange}
                                 error={errors.state}
                                 required

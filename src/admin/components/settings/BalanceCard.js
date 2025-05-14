@@ -4,12 +4,11 @@ import {
     CardBody,
     Flex,
     ToggleControl,
-    TextControl,
-    Notice
+    TextControl
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
-const BalanceCard = ({ onSuccessMessage }) => {
+const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
     const [settings, setSettings] = useState({
         lowBalanceAlert: {
             key: 'low_balance_alert',
@@ -36,8 +35,6 @@ const BalanceCard = ({ onSuccessMessage }) => {
     const [surchargeSuccess, setSurchargeSuccess] = useState(false);
     const [sender, setSender] = useState('');
     const [senderLoading, setSenderLoading] = useState(true);
-    const [senderError, setSenderError] = useState('');
-    const [senderSuccess, setSenderSuccess] = useState(false);
     
     // Notify parent component when a setting is saved successfully
     useEffect(() => {
@@ -55,6 +52,7 @@ const BalanceCard = ({ onSuccessMessage }) => {
                 }
                 
                 if (message && onSuccessMessage) {
+                    // Call the parent's callback to show success message
                     onSuccessMessage(message);
                 }
                 
@@ -75,8 +73,10 @@ const BalanceCard = ({ onSuccessMessage }) => {
     // Notify parent component of surcharge success
     useEffect(() => {
         if (surchargeSuccess) {
+            const message = __('Surcharge amount saved successfully', 'topsms');
+            
             if (onSuccessMessage) {
-                onSuccessMessage(__('Surcharge amount saved successfully', 'topsms'));
+                onSuccessMessage(message);
             }
             
             // Reset local success state
@@ -86,20 +86,12 @@ const BalanceCard = ({ onSuccessMessage }) => {
         }
     }, [surchargeSuccess, onSuccessMessage]);
 
-    // Notify parent component of sender success
+    // Watch for error changes and notify parent component
     useEffect(() => {
-        if (senderSuccess) {
-            if (onSuccessMessage) {
-                onSuccessMessage(__('Sender name saved successfully', 'topsms'));
-            }
-            
-            // Reset local success state
-            setTimeout(() => {
-                setSenderSuccess(false);
-            }, 100);
+        if (surchargeError && onErrorMessage) {
+            onErrorMessage(surchargeError);
         }
-    }, [senderSuccess, onSuccessMessage]);
-
+    }, [surchargeError, onErrorMessage]);
     
     // Initial settings on load (fetched from db)
     useEffect(() => {
@@ -174,6 +166,11 @@ const BalanceCard = ({ onSuccessMessage }) => {
                     loading: false
                 }
             }));
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__('Failed to load settings. Please refresh and try again.', 'topsms'));
+            }
         } 
     };
     
@@ -219,6 +216,11 @@ const BalanceCard = ({ onSuccessMessage }) => {
             setSurchargeAmount(data.data.value || '');
         } catch (error) {
             console.error('Error fetching surcharge amount:', error);
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__('Failed to load surcharge amount. Please refresh and try again.', 'topsms'));
+            }
         } finally {
             setSurchargeLoading(false);
         }
@@ -255,6 +257,11 @@ const BalanceCard = ({ onSuccessMessage }) => {
             setSender(data.data.value || '');
         } catch (error) {
             console.error('Error fetching sender name:', error);
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__('Failed to load sender name. Please refresh and try again.', 'topsms'));
+            }
         } finally {
             setSenderLoading(false);
         }
@@ -266,6 +273,32 @@ const BalanceCard = ({ onSuccessMessage }) => {
             // Get the current setting info
             const setting = settings[stateKey];
             const newValue = !setting.enabled;
+            
+            // Check if trying to enable SMS surcharge but customer consent is disabled
+            if (stateKey === 'smsSurcharge' && newValue === true && settings.customerConsent.enabled === false) {
+                // Show error message to user
+                if (onErrorMessage) {
+                    onErrorMessage(__('Customer consent at the checkout must be enabled.', 'topsms'));
+                }
+                return; 
+            }
+            
+            // Check if trying to disable customer consent but SMS surcharge is enabled
+            if (stateKey === 'customerConsent' && newValue === false && settings.smsSurcharge.enabled === true) {
+                // Automatically disable SMS surcharge as well
+                setSettings(prev => ({
+                    ...prev,
+                    smsSurcharge: {
+                        ...prev.smsSurcharge,
+                        enabled: false,
+                        loading: true,
+                        saveSuccess: false
+                    }
+                }));
+                
+                // Save the SMS surcharge setting to false
+                saveSetting('sms_surcharge', false, 'smsSurcharge');
+            }
             
             // Update local state immediately
             setSettings(prev => ({
@@ -335,6 +368,11 @@ const BalanceCard = ({ onSuccessMessage }) => {
                     loading: false
                 }
             }));
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__('Failed to save setting. Please try again.', 'topsms'));
+            }
         }
     };
 
@@ -399,81 +437,9 @@ const BalanceCard = ({ onSuccessMessage }) => {
         }
     };
 
-    // Handle sender input change
-    const handleSenderChange = (value) => {
-        setSender(value);
-        
-        // Clear any error when the user is typing
-        if (senderError) {
-            setSenderError('');
-        }
-    };
-
-    // Save sender on blur
-    const handleSenderBlur = async () => {
-        try {
-            // Validate sender name length (max 11 characters)
-            if (sender.length > 11) {
-                setSenderError(__('Sender name must be 11 characters or less', 'topsms'));
-                return;
-            }
-            
-            setSenderLoading(true);
-            
-            // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
-            if (!nonce) {
-                throw new Error('WordPress REST API nonce not available');
-            }
-
-            // Data to send
-            const sendData = {
-                key: 'sender',
-                value: sender
-            };
-
-            // Save surcharge amount to backend
-            const response = await fetch('/wp-json/topsms/v1/settings/save-input', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': nonce
-                },
-                body: JSON.stringify(sendData)
-            });
-
-            const data = await response.json();
-            // console.log("Save sender name:", data);
-            
-            if (!data.success) {
-                throw new Error(data.data?.message || 'Unknown error');
-            }
-            // console.log('Sender name saved successfully');
-            setSenderSuccess(true);
-        } catch (error) {
-            console.error('Error saving sender name:', error);
-            setSenderError(__('Failed to save sender name', 'topsms'));
-        } finally {
-            setSenderLoading(false);
-        }
-    };
-
     return (
         <Card className="mb-6 w-full">
             <CardBody>
-                {/* Error notices for surcharge and sender are still kept here */}
-                {surchargeError && (
-                    <Notice status="error" isDismissible={false} className="mb-3">
-                        {surchargeError}
-                    </Notice>
-                )}
-                
-                {senderError && (
-                    <Notice status="error" isDismissible={false} className="mb-3">
-                        {senderError}
-                    </Notice>
-                )}
-                
                 <Flex direction="column" gap={4}>
                     {/* Low Balance Alert */}
                     <div>
@@ -528,7 +494,7 @@ const BalanceCard = ({ onSuccessMessage }) => {
                     <hr className="border-gray-200 mb-4" />
 
                     {/* Sms surcharge */}
-                    <div>
+                    <div className={!settings.customerConsent.enabled ? "opacity-60" : ""}>
                         <Flex align="center" justify="space-between">
                             <div>
                                 <h4 className="text-gray-800 font-bold mb-1">
@@ -536,6 +502,9 @@ const BalanceCard = ({ onSuccessMessage }) => {
                                 </h4>
                                 <p className="text-sm text-gray-600">
                                     {__("Add a surcharge to cover SMS costs", 'topsms')}
+                                </p>
+                                <p className="text-sm text-amber-600">
+                                    {__("Customer consent at the checkout must be enabled", 'topsms')}
                                 </p>
                             </div>
                             {settings.smsSurcharge.loading ? (
@@ -546,6 +515,7 @@ const BalanceCard = ({ onSuccessMessage }) => {
                                     label=""
                                     checked={settings.smsSurcharge.enabled}
                                     onChange={handleToggleChange('smsSurcharge')}
+                                    disabled={!settings.customerConsent.enabled}
                                 />
                             )}
                         </Flex>
@@ -581,6 +551,14 @@ const BalanceCard = ({ onSuccessMessage }) => {
                                 <h4 className="text-gray-800 font-bold mb-1">
                                     {__('SMS Sender', 'topsms')}
                                 </h4>
+                                <p className="text-sm text-gray-600">
+                                    <p className="text-sm text-gray-600">
+                                    {__("To comply with ACMA regulations, Sender names will need to be verified against your legal entity. If you wish to change your Sender name please reach out to our support team at ", 'topsms')}
+                                    <a href="mailto:support@topsms.com.au" className="text-blue-600 hover:underline">
+                                        support@topsms.com.au
+                                    </a>
+                                </p>
+                                </p>
                             </div>
                         </Flex>
                         <div className="topsms-input mt-4">
@@ -591,8 +569,7 @@ const BalanceCard = ({ onSuccessMessage }) => {
                                     <TextControl
                                         label="SMS Sender Name"
                                         value={sender}
-                                        onChange={handleSenderChange}
-                                        onBlur={handleSenderBlur}
+                                        disabled={true}
                                         placeholder={__('Sender Name to be shown in the SMS', 'topsms')}
                                         maxLength={11}
                                     />

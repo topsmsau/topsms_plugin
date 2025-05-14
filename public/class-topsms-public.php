@@ -104,12 +104,13 @@ class Topsms_Public {
 
 
     // Add custom checkbox to checkout page after the terms and conditions to get customer consent
-    public function add_topsms_customer_consent_checkout_checkbox( ){
+    public function add_topsms_customer_consent_checkout_checkbox(){
         // Check if the customer consent is enabled
         $consent_enabled = get_option('topsms_settings_customer_consent', true);
+        error_log("consent enabled:" . print_r($consent_enabled, true));
         
         // Only show the checkbox if this setting is enabled; Return if disabled
-        if (!$consent_enabled) {
+        if ($consent_enabled == 'no') {
             return; 
         }
 
@@ -165,7 +166,7 @@ class Topsms_Public {
         if (is_admin() && !defined('DOING_AJAX')) {
             return;
         }
-        error_log(print_r($_POST, true));
+        // error_log(print_r($_POST, true));
         
         // Check if the surcharge is enabled in settings
         $surcharge_enabled = get_option('topsms_settings_sms_surcharge');

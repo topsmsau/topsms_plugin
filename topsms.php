@@ -39,6 +39,46 @@ define( 'TOPSMS_VERSION', '1.0.0' );
 define('TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 /**
+ * Handle admin notices for WooCommerce dependency
+ */
+function topsms_admin_notices() {
+    // Check for the transient that was set during activation
+    if (get_transient('topsms_woocommerce_missing')) {
+        ?>
+        <div class="error">
+            <p><?php esc_html_e('TopSMS requires WooCommerce to be installed and active. The plugin has been deactivated.', 'topsms'); ?></p>
+        </div>
+        <?php
+        // Delete the transient so the notice only appears once
+        delete_transient('topsms_woocommerce_missing');
+    }
+}
+add_action('admin_notices', 'topsms_admin_notices');
+
+/**
+ * Check WooCommerce dependency on admin init
+ */
+function topsms_check_woocommerce_dependency() {
+    // Only run this check if our plugin is active
+    if (is_plugin_active(plugin_basename(__FILE__))) {
+        // If WooCommerce is not active
+        if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+            // Deactivate the plugin
+            deactivate_plugins(plugin_basename(__FILE__));
+            
+            // Set a transient to show the notice
+            set_transient('topsms_woocommerce_missing', true, 5);
+            
+            // If we're on the plugins page after activation, prevent the "activated" notice
+            if (isset($_GET['activate'])) {
+                unset($_GET['activate']);
+            }
+        }
+    }
+}
+add_action('admin_init', 'topsms_check_woocommerce_dependency');
+
+/**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-topsms-activator.php
  */
@@ -64,6 +104,7 @@ register_deactivation_hook( __FILE__, 'deactivate_topsms' );
  * admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-topsms.php';
+
 
 /**
  * Begins execution of the plugin.

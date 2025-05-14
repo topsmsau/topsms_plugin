@@ -553,11 +553,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .mt-8 {
   margin-top: 2rem;
 }
-.topsms-app .inline-block {
-  display: inline-block;
-}
 .topsms-app .flex {
   display: flex;
+}
+.topsms-app .inline-flex {
+  display: inline-flex;
 }
 .topsms-app .grid {
   display: grid;
@@ -586,6 +586,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .h-5 {
   height: 1.25rem;
 }
+.topsms-app .h-6 {
+  height: 1.5rem;
+}
 .topsms-app .h-8 {
   height: 2rem;
 }
@@ -597,6 +600,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .w-14 {
   width: 3.5rem;
+}
+.topsms-app .w-16 {
+  width: 4rem;
 }
 .topsms-app .w-3 {
   width: 0.75rem;
@@ -621,9 +627,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .w-full {
   width: 100%;
-}
-.topsms-app .min-w-\[50px\] {
-  min-width: 50px;
 }
 .topsms-app .max-w-4xl {
   max-width: 56rem;
@@ -668,6 +671,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .items-center {
   align-items: center;
+}
+.topsms-app .justify-start {
+  justify-content: flex-start;
 }
 .topsms-app .justify-center {
   justify-content: center;
@@ -887,9 +893,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .text-center {
   text-align: center;
 }
-.topsms-app .align-middle {
-  vertical-align: middle;
-}
 .topsms-app .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -918,6 +921,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .font-semibold {
   font-weight: 600;
+}
+.topsms-app .text-amber-600 {
+  --tw-text-opacity: 1;
+  color: rgb(217 119 6 / var(--tw-text-opacity, 1));
 }
 .topsms-app .text-blue-400 {
   --tw-text-opacity: 1;
@@ -961,6 +968,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .opacity-50 {
   opacity: 0.5;
+}
+.topsms-app .opacity-60 {
+  opacity: 0.6;
 }
 .topsms-app .shadow-none {
   --tw-shadow: 0 0 #0000;
@@ -1010,31 +1020,21 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 
 /* Common input styling */
-.topsms-app .topsms-input .components-text-control__input {
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  padding: 0.5rem;
-  width: 100%;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  min-height: 46px;
+.topsms-app .topsms-input .components-text-control__input, .topsms-app .topsms-input .components-select-control__input  {
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+  width: 100% !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  min-height: 46px !important;
 }
-.topsms-app .topsms-input .components-text-control__input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
-  outline: none;
+.topsms-app .topsms-input .components-text-control__input:focus, .topsms-app .topsms-input .components-select-control__input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 1px #3b82f6 !important;
+  outline: none !important;
 }
-
-/* Select dropdown */
-.topsms-app .topsms-select .components-select-control__input {
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  padding: 0.5rem;
-  width: 100%;
-}
-.topsms-app .topsms-select .components-select-control__input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
-  outline: none;
+.topsms-app .topsms-input .components-select-control .components-input-control__backdrop {
+    border: 1px solid #d1d5db !important;
 }
 
 /* Password field */
@@ -1114,6 +1114,22 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     transform: translateY(-50%);
     z-index: 1;
     pointer-events: none;
+}
+
+
+/* Snackbar styles */
+
+/* Override WordPress Snackbar positioning to show at bottom-left */
+.topsms-app .topsms-snackbar {
+    position: fixed !important;
+    bottom: 32px !important; 
+    left: 160px !important; 
+    top: auto !important;
+    right: auto !important;
+    max-width: 320px !important;
+    margin: 8px !important;
+    z-index: 99999 !important;
+    transform: none !important;
 }
 
 

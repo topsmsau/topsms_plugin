@@ -21,31 +21,21 @@
 }
 
 /* Common input styling */
-.topsms-input .components-text-control__input {
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  padding: 0.5rem;
-  width: 100%;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  min-height: 46px;
+.topsms-input .components-text-control__input, .topsms-input .components-select-control__input  {
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+  width: 100% !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  min-height: 46px !important;
 }
-.topsms-input .components-text-control__input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
-  outline: none;
+.topsms-input .components-text-control__input:focus, .topsms-input .components-select-control__input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 1px #3b82f6 !important;
+  outline: none !important;
 }
-
-/* Select dropdown */
-.topsms-select .components-select-control__input {
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  padding: 0.5rem;
-  width: 100%;
-}
-.topsms-select .components-select-control__input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
-  outline: none;
+.topsms-input .components-select-control .components-input-control__backdrop {
+    border: 1px solid #d1d5db !important;
 }
 
 /* Password field */
@@ -125,6 +115,22 @@
     transform: translateY(-50%);
     z-index: 1;
     pointer-events: none;
+}
+
+
+/* Snackbar styles */
+
+/* Override WordPress Snackbar positioning to show at bottom-left */
+.topsms-snackbar {
+    position: fixed !important;
+    bottom: 32px !important; 
+    left: 160px !important; 
+    top: auto !important;
+    right: auto !important;
+    max-width: 320px !important;
+    margin: 8px !important;
+    z-index: 99999 !important;
+    transform: none !important;
 }
 
 

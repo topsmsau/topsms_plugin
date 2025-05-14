@@ -10,7 +10,7 @@ import { chevronRight } from '@wordpress/icons';
 
 import TemplateTag from './SmsTemplateTag';
 
-const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSuccessMessage }) => {
+const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSuccessMessage, onErrorMessage }) => {
     const MAX_CHARS_PER_SMS = 160;
 
     const [smsMessage, setSmsMessage] = useState(defaultTemplate);
@@ -128,6 +128,11 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             setCharacterCount((template || smsMessage).length);
         } catch (error) {
             console.error('Error fetching status settings:', error);
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__(`Failed to load ${status} template. Please refresh and try again.`, 'topsms'));
+            }
         } 
     };
 
@@ -147,7 +152,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
                 status_key: statusKey,
                 template: smsMessage
             };
-            console.log(`Saving ${statusKey} template:`, sendData);
+            // console.log(`Saving ${statusKey} template:`, sendData);
 
             // Save status template to backend
             const response = await fetch('/wp-json/topsms/v1/automations/status/save-template', {
@@ -169,7 +174,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             // }
 
             const data = await response.json();
-            console.log('Status template saved successfully:', data);
+            // console.log('Status template saved successfully:', data);
 
             if (!data.success) {
                 throw new Error(data.data.message || 'Unknown error');
@@ -181,7 +186,11 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             // setDefaultTemplate(smsMessage);
         } catch (error) {
             console.error('Error saving status template:', error);
-            setIsSaving(false);
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__(`Failed to save ${status} template. Please try again.`, 'topsms'));
+            }
         } finally {
             setIsSaving(false);
         }
@@ -223,6 +232,11 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             setSender(data.data.value || '');
         } catch (error) {
             console.error('Error fetching sender name:', error);
+            
+            // Notify parent of error
+            if (onErrorMessage) {
+                onErrorMessage(__('Failed to load sender name. Please refresh and try again.', 'topsms'));
+            }
         } 
     }
 
@@ -261,7 +275,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
                                                     value={smsMessage}
                                                     onChange={(e) => handleMessageChange(e.target.value)}
                                                     className="automation-textarea w-full h-32 p-4 border border-gray-300 rounded-md"
-                                                    style={{ fontFamily: 'monospace', fontSize: '14px' }}
+                                                    style={{ fontSize: '14px' }}
                                                 />
                                             </div>
 
