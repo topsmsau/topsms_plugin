@@ -1,6 +1,7 @@
 const defaultConfig = require('@wordpress/scripts/config/webpack.config');
 const DependencyExtractionWebpackPlugin = require('@wordpress/dependency-extraction-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const path = require('path');
 const exec = require('child_process').exec;
 
 const requestToExternal = (request) => {
@@ -35,12 +36,27 @@ const requestToHandle = (request) => {
   }
 };
 
+// Remove the default CSS/SCSS rules from WordPress config
+const filteredRules = defaultConfig.module.rules.filter(rule => 
+  !(rule.test && (rule.test.toString().includes('.css') || rule.test.toString().includes('.scss')))
+);
+
 module.exports = {
   ...defaultConfig,
+  entry: {
+    index: path.resolve(process.cwd(), 'src/index.js'),
+    // Add other entry points if needed
+  },
+  output: {
+    ...defaultConfig.output,
+    filename: '[name].js',
+    path: path.resolve(process.cwd(), 'build'),
+  },
   plugins: [
     ...defaultConfig.plugins.filter(
       (plugin) =>
-        plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
+        plugin.constructor.name !== 'DependencyExtractionWebpackPlugin' && 
+        plugin.constructor.name !== 'MiniCssExtractPlugin'
     ),
     new DependencyExtractionWebpackPlugin({
       injectPolyfill: true,
@@ -48,7 +64,7 @@ module.exports = {
       requestToHandle,
     }),
     new MiniCssExtractPlugin({
-      filename: 'style.css',
+      filename: '[name].css',
     }),
     {
       apply: (compiler) => {
@@ -67,15 +83,26 @@ module.exports = {
   module: {
     ...defaultConfig.module,
     rules: [
-      ...defaultConfig.module.rules,
+      ...filteredRules,
       {
-        test: /\.(sa|sc|c)ss$/,
+        test: /\.s?css$/,
         use: [
+          MiniCssExtractPlugin.loader,
           {
-            loader: MiniCssExtractPlugin.loader,
+            loader: 'css-loader',
+            options: {
+              sourceMap: true,
+            },
           },
-          'css-loader',
-          'sass-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true,
+              sassOptions: {
+                outputStyle: 'compressed',
+              },
+            },
+          },
         ],
       },
     ],

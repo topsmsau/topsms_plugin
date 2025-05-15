@@ -2,6 +2,8 @@ import { __ } from '@wordpress/i18n';
 import { Component as ReactComponent } from '@wordpress/element';
 import { TableCard } from '@woocommerce/components';
 
+import './SmsTable.scss';
+
 export class SmsTable extends ReactComponent {
     constructor(props) {
         super(props);
@@ -77,7 +79,7 @@ export class SmsTable extends ReactComponent {
         const colors = {
             processing: '#c6e1c6', // Green
             'on-hold': '#f8dda7', // Orange
-            completed: '#003d66', // Blue
+            completed: '#c8d7e1', // Blue
             cancelled: '#e5e5e5', // Grey
             refunded: '#e5e5e5', // Grey
             failed: '#eba3a3', // Red
@@ -101,12 +103,14 @@ export class SmsTable extends ReactComponent {
 
         return {
             display: 'inline-block',
-            padding: '4px 10px',
+            padding: '0 1em',
             borderRadius: '4px',
             //   fontWeight: 'bold',
             textTransform: 'capitalize',
             backgroundColor: color, 
             color: fontColor, 
+            maxWidth: '100%',
+            lineHeight: '2.5em'
         };  
     }
 
@@ -114,19 +118,19 @@ export class SmsTable extends ReactComponent {
     getSmsStatusStyle(status) {
         // SMS status colors - matching bar chart
         const colors = {
-            delivered: '#c6e1c6', // Green
-            sent: '#003d66', // Blue
-            pending: '#f8dda7', // Yellow/amber
-            failed: '#eba3a3', // Red
-            unknown: '#e5e5e5', // Gray
+            'Delivered': '#c6e1c6', // Green
+            'Failed': '#eba3a3', // Red
+            'Pending': '#b3d9ff', // Blue
+            'Rejected': '#f8dda7', // Yellow
+            unknown: '#777', // Grey
         };
 
         const fontColors = {
-            delivered: '#2c4700', // Green
-            sent: '#003d66', // Blue
-            pending: '#573b00', // Yellow/amber
-            failed: '#570000', // Red
-            unknown: '#454545', // Gray
+            'Delivered': '#2c4700', // Green
+            'Failed': '#570000', // Red
+            'Pending': '#003d66', // Blue
+            'Rejected': '#573b00', // Yellow/amber
+            unknown: '#454545', // Grey
         }
 
         const color = colors[status] || colors.unknown;
@@ -134,7 +138,7 @@ export class SmsTable extends ReactComponent {
 
         return {
             display: 'inline-block',
-            padding: '4px 10px',
+            padding: '0 1em',
             borderRadius: '4px',
             // fontWeight: 'bold',
             textTransform: 'capitalize',
@@ -142,6 +146,8 @@ export class SmsTable extends ReactComponent {
             color: fontColor,
             border: `1px solid ${color}`,
             boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+            maxWidth: '100%',
+            lineHeight: '2.5em'
         };
     }
 
