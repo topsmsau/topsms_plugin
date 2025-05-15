@@ -106,7 +106,7 @@ class Topsms_Public {
     // Add custom checkbox to checkout page after the terms and conditions to get customer consent
     public function add_topsms_customer_consent_checkout_checkbox(){
         // Check if the customer consent is enabled
-        $consent_enabled = get_option('topsms_settings_customer_consent', 'no');
+        $consent_enabled = get_option('topsms_settings_customer_consent', 'yes');
         error_log("consent enabled:" . print_r($consent_enabled, true));
         
         // Only show the checkbox if this setting is enabled; Return if disabled
@@ -138,7 +138,7 @@ class Topsms_Public {
     // Save checkbox value to user and order meta
     public function save_topsms_customer_consent_checkout_checkbox($order_id) {
         // Check if the customer consent is enabled
-        $consent_enabled = get_option('topsms_settings_customer_consent', 'no');
+        $consent_enabled = get_option('topsms_settings_customer_consent', 'yes');
         
         // Only show the checkbox if this setting is enabled; Return if disabled
         if (!$consent_enabled) {

@@ -676,117 +676,117 @@ class Topsms_Rest_Api_Admin {
 
 
    /**
- * REST API callback for fetching SMS logs with filtering and pagination
- *
- * @param WP_REST_Request $request The REST request object.
- * @return array Response data.
- */
-public function topsms_get_analytics_logs(WP_REST_Request $request) {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'topsms_logs';
-    
-    // Get parameters from request
-    $page = $request->get_param('page') ?: 1;
-    $per_page = $request->get_param('per_page') ?: 10;
-    $after_date = $request->get_param('after');
-    $before_date = $request->get_param('before');
-    $status = $request->get_param('status');
-    $order_status = $request->get_param('order_status');
-    
-    // Calculate offset
-    $offset = ($page - 1) * $per_page;
-    
-    // Build where clauses
-    $where_clauses = array();
-    $query_params = array();
-    
-    // Date filtering
-    if (!empty($after_date)) {
-        $where_clauses[] = "creation_date >= %s";
-        $query_params[] = $after_date;
-    }
-    
-    if (!empty($before_date)) {
-        $where_clauses[] = "creation_date <= %s";
-        $query_params[] = $before_date;
-    }
-    
-    // Status filtering
-    if (!empty($status)) {
-        $where_clauses[] = "status = %s";
-        $query_params[] = $status;
-    }
-    
-    // Order status filtering
-    if (!empty($order_status)) {
-        $where_clauses[] = "order_status = %s";
-        $query_params[] = $order_status;
-    }
-    
-    // Build query
-    $where_sql = '';
-    if (!empty($where_clauses)) {
-        $where_sql = "WHERE " . implode(" AND ", $where_clauses);
-    }
-    
-    // Count total items for pagination
-    $count_query = "SELECT COUNT(*) FROM $table_name $where_sql";
-    if (!empty($query_params)) {
-        $count_query = $wpdb->prepare($count_query, $query_params);
-    }
-    $total_items = $wpdb->get_var($count_query);
-    
-    // Calculate total pages
-    $total_pages = ceil($total_items / $per_page);
-    
-    // Get logs with pagination
-    $query = "SELECT * FROM $table_name $where_sql ORDER BY creation_date DESC LIMIT %d OFFSET %d";
-    
-    // Add pagination parameters to the query
-    $all_params = array_merge($query_params, array($per_page, $offset));
-    
-    if (!empty($all_params)) {
-        $query = $wpdb->prepare($query, $all_params);
-    }
-    
-    $logs = $wpdb->get_results($query);
-    
-    // Get status counts for the filtered data (without pagination)
-    $status_count_query = "SELECT status, COUNT(*) as count FROM $table_name $where_sql GROUP BY status";
-    if (!empty($query_params)) {
-        $status_count_query = $wpdb->prepare($status_count_query, $query_params);
-    }
-    $status_counts = $wpdb->get_results($status_count_query);
-    
-    // Format status counts
-    $formatted_status_counts = array();
-    $statuses = array('delivered', 'sent', 'pending', 'failed');
-    
-    foreach ($statuses as $s) {
-        $count = 0;
-        foreach ($status_counts as $sc) {
-            if ($sc->status === $s) {
-                $count = intval($sc->count);
-                break;
-            }
+     * REST API callback for fetching SMS logs with filtering and pagination
+     *
+     * @param WP_REST_Request $request The REST request object.
+     * @return array Response data.
+     */
+    public function topsms_get_analytics_logs(WP_REST_Request $request) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'topsms_logs';
+        
+        // Get parameters from request
+        $page = $request->get_param('page') ?: 1;
+        $per_page = $request->get_param('per_page') ?: 10;
+        $after_date = $request->get_param('after');
+        $before_date = $request->get_param('before');
+        $status = $request->get_param('status');
+        $order_status = $request->get_param('order_status');
+        
+        // Calculate offset
+        $offset = ($page - 1) * $per_page;
+        
+        // Build where clauses
+        $where_clauses = array();
+        $query_params = array();
+        
+        // Date filtering
+        if (!empty($after_date)) {
+            $where_clauses[] = "creation_date >= %s";
+            $query_params[] = $after_date;
         }
-        $formatted_status_counts[] = array(
-            'status' => $s,
-            'count' => $count,
-            'percentage' => $total_items > 0 ? round(($count / $total_items) * 100) : 0
+        
+        if (!empty($before_date)) {
+            $where_clauses[] = "creation_date <= %s";
+            $query_params[] = $before_date;
+        }
+        
+        // Status filtering
+        if (!empty($status)) {
+            $where_clauses[] = "status = %s";
+            $query_params[] = $status;
+        }
+        
+        // Order status filtering
+        if (!empty($order_status)) {
+            $where_clauses[] = "order_status = %s";
+            $query_params[] = $order_status;
+        }
+        
+        // Build query
+        $where_sql = '';
+        if (!empty($where_clauses)) {
+            $where_sql = "WHERE " . implode(" AND ", $where_clauses);
+        }
+        
+        // Count total items for pagination
+        $count_query = "SELECT COUNT(*) FROM $table_name $where_sql";
+        if (!empty($query_params)) {
+            $count_query = $wpdb->prepare($count_query, $query_params);
+        }
+        $total_items = $wpdb->get_var($count_query);
+        
+        // Calculate total pages
+        $total_pages = ceil($total_items / $per_page);
+        
+        // Get logs with pagination
+        $query = "SELECT * FROM $table_name $where_sql ORDER BY creation_date DESC LIMIT %d OFFSET %d";
+        
+        // Add pagination parameters to the query
+        $all_params = array_merge($query_params, array($per_page, $offset));
+        
+        if (!empty($all_params)) {
+            $query = $wpdb->prepare($query, $all_params);
+        }
+        
+        $logs = $wpdb->get_results($query);
+        
+        // Get status counts for the filtered data (without pagination)
+        $status_count_query = "SELECT status, COUNT(*) as count FROM $table_name $where_sql GROUP BY status";
+        if (!empty($query_params)) {
+            $status_count_query = $wpdb->prepare($status_count_query, $query_params);
+        }
+        $status_counts = $wpdb->get_results($status_count_query);
+        
+        // Format status counts
+        $formatted_status_counts = array();
+        $statuses = array('delivered', 'sent', 'pending', 'failed');
+        
+        foreach ($statuses as $s) {
+            $count = 0;
+            foreach ($status_counts as $sc) {
+                if ($sc->status === $s) {
+                    $count = intval($sc->count);
+                    break;
+                }
+            }
+            $formatted_status_counts[] = array(
+                'status' => $s,
+                'count' => $count,
+                'percentage' => $total_items > 0 ? round(($count / $total_items) * 100) : 0
+            );
+        }
+        
+        // Add pagination headers
+        $response = array(
+            'logs' => $logs,
+            'total' => intval($total_items),
+            'pages' => intval($total_pages),
+            'page' => intval($page),
+            'per_page' => intval($per_page),
+            'status_counts' => $formatted_status_counts
         );
+        
+        return $response;
     }
-    
-    // Add pagination headers
-    $response = array(
-        'logs' => $logs,
-        'total' => intval($total_items),
-        'pages' => intval($total_pages),
-        'page' => intval($page),
-        'per_page' => intval($per_page),
-        'status_counts' => $formatted_status_counts
-    );
-    
-    return $response;
-}
 }

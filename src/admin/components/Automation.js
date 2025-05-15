@@ -25,7 +25,7 @@ const Automation = () => {
             title: 'Processing',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#17a34a', 
-            defaultTemplate: "Hello [first_name], your order with ID [order_id] has been shipped and is on its way! Expected delivery within 3-5 business days. If you have any questions, feel free to contact us."
+            defaultTemplate: "Hello [first_name], your order #[order_id] has been shipped and is on its way! Expected delivery within 3-5 business days. If you have any questions, feel free to contact us."
         },
         {
             key: 'completed',
@@ -49,7 +49,7 @@ const Automation = () => {
             defaultTemplate: "Hello [first_name], your order #[order_id] has been refunded. The amount should reflect in your account shortly. Let us know if you have any questions."
         }, 
         {
-            key: 'pending_payment',
+            key: 'pending',
             title: 'Pending Payment',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#f90', 
@@ -63,11 +63,11 @@ const Automation = () => {
             defaultTemplate: "Hello [first_name], your order #[order_id] has been cancelled. If this was a mistake or you need help placing a new order, feel free to reach out."
         },
         {
-            key: 'onhold',
+            key: 'on-hold',
             title: 'On Hold',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#ff3a44',
-            defaultTemplate: "Hello [first_name], your order #[order_id] is currently on hold. We’ll notify you as soon as it’s updated. Contact us if you need more information."
+            defaultTemplate: "Hello [first_name], your order #[order_id] is currently on hold. We'll notify you as soon as it's updated. Contact us if you need more information."
         },
         {
             key: 'draft',

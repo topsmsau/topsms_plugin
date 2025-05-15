@@ -565,6 +565,7 @@ register_rest_route('topsms/v1', '/logs', array(
         
         // Remove 'wc-' prefix if present in status
         $status_to = str_replace('wc-', '', $status_to);
+        error_log("status to:" . print_r($status_to, true));
         
         // Get configuration from options table
         $access_token = get_option('topsms_access_token');
