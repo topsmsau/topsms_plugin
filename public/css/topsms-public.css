@@ -2,3 +2,58 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+.sms-notification-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sms-notification-option input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #000;
+    /* border-radius: 3px; */
+    margin-right: 10px;
+    position: relative;
+    cursor: pointer;
+    background-color: #fff;
+    vertical-align: middle;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.sms-notification-option input[type="checkbox"]:checked {
+    background-color: #2271b1;
+    border-color: #2271b1;
+}
+
+.sms-notification-option input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 4px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.sms-notification-option label {
+    cursor: pointer;
+    user-select: none;
+    font-size: 18px;
+}
+
+.sms-notification-note {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+    margin-left: 28px; /* Aligns with the label text */
+}
+
+.sms-notification-save-btn {
+    margin-top: 20px;
+}

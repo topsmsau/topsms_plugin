@@ -25,56 +25,56 @@ const Automation = () => {
             title: 'Processing',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#17a34a', 
-            defaultTemplate: "Hello [first_name], your order with ID [order_id] has been shipped and is on its way! Expected delivery within 3-5 business days.\nIf you have any questions, feel free to contact us."
+            defaultTemplate: "Hello [first_name], your order with ID [order_id] has been shipped and is on its way! Expected delivery within 3-5 business days. If you have any questions, feel free to contact us."
         },
         {
             key: 'completed',
             title: 'Completed',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#365aed', 
-            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
+            defaultTemplate: "Hello [first_name], your order #[order_id] has been successfully delivered. We hope you enjoy your purchase! Thank you for shopping with us."
         },
         {
             key: 'failed',
             title: 'Failed',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#ff3a44', 
-            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
+            defaultTemplate: "Hello [first_name], unfortunately, your order #[order_id] could not be processed due to a payment issue. Please try again or contact us for help."
         },
         {
             key: 'refunded',
             title: 'Refunded',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#6a6f7a', 
-            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
+            defaultTemplate: "Hello [first_name], your order #[order_id] has been refunded. The amount should reflect in your account shortly. Let us know if you have any questions."
         }, 
         {
             key: 'pending_payment',
             title: 'Pending Payment',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#f90', 
-            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
+            defaultTemplate: "Hello [first_name], your order #[order_id] is awaiting payment. Please complete the payment to process your order. Contact us if you need assistance."
         },
         {
             key: 'cancelled',
             title: 'Cancelled',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#ff3a44',
-            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
+            defaultTemplate: "Hello [first_name], your order #[order_id] has been cancelled. If this was a mistake or you need help placing a new order, feel free to reach out."
         },
         {
             key: 'onhold',
             title: 'On Hold',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#ff3a44',
-            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture"
+            defaultTemplate: "Hello [first_name], your order #[order_id] is currently on hold. We’ll notify you as soon as it’s updated. Contact us if you need more information."
         },
         {
             key: 'draft',
             title: 'Draft',
             description: 'lorem ipsum dolor sit amet condecture',
             color: '#17a34a',
-            defaultTemplate: "lorem ipsum dolor sit amet condecture lorem ipsum dolor sit amet condecture" 
+            defaultTemplate: "" 
         }
     ];
 

@@ -520,7 +520,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
                             )}
                         </Flex>
                         {settings.smsSurcharge.enabled && (
-                            <div className="topsms-input mt-4">
+                            <div className="topsms-input mt-4 surchargeAmount">
                                 {surchargeLoading ? (
                                     <div className="animate-pulse bg-gray-300 h-10 w-full rounded"></div>
                                 ) : (

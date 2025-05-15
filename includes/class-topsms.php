@@ -200,6 +200,10 @@ class Topsms {
         // AJAX handler to update the customer consent in session
         $this->loader->add_action( 'wp_ajax_topsms_update_consent', $plugin_public, 'topsms_update_customer_consent' );
         $this->loader->add_action( 'wp_ajax_nopriv_topsms_update_consent', $plugin_public, 'topsms_update_customer_consent' );
+
+        $this->loader->add_filter( 'woocommerce_account_menu_items', $plugin_public, 'add_sms_notifications_tab' );
+        $this->loader->add_action( 'init', $plugin_public, 'sms_notifications_endpoint' );
+        $this->loader->add_action( 'woocommerce_account_sms-notifications_endpoint', $plugin_public, 'sms_notifications_content');
 	}
 
 	/**

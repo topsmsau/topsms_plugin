@@ -1020,8 +1020,16 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 
 /* Common input styling */
-.topsms-app .topsms-input .components-text-control__input, .topsms-app .topsms-input .components-select-control__input  {
+.topsms-app .topsms-input .components-text-control__input  {
   border: 1px solid #d1d5db !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem ;
+  width: 100% !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  min-height: 46px !important;
+}
+.topsms-app .topsms-input .components-select-control__input {
+    border: 1px solid #d1d5db !important;
   border-radius: 0.375rem !important;
   padding: 0.5rem !important;
   width: 100% !important;
@@ -1115,6 +1123,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     z-index: 1;
     pointer-events: none;
 }
+
 
 
 /* Snackbar styles */

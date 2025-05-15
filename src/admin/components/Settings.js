@@ -97,12 +97,6 @@ const Settings = () => {
         }, 5000);
     };
     
-    // Handle view autosave action
-    const handleViewAutosave = () => {
-        console.log('View autosave clicked');
-        setShowSnackbar(false);
-    };
-    
     // Clear the snackbar when the component unmounts
     useEffect(() => {
         return () => {
@@ -114,6 +108,11 @@ const Settings = () => {
     const getPricePerSms = (smsAmount, smsCount) => {
         return (smsAmount / smsCount).toFixed(2);
     }
+
+    // Format number to have a comma after thousands
+    const formatNumber = (num) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    };
 
     return (
         <Layout>
@@ -157,6 +156,10 @@ const Settings = () => {
                                 <p className="text-sm text-gray-600">
                                     {__('Select an amount to add to your account', 'topsms')}
                                 </p>
+                                <p variant='muted' className="text-xs text-gray-600 mt-2">
+                                    <span className="font-bold">Important: </span>
+                                    {__('Please use the same email address and phone number you used when registering your account. This ensures your top-up is correctly linked to your balance. If the details don’t match, the credit may not be applied automatically.', 'topsms')}
+                                </p>
                             </div>
 
                             {/* Top Up Options */}
@@ -169,8 +172,8 @@ const Settings = () => {
                                         discount={discount}
                                         className="w-[15%]"
                                     >
-                                        <span className="text-xl font-bold mb-1">${amount}</span>
-                                        <span className="text-sm text-gray-600">{sms} SMS</span>
+                                        <span className="text-xl font-bold mb-1">${formatNumber(amount)}</span>
+                                        <span className="text-sm text-gray-600">{formatNumber(sms)} SMS</span>
                                         <span className="text-xs text-gray-600">{getPricePerSms(amount, sms)}c per SMS</span>
                                     </TopupBalanceButton>
                                 ))}

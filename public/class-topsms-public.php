@@ -106,7 +106,7 @@ class Topsms_Public {
     // Add custom checkbox to checkout page after the terms and conditions to get customer consent
     public function add_topsms_customer_consent_checkout_checkbox(){
         // Check if the customer consent is enabled
-        $consent_enabled = get_option('topsms_settings_customer_consent', true);
+        $consent_enabled = get_option('topsms_settings_customer_consent', 'no');
         error_log("consent enabled:" . print_r($consent_enabled, true));
         
         // Only show the checkbox if this setting is enabled; Return if disabled
@@ -138,7 +138,7 @@ class Topsms_Public {
     // Save checkbox value to user and order meta
     public function save_topsms_customer_consent_checkout_checkbox($order_id) {
         // Check if the customer consent is enabled
-        $consent_enabled = get_option('topsms_settings_customer_consent', true);
+        $consent_enabled = get_option('topsms_settings_customer_consent', 'no');
         
         // Only show the checkbox if this setting is enabled; Return if disabled
         if (!$consent_enabled) {
@@ -235,4 +235,65 @@ class Topsms_Public {
         }
         wp_die();
     }   
+
+    // Add a new tab/section in the My Account page
+    public function add_sms_notifications_tab($menu_items) {
+        $menu_items['sms-notifications'] = 'SMS Notifications';
+        return $menu_items;
+    }
+
+    // Register endpoint for the new tab
+    public function sms_notifications_endpoint() {
+        add_rewrite_endpoint('sms-notifications', EP_ROOT | EP_PAGES);
+    }
+
+    // Add content to the new tab
+    public function sms_notifications_content() {
+        $user_id = get_current_user_id();
+        $message = '';
+        
+        // Process form submission
+        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['topsms_sms_preference'])) {
+            $is_enabled = isset($_POST['topsms_customer_consent']) ? 'yes' : 'no';
+            update_user_meta($user_id, 'topsms_customer_consent', $is_enabled);
+            $message = '<div class="woocommerce-message">SMS notification preferences updated.</div>';
+            
+            // This prevents form resubmission on refresh
+            echo '<script>
+                if (window.history.replaceState) {
+                    window.history.replaceState(null, null, window.location.href);
+                }
+            </script>';
+        }
+        
+        // Get current setting
+        $is_enabled = get_user_meta($user_id, 'topsms_customer_consent', true);
+        
+        // Display success message if any
+        echo $message;
+        
+        // Display the form
+        ?>
+        <form method="post">
+            <h3>SMS Notification</h3>
+
+            <div>
+                <div class="sms-notification-option">
+                    <input type="checkbox" name="topsms_customer_consent" id="topsms_customer_consent" value="1" <?php checked($is_enabled, 'yes'); ?>>
+                    <label for="topsms_customer_consent">
+                        Receive SMS Notifications 
+                    </label>
+                </div>
+
+                <p class="sms-notification-note">*The message might go to your spam folder. Please add the sender to the whitelist.</p>
+            </div>
+            
+            <p>
+                <button type="submit" name="topsms_sms_preference" class="woocommerce-Button button sms-notification-save-btn">
+                    Save Preferences
+                </button>
+            </p>
+        </form>
+        <?php
+    }
 }
