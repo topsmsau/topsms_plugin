@@ -37,7 +37,13 @@ if ( ! defined( 'WPINC' ) ) {
  */
 define( 'TOPSMS_VERSION', '1.0.0' );
 define('TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url(__FILE__));
+// Define path to the included plugin
+define('ANALYTICS_PATH', plugin_dir_path(__FILE__) . 'topsms-analytics/');
 
+// Include the main file of the plugin you want to include
+if (file_exists(ANALYTICS_PATH . 'topsms-analytics.php')) {
+    require_once ANALYTICS_PATH . 'topsms-analytics.php';
+}
 /**
  * Handle admin notices for WooCommerce dependency
  */

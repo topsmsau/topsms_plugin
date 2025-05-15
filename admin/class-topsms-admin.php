@@ -241,6 +241,60 @@ class Topsms_Admin {
                 return current_user_can('manage_options');
             },
         ));
+
+
+
+        // Register REST API route with parameters
+register_rest_route('topsms/v1', '/logs', array(
+    'methods' => 'GET',
+    'callback' => array($this->rest_api, 'topsms_get_analytics_logs'),
+    'permission_callback' => function() {
+        return current_user_can('manage_options');
+    },
+    'args' => array(
+        'after' => array(
+            'description' => 'Limit results to those after the specified date (ISO 8601 format)',
+            'type' => 'string',
+            'format' => 'date-time',
+            'validate_callback' => function($param) {
+                return empty($param) || rest_parse_date($param);
+            }
+        ),
+        'before' => array(
+            'description' => 'Limit results to those before the specified date (ISO 8601 format)',
+            'type' => 'string',
+            'format' => 'date-time',
+            'validate_callback' => function($param) {
+                return empty($param) || rest_parse_date($param);
+            }
+        ),
+        'page' => array(
+            'description' => 'Current page of the collection',
+            'type' => 'integer',
+            'default' => 1,
+            'minimum' => 1,
+            'sanitize_callback' => 'absint',
+        ),
+        'per_page' => array(
+            'description' => 'Maximum number of items to be returned in result set',
+            'type' => 'integer',
+            'default' => 10,
+            'minimum' => 1,
+            'maximum' => 100,
+            'sanitize_callback' => 'absint',
+        ),
+        'status' => array(
+            'description' => 'Filter by SMS status',
+            'type' => 'string',
+            'enum' => array('delivered', 'sent', 'pending', 'failed'),
+        ),
+        'order_status' => array(
+            'description' => 'Filter by order status',
+            'type' => 'string',
+        ),
+    ),
+));
+
     }
 
     /**
@@ -299,6 +353,16 @@ class Topsms_Admin {
             array( $this, 'display_settings_page' )
         );
 
+
+        add_submenu_page(
+            'topsms',
+            __( 'Analytics', 'topsms' ),
+            __( 'Analytics', 'topsms' ),
+            'manage_options',
+            'topsms-analytics',
+            array( $this, 'display_analytics_page' )
+        );
+
         // Remove the duplicated submenu
         remove_submenu_page( 'topsms', 'topsms'); 
     }
@@ -329,6 +393,20 @@ class Topsms_Admin {
         echo '<div class="wrap">';
         echo '<div id="topsms-admin-setup" class="topsms-app"></div>';
         echo '</div>';
+    }
+
+
+    public function display_analytics_page() {
+        
+
+        $is_connected = $this->check_topsms_connection();
+        if (!$is_connected) {
+            wp_redirect(admin_url('admin.php?page=topsms-setup'));
+            exit;
+        }
+        
+        wp_redirect(admin_url('admin.php?page=wc-admin&path=%2Fanalytics%2Ftopsms-analytics'));
+        exit;
     }
 
 

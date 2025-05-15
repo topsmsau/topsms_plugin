@@ -7,22 +7,22 @@ import './css/topsms-admin-app.css';
 
 // Render the app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('topsms-admin-setup');
-    if (container) {
-     render(<Setup />, container);
-    }
+  const container = document.getElementById('topsms-admin-setup');
+  if (container) {
+    render(<Setup />, container);
+  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('topsms-admin-automations');
-    if (container) {
-        render(<Automation />, container);
-    }
+  const container = document.getElementById('topsms-admin-automations');
+  if (container) {
+    render(<Automation />, container);
+  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('topsms-admin-settings');
-    if (container) {
-        render(<Settings />, container);
-    }
+  const container = document.getElementById('topsms-admin-settings');
+  if (container) {
+    render(<Settings />, container);
+  }
 });
