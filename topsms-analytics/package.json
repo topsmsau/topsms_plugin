@@ -1,0 +1,46 @@
+{
+  "name": "wc-admin-topsms-analytics",
+  "title": "wc-admin-topsms-analytics",
+  "version": "0.1.0",
+  "description": "wc-admin-topsms-analytics",
+  "author": {
+    "name": "TopSMS",
+    "email": "adrian@topsms.com.au"
+  },
+  "license": "GPL-3.0-or-later",
+  "keywords": [
+    "woocommerce",
+    "wordpress",
+    "gutenberg",
+    "javascript",
+    "react",
+    "plugin",
+    "ecommerce"
+  ],
+  "dependencies": {
+    "@woocommerce/date": "^4.3.0",
+    "@woocommerce/settings": "^1.0.0",
+    "@wordpress/api-fetch": "^7.23.0",
+    "@wordpress/hooks": "^4.23.0",
+    "@wordpress/i18n": "^5.23.0",
+    "recharts": "^2.15.3"
+  },
+  "scripts": {
+    "build": "wp-scripts build",
+    "check-engines": "wp-scripts check-engines",
+    "check-licenses": "wp-scripts check-licenses",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "lint:pkg-json": "wp-scripts lint-pkg-json",
+    "start": "wp-scripts start",
+    "test:e2e": "wp-scripts test-e2e",
+    "test:unit": "wp-scripts test-unit-js"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.16.0",
+    "css-loader": "^7.1.2",
+    "mini-css-extract-plugin": "^2.9.2",
+    "node-sass": "^9.0.0",
+    "sass-loader": "^16.0.5"
+  }
+}
