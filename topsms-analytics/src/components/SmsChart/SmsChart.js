@@ -18,11 +18,11 @@ export class SmsChart extends ReactComponent {
    */
   getStatusColor(status) {
     const colorMap = {
-      delivered: '#4CAF50', // Green
-      sent: '#2196F3', // Blue
-      pending: '#FFC107', // Yellow/amber
-      failed: '#F44336', // Red
-      unknown: '#52accc', // Default color
+      delivered: '#c6e1c6', // Green
+      sent: '#b3d9ff', // Blue
+      pending: '#f8dda7', // Yellow
+      failed: '#eba3a3', // Red
+      unknown: '#777', // Default color
     };
 
     return colorMap[status] || colorMap.unknown;
@@ -56,9 +56,9 @@ export class SmsChart extends ReactComponent {
                   <CartesianGrid vertical={false} strokeDasharray='3 3' />
                   <Bar
                     dataKey='value'
-                    fillOpacity={0.9}
-                    stroke='#333'
-                    strokeWidth={1}
+                    fillOpacity={1}
+                    // stroke='#333'
+                    // strokeWidth={0.5}
                     radius={[4, 4, 0, 0]}
                     name='Count'
                   >
