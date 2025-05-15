@@ -37,8 +37,13 @@ const requestToHandle = (request) => {
 };
 
 // Remove the default CSS/SCSS rules from WordPress config
-const filteredRules = defaultConfig.module.rules.filter(rule => 
-  !(rule.test && (rule.test.toString().includes('.css') || rule.test.toString().includes('.scss')))
+const filteredRules = defaultConfig.module.rules.filter(
+  (rule) =>
+    !(
+      rule.test &&
+      (rule.test.toString().includes('.css') ||
+        rule.test.toString().includes('.scss'))
+    )
 );
 
 module.exports = {
@@ -55,7 +60,7 @@ module.exports = {
   plugins: [
     ...defaultConfig.plugins.filter(
       (plugin) =>
-        plugin.constructor.name !== 'DependencyExtractionWebpackPlugin' && 
+        plugin.constructor.name !== 'DependencyExtractionWebpackPlugin' &&
         plugin.constructor.name !== 'MiniCssExtractPlugin'
     ),
     new DependencyExtractionWebpackPlugin({

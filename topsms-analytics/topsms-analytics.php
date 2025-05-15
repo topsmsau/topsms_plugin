@@ -21,16 +21,16 @@ function add_wc_admin_topsms_analytics_register_script() {
 		true
 	);
 
-	// wp_register_style(
-	// 	'wc-admin-topsms-analytics',
-	// 	plugins_url( '/build/style.css', __FILE__ ),
-	// 	// Add any dependencies styles may have, such as wp-components.
-	// 	array(),
-	// 	filemtime( dirname( __FILE__ ) . '/build/style.css' )
-	// );
+	wp_register_style(
+		'wc-admin-topsms-analytics',
+		plugins_url( '/build/index.css', __FILE__ ),
+		// Add any dependencies styles may have, such as wp-components.
+		array(),
+		filemtime( dirname( __FILE__ ) . '/build/index.css' )
+	);
 
 	wp_enqueue_script( 'wc-admin-topsms-analytics' );
-	//wp_enqueue_style( 'wc-admin-topsms-analytics' );
+	wp_enqueue_style( 'wc-admin-topsms-analytics' );
 }
 
 function add_to_analytics_menu( $report_pages ) {

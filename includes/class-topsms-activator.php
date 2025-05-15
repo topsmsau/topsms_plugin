@@ -110,7 +110,7 @@ class Topsms_Activator {
         $order_statuses = array('processing', 'completed', 'on-hold', 'cancelled', 'pending');
         
         // Array of possible SMS statuses
-        $sms_statuses = array('sent', 'failed', 'delivered', 'pending');
+        $sms_statuses = array('Delivered', 'Pending', 'Failed', 'Rejected');
         
         // Current timestamp
         $now = current_time('mysql');
