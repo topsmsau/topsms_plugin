@@ -621,14 +621,22 @@ register_rest_route('topsms/v1', '/logs', array(
             'body' => json_encode($body),
             'timeout' => 45
         ));
-        error_log("response:" . print_r($response, true));
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true); 
+
+        error_log("response:" . print_r($data, true));
         
         // Determine API status
         if (is_wp_error($response)) {
-            $api_status = 'ERROR: ' . $response->get_error_message();
+            $api_status = 'Failed';
         } else {
-            $response_code = wp_remote_retrieve_response_code($response);
-            $api_status = ($response_code == 200) ? 'SUCCESS' : 'ERROR: ' . $response_code;
+           // $response_code = wp_remote_retrieve_response_code($response);
+           if (isset($data['messageStatuses'][0]['statusText'])) {
+            $api_status = $data['messageStatuses'][0]['statusText'];
+          } else {
+            $api_status = 'Pending';
+          }
         }
         
         // Log to topsms_logs table
