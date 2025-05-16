@@ -306,6 +306,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
                                             </div>
                                         </div>
 
+                                        {/* Live preview */}
                                         <div className="w-full lg:w-1/2 px-4 mb-6">
                                             <h2 className="text-lg font-medium mb-1">{__('Live Preview', 'topsms')}</h2>
                                             <p className="text-gray-500 text-sm mb-4">{__('How your message will appear', 'topsms')}</p>

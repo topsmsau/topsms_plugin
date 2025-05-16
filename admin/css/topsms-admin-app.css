@@ -1141,38 +1141,50 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     transform: none !important;
 }
 
+/* Small screens */
+@media (max-width: 1023px) {
+  /* Fix automations settings message preview section */
+  .topsms-app .automation-layout {
+    display: flex;
+    flex-direction: column;
+  }
+  /* Make preview appear after template section */
+  .topsms-app .automation-layout > div:nth-child(2) {
+    order: 3;
+  }
+  /* Keep action buttons below template but above preview */
+  .topsms-app .automation-actions {
+    order: 2;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+}
 
 /**************************************** End of Custom css ********************************************/
-
 
 .topsms-app .hover\:bg-gray-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
 }
 
-
 .topsms-app .hover\:bg-gray-50:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
 }
-
 
 .topsms-app .hover\:text-blue-800:hover {
   --tw-text-opacity: 1;
   color: rgb(30 64 175 / var(--tw-text-opacity, 1));
 }
 
-
 .topsms-app .hover\:text-gray-700:hover {
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity, 1));
 }
 
-
 .topsms-app .hover\:underline:hover {
   text-decoration-line: underline;
 }
-
 
 @media (min-width: 1024px) {
   .topsms-app .lg\:w-1\/2 {

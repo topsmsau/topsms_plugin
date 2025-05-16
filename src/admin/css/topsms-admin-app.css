@@ -142,5 +142,23 @@
     transform: none !important;
 }
 
+/* Small screens */
+@media (max-width: 1023px) {
+  /* Fix automations settings message preview section */
+  .automation-layout {
+    display: flex;
+    flex-direction: column;
+  }
+  /* Make preview appear after template section */
+  .automation-layout > div:nth-child(2) {
+    order: 3;
+  }
+  /* Keep action buttons below template but above preview */
+  .automation-actions {
+    order: 2;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+}
 
 /**************************************** End of Custom css ********************************************/

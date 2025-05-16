@@ -11,6 +11,7 @@ export class SmsTable extends ReactComponent {
     this.handleSort = this.handleSort.bind(this);
     this.onPageChange = this.onPageChange.bind(this);
     this.onPerPageChange = this.onPerPageChange.bind(this);
+    this.handleQueryChange = this.handleQueryChange.bind(this); // Add this line
 
     const defaultSortColumn = 'creation_date';
     const defaultSortOrder = 'desc';
@@ -196,6 +197,19 @@ export class SmsTable extends ReactComponent {
     }
   }
 
+  // Handle query changes (both page and per_page)
+  handleQueryChange(key) {
+    return (value) => {
+      console.log(`Query change: ${key} = ${value}`);
+      
+       if ((key === 'page' || key === 'paged') && this.props.onPageChange) {
+            this.props.onPageChange(value);
+        } else if (key === 'per_page' && this.props.onPerPageChange) {
+            this.props.onPerPageChange(value);
+        }
+    };
+  }
+
   render() {
     console.log('Rendering SmsTable with data:', this.state.messageData);
 
@@ -212,7 +226,13 @@ export class SmsTable extends ReactComponent {
       totalItems: messageData.length,
       totalPages: 1,
       currentPage: 1,
-      perPage: 10,
+      perPage: 25,
+    };
+
+    // Create the query object 
+    const query = {
+        paged: pagination.currentPage, // paged instead of page (doc shows page)
+        per_page: pagination.perPage
     };
 
     // Create the table rows with properly styled elements
@@ -295,13 +315,15 @@ export class SmsTable extends ReactComponent {
         title={__('SMS Messages', 'wc-admin-sms-reports')}
         rows={rows}
         headers={headers}
+        query={query}
         rowsPerPage={pagination.perPage}
         totalRows={pagination.totalItems}
-        currentPage={pagination.currentPage}
+        // currentPage={pagination.currentPage}
         summary={summary}
         onSort={this.handleSort}
         onPageChange={this.onPageChange}
-        onRowsChange={this.onPerPageChange}
+        onQueryChange={this.handleQueryChange}
+        // onRowsChange={this.onPerPageChange}
       />
     );
   }
