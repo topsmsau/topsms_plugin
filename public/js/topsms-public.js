@@ -34,6 +34,9 @@
             // Save the checkbox state
             var isChecked = $(this).is(':checked') ? 1 : 0;
             
+            // Get nonce from the field that wp_nonce_field created
+            var nonce = $('#topsms_consent_nonce').val();
+            
             // Trigger cart update
             $('body').trigger('update_checkout');
             
@@ -43,7 +46,8 @@
                 url: wc_checkout_params.ajax_url,
                 data: {
                     'action': 'topsms_update_consent',
-                    'consent': isChecked
+                    'consent': isChecked,
+                    'security': nonce
                 }
             });
         });

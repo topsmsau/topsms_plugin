@@ -16,7 +16,7 @@
  * Plugin Name:       TopSMS
  * Plugin URI:        https://eux.com.au
  * Description:       An WooCommerce Add-On for SMS notifications
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            EUX
  * Author URI:        https://eux.com.au
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'TOPSMS_VERSION', '1.0.0' );
+define( 'TOPSMS_VERSION', '1.0.1' );
 define('TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url(__FILE__));
 // Define path to the included plugin
 define('ANALYTICS_PATH', plugin_dir_path(__FILE__) . 'topsms-analytics/');
@@ -44,6 +44,7 @@ define('ANALYTICS_PATH', plugin_dir_path(__FILE__) . 'topsms-analytics/');
 if (file_exists(ANALYTICS_PATH . 'topsms-analytics.php')) {
     require_once ANALYTICS_PATH . 'topsms-analytics.php';
 }
+
 /**
  * Handle admin notices for WooCommerce dependency
  */

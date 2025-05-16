@@ -37,7 +37,7 @@ function add_to_analytics_menu( $report_pages ) {
 
     $report_pages[] = array(
         'id' => 'wc-admin-topsms-analytics',
-        'title' => __('TopSMS', 'wc-admin-topsms-analytics'),
+        'title' => __('TopSMS', 'topsms'),
         'parent' => 'woocommerce-analytics',
         'path' => '/analytics/topsms-analytics',
     );

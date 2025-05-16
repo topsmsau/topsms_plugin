@@ -138,11 +138,21 @@ class Topsms_Admin {
 
 	}
 
+    /**
+     * Load files all files and dependencies required.
+     *
+     * @since    1.0.0
+     */
     private function load_dependencies() {
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-topsms-rest-api-admin.php';
         $this->rest_api = new Topsms_Rest_Api_Admin($this->plugin_name, $this->version);
     }
 
+    /**
+     * Hide WordPress admin UI elements when on the setup page.
+     *
+     * @since    1.0.0
+     */
     public function hide_admin_ui() {
         echo '<style>
             #wpcontent { margin-left: 0 !important; }
@@ -151,6 +161,11 @@ class Topsms_Admin {
         </style>';
     }
 
+    /**
+     * Register custom routes for the REST API.
+     *
+     * @since    1.0.0
+     */
     public function topsms_register_routes() {
         // Sending otp
         register_rest_route('topsms/v1', '/send-otp', array(
@@ -242,58 +257,56 @@ class Topsms_Admin {
             },
         ));
 
-
-
         // Register REST API route with parameters
-register_rest_route('topsms/v1', '/logs', array(
-    'methods' => 'GET',
-    'callback' => array($this->rest_api, 'topsms_get_analytics_logs'),
-    'permission_callback' => function() {
-        return current_user_can('manage_options');
-    },
-    'args' => array(
-        'after' => array(
-            'description' => 'Limit results to those after the specified date (ISO 8601 format)',
-            'type' => 'string',
-            'format' => 'date-time',
-            'validate_callback' => function($param) {
-                return empty($param) || rest_parse_date($param);
-            }
-        ),
-        'before' => array(
-            'description' => 'Limit results to those before the specified date (ISO 8601 format)',
-            'type' => 'string',
-            'format' => 'date-time',
-            'validate_callback' => function($param) {
-                return empty($param) || rest_parse_date($param);
-            }
-        ),
-        'page' => array(
-            'description' => 'Current page of the collection',
-            'type' => 'integer',
-            'default' => 1,
-            'minimum' => 1,
-            'sanitize_callback' => 'absint',
-        ),
-        'per_page' => array(
-            'description' => 'Maximum number of items to be returned in result set',
-            'type' => 'integer',
-            'default' => 10,
-            'minimum' => 1,
-            'maximum' => 100,
-            'sanitize_callback' => 'absint',
-        ),
-        'status' => array(
-            'description' => 'Filter by SMS status',
-            'type' => 'string',
-            'enum' => array('delivered', 'sent', 'pending', 'failed'),
-        ),
-        'order_status' => array(
-            'description' => 'Filter by order status',
-            'type' => 'string',
-        ),
-    ),
-));
+        register_rest_route('topsms/v1', '/logs', array(
+            'methods' => 'GET',
+            'callback' => array($this->rest_api, 'topsms_get_analytics_logs'),
+            'permission_callback' => function() {
+                return current_user_can('manage_options');
+            },
+            'args' => array(
+                'after' => array(
+                    'description' => 'Limit results to those after the specified date (ISO 8601 format)',
+                    'type' => 'string',
+                    'format' => 'date-time',
+                    'validate_callback' => function($param) {
+                        return empty($param) || rest_parse_date($param);
+                    }
+                ),
+                'before' => array(
+                    'description' => 'Limit results to those before the specified date (ISO 8601 format)',
+                    'type' => 'string',
+                    'format' => 'date-time',
+                    'validate_callback' => function($param) {
+                        return empty($param) || rest_parse_date($param);
+                    }
+                ),
+                'page' => array(
+                    'description' => 'Current page of the collection',
+                    'type' => 'integer',
+                    'default' => 1,
+                    'minimum' => 1,
+                    'sanitize_callback' => 'absint',
+                ),
+                'per_page' => array(
+                    'description' => 'Maximum number of items to be returned in result set',
+                    'type' => 'integer',
+                    'default' => 10,
+                    'minimum' => 1,
+                    'maximum' => 100,
+                    'sanitize_callback' => 'absint',
+                ),
+                'status' => array(
+                    'description' => 'Filter by SMS status',
+                    'type' => 'string',
+                    'enum' => array('delivered', 'sent', 'pending', 'failed'),
+                ),
+                'order_status' => array(
+                    'description' => 'Filter by order status',
+                    'type' => 'string',
+                ),
+            ),
+        ));
 
     }
 
@@ -396,6 +409,11 @@ register_rest_route('topsms/v1', '/logs', array(
     }
 
 
+    /**
+     * Render the analytics page.
+     *
+     * @since    1.0.0
+     */
     public function display_analytics_page() {
         
 
@@ -409,7 +427,11 @@ register_rest_route('topsms/v1', '/logs', array(
         exit;
     }
 
-
+    /**
+     * Render the automations page.
+     *
+     * @since    1.0.0
+     */
     public function display_automations_page() {
         // Check if connected, if not, redirect to the setup page
         $is_connected = $this->check_topsms_connection();
@@ -431,7 +453,11 @@ register_rest_route('topsms/v1', '/logs', array(
         echo '</div>';
     }
 
-
+    /**
+     * Render the general settings page.
+     *
+     * @since    1.0.0
+     */
     public function display_settings_page() {
         // Check if connected, if not, redirect to the setup page
         $is_connected = $this->check_topsms_connection();
@@ -453,6 +479,14 @@ register_rest_route('topsms/v1', '/logs', array(
         echo '</div>';
     }
 
+    /**
+     * Checks if access token and refresh token exist to determine
+     * if the plugin is connected to the TopSMS API.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @return   boolean    True if connected, false otherwise.
+     */
     private function check_topsms_connection() {
         $access_token = get_option('topsms_access_token');
         $refresh_token = get_option('topsms_refresh_token');
@@ -465,8 +499,11 @@ register_rest_route('topsms/v1', '/logs', array(
         }
     }
 
-
-
+    /**
+     * Redirect to setup page after plugin activation.
+     *
+     * @since    1.0.0
+     */
     public function topsms_activation_redirect() {
         // Check if our transient is set and we're on the plugins page
         if (get_transient('topsms_activation_redirect') && is_admin()) {
@@ -485,10 +522,16 @@ register_rest_route('topsms/v1', '/logs', array(
             }
         }
     }
- 
- 
- 
-    // Register custom cron interval (55 minutes)
+
+    /**
+     * Register custom cron interval for token refresh.
+     *
+     * Adds a new cron schedule interval of 55 minutes for token refresh operations.
+     *
+     * @since    1.0.0
+     * @param    array    $schedules    List of existing cron schedules.
+     * @return   array    Modified list of cron schedules.
+     */
     public function topsms_add_cron_interval($schedules) {
         $schedules['every_55_minutes'] = array(
             'interval' => 55 * 60,
@@ -497,13 +540,18 @@ register_rest_route('topsms/v1', '/logs', array(
         return $schedules;
     }
  
-    // Function to refresh TopSMS tokens
+    /**
+     * Refresh TopSMS API access tokens.
+     *
+     * @since    1.0.0
+     * @return   boolean    True on successful refresh, false on failure.
+     */
     public function topsms_refresh_tokens() {
         // Get the current refresh token
         $refresh_token = get_option('topsms_refresh_token', true);
         
         if (!$refresh_token) {
-            error_log('TopSMS refresh token not found');
+            // error_log('TopSMS refresh token not found');
             return false;
         }
         
@@ -520,7 +568,7 @@ register_rest_route('topsms/v1', '/logs', array(
         
         // Check for errors
         if (is_wp_error($response)) {
-            error_log('TopSMS API Error: ' . $response->get_error_message());
+            // error_log('TopSMS API Error: ' . $response->get_error_message());
             return false;
         }
         
@@ -530,7 +578,7 @@ register_rest_route('topsms/v1', '/logs', array(
         
         // Check if we received valid data
         if (!isset($data['session']['access_token']) || !isset($data['session']['refresh_token'])) {
-            error_log('TopSMS API Error: Invalid response format');
+            // error_log('TopSMS API Error: Invalid response format');
             return false;
         }
         
@@ -541,17 +589,29 @@ register_rest_route('topsms/v1', '/logs', array(
         return true;
     }
  
- 
- 
-    // Schedule the cron job if it's not already scheduled
+    /**
+     * Schedule token refresh cron job for every 55 minutes.
+     *
+     * Sets up a recurring cron job to refresh the TopSMS API tokens
+     * if the job is not already scheduled.
+     *
+     * @since    1.0.0
+     */
     public function topsms_schedule_token_refresh() {
         if (!wp_next_scheduled('topsms_refresh_tokens_hook')) {
             wp_schedule_event(time(), 'every_55_minutes', 'topsms_refresh_tokens_hook');
         }
     }
  
- 
- 
+    /**
+     * Sends SMS notifications to customers when order status changes.
+     *
+     * @since    1.0.0
+     * @param    int       $order_id      The order ID.
+     * @param    string    $status_from   The previous order status.
+     * @param    string    $status_to     The new order status.
+     * @param    WC_Order  $order         The order object.
+     */
     public function topsms_order_status_changed($order_id, $status_from, $status_to, $order) {
         // Check if the customer consent is enabled
         $consent_enabled = get_post_meta($order_id, 'topsms_customer_consent', true);
@@ -565,17 +625,17 @@ register_rest_route('topsms/v1', '/logs', array(
         
         // Remove 'wc-' prefix if present in status
         $status_to = str_replace('wc-', '', $status_to);
-        error_log("status to:" . print_r($status_to, true));
+        // error_log("status to:" . print_r($status_to, true));
         
         // Get configuration from options table
         $access_token = get_option('topsms_access_token');
         $sender = get_option('topsms_sender');
         $is_enabled = get_option('topsms_order_' . $status_to . '_enabled');
         $message_template = get_option('topsms_order_' . $status_to . '_message');
-        error_log("is enabled:". print_r($is_enabled, true));
-        error_log("sender:". print_r($sender, true));
-        error_log("message template:". print_r($message_template, true));
-        error_log("access token:". print_r($access_token, true));
+        // error_log("is enabled:". print_r($is_enabled, true));
+        // error_log("sender:". print_r($sender, true));
+        // error_log("message template:". print_r($message_template, true));
+        // error_log("access token:". print_r($access_token, true));
         
         // Check if SMS is enabled for this status
         if ($is_enabled !== '1' && $is_enabled !== true && $is_enabled !== 'yes') {
@@ -588,7 +648,7 @@ register_rest_route('topsms/v1', '/logs', array(
             return; // No phone number available
         }
 
-        error_log("phone:". print_r($phone, true));
+        // error_log("phone:". print_r($phone, true));
         
         // Check if message template exists
         if (empty($message_template)) {
@@ -625,7 +685,7 @@ register_rest_route('topsms/v1', '/logs', array(
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true); 
 
-        error_log("response:" . print_r($data, true));
+        // error_log("response:" . print_r($data, true));
         
         // Determine API status
         if (is_wp_error($response)) {
@@ -659,6 +719,5 @@ register_rest_route('topsms/v1', '/logs', array(
             )
         );
     }
- 
  
 }

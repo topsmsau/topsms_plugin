@@ -101,13 +101,15 @@ class Topsms_Public {
 
 	}
 
-
-
-    // Add custom checkbox to checkout page after the terms and conditions to get customer consent
+    /**
+     * Add SMS consent checkbox to the WooCommerce checkout page.
+     *
+     * @since    1.0.0
+     */
     public function add_topsms_customer_consent_checkout_checkbox(){
         // Check if the customer consent is enabled
         $consent_enabled = get_option('topsms_settings_customer_consent', 'yes');
-        error_log("consent enabled:" . print_r($consent_enabled, true));
+        // error_log("consent enabled:" . print_r($consent_enabled, true));
         
         // Only show the checkbox if this setting is enabled; Return if disabled
         if ($consent_enabled == 'no') {
@@ -132,10 +134,17 @@ class Topsms_Public {
                 'class'     => array('input-checkbox'),
                 'label'     => __('Receive SMS Notifications', 'topsms'),
             ),  $is_subscribed );
+            // Add nonce field for security
+            wp_nonce_field('topsms_consent_action', 'topsms_consent_nonce');
         echo '</div>';
     }
 
-    // Save checkbox value to user and order meta
+    /**
+     * Save customer SMS consent from the checkout to order and user meta.
+     *
+     * @since    1.0.0
+     * @param    int    $order_id    The ID of the order being processed.
+     */
     public function save_topsms_customer_consent_checkout_checkbox($order_id) {
         // Check if the customer consent is enabled
         $consent_enabled = get_option('topsms_settings_customer_consent', 'yes');
@@ -143,6 +152,12 @@ class Topsms_Public {
         // Only show the checkbox if this setting is enabled; Return if disabled
         if (!$consent_enabled) {
             return; 
+        }
+
+        // Verify nonce for security
+        if (!isset($_POST['topsms_consent_nonce']) || 
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['topsms_consent_nonce'])), 'topsms_consent_action')) {
+            return;
         }
 
         if (isset($_POST['topsms_customer_consent']) && !empty($_POST['topsms_customer_consent'])) {
@@ -162,6 +177,14 @@ class Topsms_Public {
         }
     }
 
+    /**
+     * Add SMS surcharge to the cart if customer has consented 
+     * and the SMS surcharge option in the general settings is enabled.
+     *
+     *
+     * @since    1.0.0
+     * @param    WC_Cart    $cart    The WooCommerce cart object.
+     */
     public function add_topsms_surcharge_to_cart($cart) {
         if (is_admin() && !defined('DOING_AJAX')) {
             return;
@@ -176,14 +199,26 @@ class Topsms_Public {
         
         // Check if it's in the POST data (during checkout updates)
         if (isset($_POST['topsms_customer_consent'])) {
-            $customer_consented = true;
+            // Verify nonce if available during checkout
+            if (!isset($_POST['topsms_consent_nonce']) || 
+                !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['topsms_consent_nonce'])), 'topsms_consent_action')) {
+                $customer_consented = false;
+            } else {
+                $customer_consented = true;
+            }
         } 
         // Check in parsed post_data for AJAX requests
         elseif (isset($_POST['post_data'])) {
-            parse_str($_POST['post_data'], $parsed_post_data);
+            // Properly unslash and sanitize post_data
+            $post_data = sanitize_text_field(wp_unslash($_POST['post_data']));
+            parse_str($post_data, $parsed_post_data);
+
+            // Check if nonce exists and is valid in parsed data
+            $valid_nonce = isset($parsed_post_data['topsms_consent_nonce']) && 
+                wp_verify_nonce(sanitize_text_field($parsed_post_data['topsms_consent_nonce']), 'topsms_consent_action');
             
             // Check params in the post_data
-            if (strpos($_POST['post_data'], 'topsms_customer_consent') !== false) {
+            if (isset($parsed_post_data['topsms_customer_consent']) && $valid_nonce) {
                 $customer_consented = true;
             } else {
                 $customer_consented = false;
@@ -228,18 +263,60 @@ class Topsms_Public {
         }
     }
 
+    /**
+     * Update customer's SMS notification consent status in the WooCommerce session.
+     *
+     * @since    1.0.0
+     */
     public function topsms_update_customer_consent() {
-        if (isset($_POST['consent'])) {
-            $consent = $_POST['consent'] === '1' || $_POST['consent'] === 1;
+        // Verify nonce for security
+        if (!isset($_POST['security']) || 
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['security'])), 'topsms_consent_action')) {
+            wp_send_json_error('Security check failed');
+            wp_die();
+        }
+
+       if (isset($_POST['consent'])) {
+            // Properly sanitize and unslash the consent value
+            $consent_value = sanitize_text_field(wp_unslash($_POST['consent']));
+            $consent = ($consent_value === '1' || (int)$consent_value === 1);
             WC()->session->set('topsms_customer_consent', $consent);
         }
         wp_die();
     }   
 
-    // Add a new tab/section in the My Account page
+    /**
+     * Adds a new tab to the WooCommerce My Account page menu.
+     *
+     * @since    1.0.0
+     * @param    array    $menu_items    The existing menu items.
+     * @return   array                   Modified menu items with SMS notifications tab.
+     */
     public function add_sms_notifications_tab($menu_items) {
-        $menu_items['sms-notifications'] = 'SMS Notifications';
-        return $menu_items;
+        // Create a new array to hold the reordered items
+        $new_menu_items = array();
+        
+        // Find the logout item position
+        $logout_position = array_search('customer-logout', array_keys($menu_items));
+        
+        if ($logout_position !== false) {
+            // Insert items before logout
+            $counter = 0;
+            foreach ($menu_items as $endpoint => $label) {
+                if ($counter === $logout_position) {
+                    $new_menu_items['sms-notifications'] = 'SMS Notifications';
+                }
+                
+                $new_menu_items[$endpoint] = $label;
+                $counter++;
+            }
+        } else {
+            // If logout item not found, just add it to the end
+            $menu_items['sms-notifications'] = 'SMS Notifications';
+            $new_menu_items = $menu_items;
+        }
+        
+        return $new_menu_items;
     }
 
     // Register endpoint for the new tab
@@ -247,16 +324,26 @@ class Topsms_Public {
         add_rewrite_endpoint('sms-notifications', EP_ROOT | EP_PAGES);
     }
 
-    // Add content to the new tab
+    /**
+     * Register My Account endpoint for SMS notifications.
+     *
+     * @since    1.0.0
+     */
     public function sms_notifications_content() {
         $user_id = get_current_user_id();
         $message = '';
         
         // Process form submission
         if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['topsms_sms_preference'])) {
-            $is_enabled = isset($_POST['topsms_customer_consent']) ? 'yes' : 'no';
-            update_user_meta($user_id, 'topsms_customer_consent', $is_enabled);
-            $message = '<div class="woocommerce-message">SMS notification preferences updated.</div>';
+            // Verify nonce
+            if (!isset($_POST['topsms_account_nonce']) || 
+                !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['topsms_account_nonce'])), 'topsms_account_action')) {
+                $message = '<div class="woocommerce-error">Security check failed. Please try again.</div>';
+            } else {
+                $is_enabled = isset($_POST['topsms_customer_consent']) ? 'yes' : 'no';
+                update_user_meta($user_id, 'topsms_customer_consent', $is_enabled);
+                $message = '<div class="woocommerce-message">SMS notification preferences updated.</div>';
+            }
             
             // This prevents form resubmission on refresh
             echo '<script>
@@ -270,7 +357,7 @@ class Topsms_Public {
         $is_enabled = get_user_meta($user_id, 'topsms_customer_consent', true);
         
         // Display success message if any
-        echo $message;
+        echo wp_kses_post($message);
         
         // Display the form
         ?>
@@ -287,6 +374,11 @@ class Topsms_Public {
 
                 <p class="sms-notification-note">*The message might go to your spam folder. Please add the sender to the whitelist.</p>
             </div>
+            
+            <?php 
+            // Add nonce field for account page form
+            wp_nonce_field('topsms_account_action', 'topsms_account_nonce'); 
+            ?>
             
             <p>
                 <button type="submit" name="topsms_sms_preference" class="woocommerce-Button button sms-notification-save-btn">

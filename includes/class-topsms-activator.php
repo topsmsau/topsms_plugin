@@ -104,49 +104,6 @@ class Topsms_Activator {
         
         // Execute the query using dbDelta for proper table creation
         dbDelta($sql);
-
-
-
-        $order_statuses = array('processing', 'completed', 'on-hold', 'cancelled', 'pending');
-        
-        // Array of possible SMS statuses
-        $sms_statuses = array('Delivered', 'Pending', 'Failed', 'Rejected');
-        
-        // Current timestamp
-        $now = current_time('mysql');
-        
-        // Insert 10 dummy records
-        for ($i = 1; $i <= 10; $i++) {
-            // Random order ID between 1000 and 9999
-            $order_id = rand(1000, 9999);
-            
-            // Random order status
-            $order_status = $order_statuses[array_rand($order_statuses)];
-            
-            // Random phone number
-            $phone = '+1' . rand(2000000000, 9999999999);
-            
-            // Random SMS status
-            $status = $sms_statuses[array_rand($sms_statuses)];
-            
-            // Random date within the last week
-            $days_ago = rand(0, 7);
-            $hours_ago = rand(0, 23);
-            $minutes_ago = rand(0, 59);
-            $creation_date = date('Y-m-d H:i:s', strtotime("$now - $days_ago days - $hours_ago hours - $minutes_ago minutes"));
-            
-            // Insert the record
-            $wpdb->insert(
-                $table_name,
-                array(
-                    'order_id' => $order_id,
-                    'order_status' => $order_status,
-                    'phone' => $phone,
-                    'creation_date' => $creation_date,
-                    'status' => $status
-                )
-            );
-        }
     
     }
 

@@ -55,14 +55,14 @@ class Topsms_Rest_Api_Admin {
 	}
 
     /**
-     * Send otp to the given phone number
+     * Send otp to the given phone number.
      * 
      * @param WP_REST_Request $request The request object
      * @return WP_REST_Response The response
      */
     public function topsms_send_otp(WP_REST_Request $request) {
         $body_params = $request->get_json_params();
-        error_log("body params: " . print_r($body_params, true));
+        // error_log("body params: " . print_r($body_params, true));
 
         // Get phone number from the request
         $phone_number = $body_params['phoneNumber'];
@@ -80,7 +80,7 @@ class Topsms_Rest_Api_Admin {
         if (substr($formatted_number, 0, 2) === '61') {
             $formatted_number = substr($formatted_number, 2);
         }
-        error_log("phone number" . print_r($formatted_number, true));
+        // error_log("phone number" . print_r($formatted_number, true));
         
         // Make api request to Topsms
         $response = wp_remote_post('https://api.topsms.com.au/functions/v1/send-otp', [
@@ -102,7 +102,7 @@ class Topsms_Rest_Api_Admin {
         
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
-        error_log("response data" . print_r($data, true));
+        // error_log("response data" . print_r($data, true));
         
         // Check HTTP status code
         if (wp_remote_retrieve_response_code($response) !== 200) {
@@ -130,7 +130,7 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Verify otp according to the phone and registers the user in topsms
+     * Verify otp according to the phone and registers the user in topsms.
      * 
      * @param WP_REST_Request $request The request object
      * @return WP_REST_Response The response
@@ -158,7 +158,7 @@ class Topsms_Rest_Api_Admin {
         
         // Update the payload with formatted number
         $payload['phone_number'] = $formatted_number;
-        error_log("Verifying OTP for: " . print_r($payload, true));
+        // error_log("Verifying OTP for: " . print_r($payload, true));
         
         // Make api request to topsms
         $response = wp_remote_post('https://api.topsms.com.au/functions/v1/verify', [
@@ -170,7 +170,7 @@ class Topsms_Rest_Api_Admin {
         
         // Check for connection errors
         if (is_wp_error($response)) {
-            error_log("OTP Verification Error: " . $response->get_error_message());
+            // error_log("OTP Verification Error: " . $response->get_error_message());
             return new WP_REST_Response(array(
                 'success' => false,
                 'data' => array('message' => $response->get_error_message())
@@ -185,7 +185,7 @@ class Topsms_Rest_Api_Admin {
         
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
-        error_log("response data" . print_r($data, true));
+        // error_log("response data" . print_r($data, true));
         
         // Check if any error
         if (isset($data['status']) && $data['status'] === 'error' && isset($data['error'])) {
@@ -208,8 +208,8 @@ class Topsms_Rest_Api_Admin {
             // Store tokens
             $access_token = isset($data['session']['access_token']) ? $data['session']['access_token'] : '';
             $refresh_token = isset($data['session']['refresh_token']) ? $data['session']['refresh_token'] : '';
-            error_log("access token " . print_r($access_token, true));
-            error_log("refresh token " . print_r($refresh_token, true));
+            // error_log("access token " . print_r($access_token, true));
+            // error_log("refresh token " . print_r($refresh_token, true));
 
             if (empty($access_token) || empty($refresh_token)) {
                 $error_message = 'Unknown error occurred';
@@ -230,7 +230,7 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Store Topsms API tokens (refresh token and access token) in the options table
+     * Store Topsms API tokens (refresh token and access token) in the options table.
      *
      * @param string $access_token The access token to store
      * @param string $refresh_token The refresh token to store
@@ -272,7 +272,7 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Get topsms automations woocommerce status settings, including enabled option and sms template
+     * Get topsms automations woocommerce status settings, including enabled option and sms template.
      * from the options table
      * 
      * @param WP_REST_Request $request The request object
@@ -315,7 +315,7 @@ class Topsms_Rest_Api_Admin {
     }
     
     /**
-     * Save topsms automation woocommerce status enabled option 
+     * Save topsms automation woocommerce status enabled option. 
      * 
      * @param WP_REST_Request $request The request object
      * @return WP_REST_Response The response
@@ -351,7 +351,7 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Save topsms automation woocommerce status sms template
+     * Save topsms automation woocommerce status sms template.
      * 
      * @param WP_REST_Request $request The request object
      * @return WP_REST_Response The response
@@ -388,7 +388,7 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Get topsms general setting from the options table
+     * Get topsms general setting from the options table.
      * 
      * @param WP_REST_Request $request The request object
      * @return WP_REST_Response The response
@@ -451,7 +451,7 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Save topsms general settings 
+     * Save topsms general settings.
      * 
      * @param WP_REST_Request $request The request object
      * @return WP_REST_Response The response
@@ -490,7 +490,7 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Save general input settings to the options 
+     * Save general input settings to the options. 
      * 
      * @param WP_REST_Request $request The request object
      * @return WP_REST_Response The response
@@ -498,7 +498,7 @@ class Topsms_Rest_Api_Admin {
     public function topsms_save_settings_(WP_REST_Request $request) {
         // Get data from request
         $body_params = $request->get_json_params();
-        error_log("save setting input:" . print_r($body_params, true));
+        // error_log("save setting input:" . print_r($body_params, true));
         
         // Validate required parameters
         if (!isset($body_params['key']) || !isset($body_params['value'])) {
@@ -538,7 +538,7 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Update sender name in TopSMS API
+     * Update sender name in TopSMS API.
      * 
      * @param string $sender The sender name to update
      * @param string $key The option key
@@ -548,7 +548,7 @@ class Topsms_Rest_Api_Admin {
     private function topsms_update_api_sender_name($sender, $key, $option_name) {
         // Get access token for API request
         $access_token = get_option('topsms_access_token');
-        error_log("topsms access token: " . print_r($access_token, true));
+        // error_log("topsms access token: " . print_r($access_token, true));
         
         if (!$access_token) {
             return new WP_REST_Response([
@@ -587,7 +587,7 @@ class Topsms_Rest_Api_Admin {
         
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
-        error_log("response data: " . print_r($data, true));
+        // error_log("response data: " . print_r($data, true));
         
         // Check the status field in the response data
         if (isset($data['status']) && $data['status'] === 'success') {
@@ -619,14 +619,14 @@ class Topsms_Rest_Api_Admin {
     }
 
     /**
-     * Get the user data, identified by the topsms access token in the options
+     * Get the user data, identified by the topsms access token in the options.
      * 
      * @param WP_REST_Request $request The request object
      * @return WP_REST_Response The response
      */
     public function topsms_get_user_data(WP_REST_Request $request) {
         $access_token = get_option('topsms_access_token');
-        error_log("topsms access token" . print_r($access_token, true));
+        // error_log("topsms access token" . print_r($access_token, true));
 
         if (!$access_token) {
             return new WP_REST_Response([
@@ -655,7 +655,7 @@ class Topsms_Rest_Api_Admin {
         
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
-        error_log("response data" . print_r($data, true));
+        // error_log("response data" . print_r($data, true));
         
         // Check the status field in the response data
         if (isset($data['status']) && $data['status'] === 'success') {
@@ -674,9 +674,8 @@ class Topsms_Rest_Api_Admin {
         }
     }
 
-
-   /**
-     * REST API callback for fetching SMS logs with filtering and pagination
+    /**
+     * REST API callback for fetching SMS logs with filtering and pagination.
      *
      * @param WP_REST_Request $request The REST request object.
      * @return array Response data.
@@ -692,6 +691,17 @@ class Topsms_Rest_Api_Admin {
         $before_date = $request->get_param('before');
         $status = $request->get_param('status');
         $order_status = $request->get_param('order_status');
+
+        // Generate a cache key based on query parameters
+        $cache_key = 'topsms_logs_' . md5(serialize([
+            $page, $per_page, $after_date, $before_date, $status, $order_status
+        ]));
+        
+        // Try to get cached results first
+        $response = wp_cache_get($cache_key, 'topsms_analytics');
+        if ($response) {
+            return $response;
+        }
         
         // Calculate offset
         $offset = ($page - 1) * $per_page;
@@ -786,6 +796,9 @@ class Topsms_Rest_Api_Admin {
             'per_page' => intval($per_page),
             'status_counts' => $formatted_status_counts
         );
+
+        // Set the cache - cache for 5 minutes
+        wp_cache_set($cache_key, $response, 'topsms_analytics', 300);
         
         return $response;
     }
