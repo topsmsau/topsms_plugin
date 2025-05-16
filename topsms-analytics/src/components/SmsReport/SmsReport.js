@@ -29,6 +29,7 @@ export class SmsReport extends ReactComponent {
       data: { loading: true },
       currentPage: 1,
       perPage: 10,
+      allData: [], // Store all SMS data here
     };
 
     this.handleDateChange = this.handleDateChange.bind(this);
@@ -86,6 +87,7 @@ export class SmsReport extends ReactComponent {
 
   /**
    * Load SMS data from API and apply date filters
+   * Modified to fetch all data without pagination
    */
   loadData() {
     if (!this.state || !this.state.dateQuery) {
@@ -93,7 +95,7 @@ export class SmsReport extends ReactComponent {
       return;
     }
 
-    // Create query string with date parameters
+    // Create query string with date parameters only (no pagination)
     let queryParams = '';
     if (this.state.dateQuery && this.state.dateQuery.primaryDate) {
       const { primaryDate } = this.state.dateQuery;
@@ -106,18 +108,18 @@ export class SmsReport extends ReactComponent {
         appendTimestamp(primaryDate.before, 'end')
       );
 
-      // Add page and per_page params for pagination
-      queryParams = `?after=${afterDate}&before=${beforeDate}&page=${this.state.currentPage}&per_page=${this.state.perPage}`;
+      // Request all records by setting a very large per_page value
+      // or by excluding pagination parameters if your API supports that
+      queryParams = `?after=${afterDate}&before=${beforeDate}&per_page=9999`;
     }
 
     const apiPath = `/topsms/v1/logs${queryParams}`;
-    console.log(`Fetching data from: ${apiPath}`);
+    console.log(`Fetching all data from: ${apiPath}`);
 
-    // Make API request
+    // Make API request for all data
     apiFetch({
       path: apiPath,
       method: 'GET',
-      // Add headers to ensure proper date format
       headers: {
         'Content-Type': 'application/json',
       },
@@ -125,34 +127,30 @@ export class SmsReport extends ReactComponent {
       .then((response) => {
         console.log('API Response:', response);
 
-        // Extract the logs array and pagination data from the response
+        // Extract the logs array and data from the response
         let smsData = [];
-        let totalItems = 0;
-        let totalPages = 1;
 
         if (response && response.logs && Array.isArray(response.logs)) {
           smsData = response.logs;
-          totalItems = response.total || smsData.length;
-          totalPages =
-            response.pages || Math.ceil(totalItems / this.state.perPage);
         } else if (Array.isArray(response)) {
           smsData = response;
-          totalItems = smsData.length;
-          totalPages = Math.ceil(totalItems / this.state.perPage);
         } else {
           console.warn('Unexpected API response format:', response);
         }
 
         console.log(`Received ${smsData.length} SMS messages from API`);
 
-        // Process the data and update state
-        const data = this.prepareData(smsData, totalItems, totalPages);
-        this.setState({ data: data });
+        // Store all data in state
+        this.setState({ allData: smsData }, () => {
+          // Process the paginated subset for the current view
+          this.updateCurrentPageData();
+        });
       })
       .catch((error) => {
         console.error('API Error:', error);
         // Handle error state
         this.setState({
+          allData: [],
           data: {
             ...this.prepareData([], 0, 0),
             error: error.message || 'Error loading data',
@@ -162,17 +160,41 @@ export class SmsReport extends ReactComponent {
   }
 
   /**
+   * Updates the current page data based on pagination settings
+   * This uses the already fetched allData instead of making new API calls
+   */
+  updateCurrentPageData() {
+    const { currentPage, perPage, allData } = this.state;
+
+    // Calculate total pages
+    const totalItems = allData.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+
+    // Get the current page subset
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = Math.min(startIndex + perPage, totalItems);
+    const currentPageData = allData.slice(startIndex, endIndex);
+
+    // Process the data and update state
+    const data = this.prepareData(currentPageData, totalItems, totalPages);
+    this.setState({ data: data });
+  }
+
+  /**
    * Transforms data to a format suitable for saving into component state.
    */
-  prepareData(smsData, totalItems = 0, totalPages = 1) {
-    // Ensure smsData is an array
-    if (!Array.isArray(smsData)) {
-      console.warn('prepareData received non-array data:', smsData);
-      smsData = [];
+  prepareData(currentPageData, totalItems = 0, totalPages = 1) {
+    // Ensure currentPageData is an array
+    if (!Array.isArray(currentPageData)) {
+      console.warn('prepareData received non-array data:', currentPageData);
+      currentPageData = [];
     }
 
     // If no data is provided, return empty state with loading false
-    if (smsData.length === 0) {
+    if (
+      currentPageData.length === 0 &&
+      (!this.state.allData || this.state.allData.length === 0)
+    ) {
       return {
         messages: [],
         statusCounts: [
@@ -183,23 +205,26 @@ export class SmsReport extends ReactComponent {
         ],
         loading: false,
         totals: {
-          total_messages: totalItems,
+          total_messages: 0,
           delivered_count: 0,
-          sent_count: 0,
-          pending_count: 0,
           failed_count: 0,
+          pending_count: 0,
+          rejected_count: 0,
         },
         pagination: {
-          totalItems: totalItems,
-          totalPages: totalPages,
+          totalItems: 0,
+          totalPages: 1,
           currentPage: this.state.currentPage,
           perPage: this.state.perPage,
         },
       };
     }
 
-    // Transform API data if needed
-    const processedData = smsData.map((item) => {
+    // Get the full dataset to calculate accurate totals
+    const allData = this.state.allData || currentPageData;
+
+    // Transform API data for the current page if needed
+    const processedPageData = currentPageData.map((item) => {
       // Make sure all expected fields are present
       return {
         id: item.id || 0,
@@ -211,9 +236,11 @@ export class SmsReport extends ReactComponent {
       };
     });
 
+    // Create data object with paginated messages but totals from all data
     let data = {
-      messages: processedData,
-      statusCounts: this.getStatusCounts(processedData),
+      messages: processedPageData,
+      // Use ALL data for chart display instead of just current page
+      statusCounts: this.getStatusCounts(allData),
       loading: false,
       pagination: {
         totalItems: totalItems,
@@ -223,12 +250,13 @@ export class SmsReport extends ReactComponent {
       },
     };
 
+    // Calculate totals from ALL data, not just current page
     data.totals = {
-      total_messages: totalItems || processedData.length,
-      delivered_count: this.countByStatus(processedData, 'Delivered'),
-      failed_count: this.countByStatus(processedData, 'Failed'),
-      pending_count: this.countByStatus(processedData, 'Pending'),
-      rejected_count: this.countByStatus(processedData, 'Rejected'),
+      total_messages: allData.length,
+      delivered_count: this.countByStatus(allData, 'Delivered'),
+      failed_count: this.countByStatus(allData, 'Failed'),
+      pending_count: this.countByStatus(allData, 'Pending'),
+      rejected_count: this.countByStatus(allData, 'Rejected'),
     };
 
     return data;
@@ -290,6 +318,7 @@ export class SmsReport extends ReactComponent {
         dateQuery: newDateQuery,
         data: { loading: true },
         currentPage: 1, // Reset to first page when date changes
+        allData: [], // Clear all data when date changes
       },
       () => {
         // Then load data with the new date range
@@ -299,7 +328,7 @@ export class SmsReport extends ReactComponent {
   }
 
   /**
-   * Handle pagination page changes
+   * Handle pagination page changes - now just updates view from cached data
    */
   handlePageChange(newPage) {
     this.setState(
@@ -308,13 +337,14 @@ export class SmsReport extends ReactComponent {
         data: { ...this.state.data, loading: true },
       },
       () => {
-        this.loadData();
+        // Instead of loading from API, just update from existing data
+        this.updateCurrentPageData();
       }
     );
   }
 
   /**
-   * Handle per page changes
+   * Handle per page changes - now just updates view from cached data
    */
   handlePerPageChange(newPerPage) {
     this.setState(
@@ -324,7 +354,8 @@ export class SmsReport extends ReactComponent {
         data: { ...this.state.data, loading: true },
       },
       () => {
-        this.loadData();
+        // Instead of loading from API, just update from existing data
+        this.updateCurrentPageData();
       }
     );
   }
