@@ -74,9 +74,14 @@ Your current credit balance is always visible in the TopSMS dashboard. You can a
 == Changelog ==
 
 = 1.0.1 =
-* Initial release
+* Initial release, with analytics functionality.
+
+= 1.0.0 =
+* Implemented basic TopSMS functionality, including automations settintgs, general settings and sending SMS on order statuses changed.
 
 == Upgrade Notice ==
 
 = 1.0.1 =
-Initial release of TopSMS WooCommerce Plugin.
+Initial release of TopSMS WooCommerce Plugin, with TopSMS analytics functionality.
+
+
