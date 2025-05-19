@@ -220,7 +220,7 @@ const Registration = ({ onComplete }) => {
             const sendData = {
                 phoneNumber: phoneNumber
             }
-            console.log("form data:", formData);
+            // console.log("form data:", formData);
             
             const response = await fetch("/wp-json/topsms/v1/send-otp/", {
                 method: 'POST',

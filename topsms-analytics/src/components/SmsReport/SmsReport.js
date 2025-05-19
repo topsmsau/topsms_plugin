@@ -114,7 +114,7 @@ export class SmsReport extends ReactComponent {
         }
 
         const apiPath = `/topsms/v1/logs${queryParams}`;
-        console.log(`Fetching all data from: ${apiPath}`);
+        // console.log(`Fetching all data from: ${apiPath}`);
 
         // Make API request for all data
         apiFetch({
@@ -125,7 +125,7 @@ export class SmsReport extends ReactComponent {
             },
         })
         .then((response) => {
-            console.log('API Response:', response);
+            // console.log('API Response:', response);
 
             // Extract the logs array and data from the response
             let smsData = [];
@@ -138,7 +138,7 @@ export class SmsReport extends ReactComponent {
                 console.warn('Unexpected API response format:', response);
             }
 
-            console.log(`Received ${smsData.length} SMS messages from API`);
+            // console.log(`Received ${smsData.length} SMS messages from API`);
 
             // Store all data in state
             this.setState({ allData: smsData }, () => {

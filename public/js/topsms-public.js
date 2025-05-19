@@ -1,4 +1,4 @@
-(function( $ ) {
+(function ( $ ) {
 	'use strict';
 
 	/**
@@ -28,29 +28,37 @@
 	 * Although scripts in the WordPress core, Plugins and Themes may be
 	 * practising this, we should strive to set a better example in our own work.
 	 */
-    jQuery(document).ready(function($) {
-        // When the checkbox changes, update cart
-        $(document).on('change', '#topsms-customer-consent', function() {
-            // Save the checkbox state
-            var isChecked = $(this).is(':checked') ? 1 : 0;
-            
-            // Get nonce from the field that wp_nonce_field created
-            var nonce = $('#topsms_consent_nonce').val();
-            
-            // Trigger cart update
-            $('body').trigger('update_checkout');
-            
-            // Use AJAX to store the preference in the session
-            $.ajax({
-                type: 'POST',
-                url: wc_checkout_params.ajax_url,
-                data: {
-                    'action': 'topsms_update_consent',
-                    'consent': isChecked,
-                    'security': nonce
-                }
-            });
-        });
-    });
+	jQuery( document ).ready(
+		function ($) {
+			// When the checkbox changes, update cart
+			$( document ).on(
+				'change',
+				'#topsms-customer-consent',
+				function () {
+					// Save the checkbox state
+					var isChecked = $( this ).is( ':checked' ) ? 1 : 0;
+
+					// Get nonce from the field that wp_nonce_field created
+					var nonce = $( '#topsms_consent_nonce' ).val();
+
+					// Trigger cart update
+					$( 'body' ).trigger( 'update_checkout' );
+
+					// Use AJAX to store the preference in the session
+					$.ajax(
+						{
+							type: 'POST',
+							url: wc_checkout_params.ajax_url,
+							data: {
+								'action': 'topsms_update_consent',
+								'consent': isChecked,
+								'security': nonce
+							}
+						}
+					);
+				}
+			);
+		}
+	);
 
 })( jQuery );

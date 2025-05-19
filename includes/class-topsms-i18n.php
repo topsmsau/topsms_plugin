@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Define the internationalization functionality
  *
@@ -25,7 +24,7 @@
  * @subpackage Topsms/includes
  * @author     EUX <samee@eux.com.au>
  */
-class Topsms_i18n {
+class Topsms_I18n {
 
 
 	/**
@@ -40,9 +39,5 @@ class Topsms_i18n {
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);
-
 	}
-
-
-
 }

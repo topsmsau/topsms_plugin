@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The plugin bootstrap file
  *
@@ -36,54 +35,62 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'TOPSMS_VERSION', '1.0.1' );
-define('TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url(__FILE__));
-// Define path to the included plugin
-define('ANALYTICS_PATH', plugin_dir_path(__FILE__) . 'topsms-analytics/');
+define( 'TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+// Define path to the included plugin.
+define( 'ANALYTICS_PATH', plugin_dir_path( __FILE__ ) . 'topsms-analytics/' );
 
-// Include the main file of the plugin you want to include
-if (file_exists(ANALYTICS_PATH . 'topsms-analytics.php')) {
-    require_once ANALYTICS_PATH . 'topsms-analytics.php';
+// Include the main file of the plugin you want to include.
+if ( file_exists( ANALYTICS_PATH . 'topsms-analytics.php' ) ) {
+	require_once ANALYTICS_PATH . 'topsms-analytics.php';
 }
 
 /**
  * Handle admin notices for WooCommerce dependency
  */
 function topsms_admin_notices() {
-    // Check for the transient that was set during activation
-    if (get_transient('topsms_woocommerce_missing')) {
-        ?>
-        <div class="error">
-            <p><?php esc_html_e('TopSMS requires WooCommerce to be installed and active. The plugin has been deactivated.', 'topsms'); ?></p>
-        </div>
-        <?php
-        // Delete the transient so the notice only appears once
-        delete_transient('topsms_woocommerce_missing');
-    }
+	// Check for the transient that was set during activation.
+	if ( get_transient( 'topsms_woocommerce_missing' ) ) {
+		?>
+		<div class="error">
+			<p><?php esc_html_e( 'TopSMS requires WooCommerce to be installed and active. The plugin has been deactivated.', 'topsms' ); ?></p>
+		</div>
+		<?php
+		// Delete the transient so the notice only appears once.
+		delete_transient( 'topsms_woocommerce_missing' );
+	}
 }
-add_action('admin_notices', 'topsms_admin_notices');
+add_action( 'admin_notices', 'topsms_admin_notices' );
 
 /**
  * Check WooCommerce dependency on admin init
  */
 function topsms_check_woocommerce_dependency() {
-    // Only run this check if our plugin is active
-    if (is_plugin_active(plugin_basename(__FILE__))) {
-        // If WooCommerce is not active
-        if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
-            // Deactivate the plugin
-            deactivate_plugins(plugin_basename(__FILE__));
-            
-            // Set a transient to show the notice
-            set_transient('topsms_woocommerce_missing', true, 5);
-            
-            // If we're on the plugins page after activation, prevent the "activated" notice
-            if (isset($_GET['activate'])) {
-                unset($_GET['activate']);
-            }
-        }
-    }
+	// Only run this check if our plugin is active.
+	if ( is_plugin_active( plugin_basename( __FILE__ ) ) ) {
+		// If WooCommerce is not active.
+		if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
+			// Deactivate the plugin.
+			deactivate_plugins( plugin_basename( __FILE__ ) );
+
+			// Set a transient to show the notice.
+			set_transient( 'topsms_woocommerce_missing', true, 5 );
+
+			// If we're on the plugins page after activation, prevent the "activated" notice.
+			if ( isset( $_GET['activate'] ) && isset( $_GET['_wpnonce'] ) ) {
+				// Unslash and sanitize the nonce value before verification.
+				$nonce = sanitize_key( wp_unslash( $_GET['_wpnonce'] ) );
+
+				// The plugin file path should match exactly what WordPress uses.
+				$plugin_file = 'woocommerce/woocommerce.php';
+
+				if ( wp_verify_nonce( $nonce, 'activate-plugin_' . $plugin_file ) ) {
+					unset( $_GET['activate'] );
+				}
+			}
+		}
+	}
 }
-add_action('admin_init', 'topsms_check_woocommerce_dependency');
+add_action( 'admin_init', 'topsms_check_woocommerce_dependency' );
 
 /**
  * The code that runs during plugin activation.
@@ -126,6 +133,5 @@ function run_topsms() {
 
 	$plugin = new Topsms();
 	$plugin->run();
-
 }
 run_topsms();

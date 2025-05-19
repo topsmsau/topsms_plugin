@@ -200,7 +200,7 @@ export class SmsTable extends ReactComponent {
   // Handle query changes (both page and per_page)
   handleQueryChange(key) {
     return (value) => {
-      console.log(`Query change: ${key} = ${value}`);
+    //   console.log(`Query change: ${key} = ${value}`);
       
        if ((key === 'page' || key === 'paged') && this.props.onPageChange) {
             this.props.onPageChange(value);
@@ -211,7 +211,7 @@ export class SmsTable extends ReactComponent {
   }
 
   render() {
-    console.log('Rendering SmsTable with data:', this.state.messageData);
+    // console.log('Rendering SmsTable with data:', this.state.messageData);
 
     const { messageData } = this.state;
     const totals = this.props.totals || {
