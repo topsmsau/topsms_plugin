@@ -6,7 +6,7 @@ import {
     Icon
 } from '@wordpress/components';
 
-const ReviewCard = ({icon, title, message,buttonText, className = ''}) => {
+const ReviewCard = ({icon, title, message, buttonText, link, className = ''}) => {
     return (
         <Card className={`text-center ${className}`}>
             <CardBody className="p-4 flex flex-col items-center">
@@ -23,6 +23,12 @@ const ReviewCard = ({icon, title, message,buttonText, className = ''}) => {
                 
                 {/* Button */}
                 <Button 
+                    onClick={() => {
+                        // Open the link in a new tab, except for "#" links which should stay on the page
+                        if (link && link !== '#') {
+                            window.open(link, '_blank');
+                        }
+                    }}
                     variant="primary"
                     className="w-full justify-center rounded-full bg-blue-500"
                 >
