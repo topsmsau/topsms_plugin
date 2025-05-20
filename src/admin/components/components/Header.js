@@ -8,15 +8,15 @@ import BalanceCard from './BalanceCard';
 const Header = () => {
     const [balance, setBalance] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
-    const [isLowBalance, setIsLowBalance] = useState(false);
+    const [isBlocked, setIsBlocked] = useState(false);
 
     // Fetch current balance on load (fetched from db)
     useEffect(() => {
-        fetchBalance();
+        fetchUserData();
     }, []);
 
     // Fetch current status enabled settings from db
-    const fetchBalance = async () => {
+    const fetchUserData = async () => {
         try {
             // Get the nonce from WordPress
             const nonce = window.wpApiSettings?.nonce;
@@ -44,11 +44,13 @@ const Header = () => {
 
             // Get the user balance
             const balance_ = data.data.data.balance;
-            console.log(balance_);
-            if (balance_ < 50) {
-                setIsLowBalance(true);
-            }
+            // console.log(balance_);
             setBalance(balance_);
+
+            const blocked = data.data.data.block;
+            if (blocked) {
+                setIsBlocked(true);
+            }
             // console.log('User current balance:', balance_);
         } catch (error) {
             console.error('Error fetching user data:', error);
@@ -59,7 +61,7 @@ const Header = () => {
 
   return (
     <Card className='topsms-header mb-4 border-0 shadow-none'>
-        {isLowBalance && 
+        {isBlocked && 
             <Notice status="error" isDismissible={false}>
                 <p>
                     {__("Thanks for installing the plugin! Your SMS account is currently under review — this process usually takes 24 to 48 hours. If you haven't heard from us after that time, feel free to reach out at ", 'topsms')}

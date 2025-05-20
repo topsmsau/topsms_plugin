@@ -553,6 +553,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .mt-8 {
   margin-top: 2rem;
 }
+.topsms-app .block {
+  display: block;
+}
 .topsms-app .flex {
   display: flex;
 }
