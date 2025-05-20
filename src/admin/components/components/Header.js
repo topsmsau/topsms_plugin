@@ -1,5 +1,5 @@
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, Flex, FlexItem, Icon } from '@wordpress/components';
+import { Card, CardBody, Flex, FlexItem, Icon, Notice } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 
 import TopsmsIcon from '../icons/TopsmsLogo.svg';
@@ -8,6 +8,7 @@ import BalanceCard from './BalanceCard';
 const Header = () => {
     const [balance, setBalance] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLowBalance, setIsLowBalance] = useState(false);
 
     // Fetch current balance on load (fetched from db)
     useEffect(() => {
@@ -43,6 +44,10 @@ const Header = () => {
 
             // Get the user balance
             const balance_ = data.data.data.balance;
+            console.log(balance_);
+            if (balance_ < 50) {
+                setIsLowBalance(true);
+            }
             setBalance(balance_);
             // console.log('User current balance:', balance_);
         } catch (error) {
@@ -54,7 +59,16 @@ const Header = () => {
 
   return (
     <Card className='topsms-header mb-4 border-0 shadow-none'>
-      <CardBody className='topsms-header-card-body p-0'>
+        {isLowBalance && 
+            <Notice status="error" isDismissible={false}>
+                <p>
+                    {__("Thanks for installing the plugin! Your SMS account is currently under review — this process usually takes 24 to 48 hours. If you haven't heard from us after that time, feel free to reach out at ", 'topsms')}
+                     <a href="mailto:support@topsms.com.au" className="text-blue-600 hover:underline"> support@topsms.com.au </a>
+                    {__("and we'll be happy to help. ", 'topsms')}
+                </p>
+            </Notice>
+        }
+      <CardBody className='topsms-header-card-body p-0 mt-2'>
         <Flex align='center' gap={4}>
           <FlexItem gap={2}>
             <Flex>

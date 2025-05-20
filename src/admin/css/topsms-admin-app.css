@@ -97,6 +97,10 @@
     background-color: #fff;
     padding: 1.25rem;
 }
+.topsms-header .components-notice {
+    background-color: #f4a2a263  !important;
+    border-left: 4px solid #d63638 !important;
+}
 
 /* Automation settings */
 .status-control .open-settings svg {
