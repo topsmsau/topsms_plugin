@@ -54,7 +54,7 @@ const Settings = () => {
             amount: 3000, 
             sms: 100000,
             discount: '44%',
-            link: 'https://buy.stripe.com/bIYaFj6IS2hEeje8wB' 
+            link: 'https://buy.stripe.com/dRm14m88g4SUdu91tbbQY06' 
         },
     ];
     

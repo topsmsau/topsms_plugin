@@ -449,7 +449,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
                                     {__('Enable low balance alerts', 'topsms')}
                                 </h4>
                                 <p className="text-sm text-gray-600">
-                                    {__("We'll notify you when your balance falls below $2.00", 'topsms')}
+                                    {__("We'll notify you when your SMS balance falls below 50", 'topsms')}
                                 </p>
                             </div>
                             {settings.lowBalanceAlert.loading ? (

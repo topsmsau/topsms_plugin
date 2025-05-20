@@ -20,6 +20,7 @@
  * @author     EUX <samee@eux.com.au>
  */
 class Topsms_Admin {
+	const LOW_BALANCE_THRESHOLD = 50;
 
 	/**
 	 * The ID of this plugin.
@@ -740,5 +741,79 @@ class Topsms_Admin {
 				'%s',
 			)
 		);
+
+		$balance = isset( $data['remainingBalance'] ) ? $data['remainingBalance'] : '';
+		if ( $balance ) {
+			$this->low_balance_alert( (int) $balance );
+		}
+	}
+
+	/**
+	 * Sends SMS alert notifications to customers when low SMS balance.
+	 *
+	 * @since    1.0.1
+	 * @param    int $balance    Current account balance.
+	 */
+	private function low_balance_alert( $balance ) {
+		// Get low balance alert option.
+		$low_balance_option = get_option( 'topsms_settings_low_balance_alert', 'no' );
+		if ( 'no' === $low_balance_option ) {
+			return;
+		} else {
+			// Check if the transient exists.
+			// If transient doesn't exist (has expired or was never set), set it to true.
+			$send_sms_transient = get_transient( 'topsms_send_sms' );
+			if ( false === $send_sms_transient ) {
+				set_transient( 'topsms_send_sms', true );
+			}
+
+			// If low balance and of transient of send_sms is true, get user phone number and send sms (call Topsms api).
+			if ( $balance < self::LOW_BALANCE_THRESHOLD && get_transient( 'topsms_send_sms' ) ) {
+				$registration_data = get_option( 'topsms_registration_data', array() );
+				if ( ! empty( $registration_data ) ) {
+					$access_token = get_option( 'topsms_access_token' );
+					$user_phone   = isset( $registration_data['phone_number'] ) ? $registration_data['phone_number'] : '';
+					$user_company = isset( $registration_data['company'] ) ? $registration_data['company'] : '';
+					$sender       = get_option( 'topsms_sender' );
+					$message      = 'Alert: Your SMS balance is running low (under 50) on ' . $user_company . '. Please top up soon to avoid interruption to order notifications.';
+
+					// Send SMS.
+					$url  = 'https://api.topsms.com.au/functions/v1/sms';
+					$body = array(
+						'phone_number' => $user_phone,
+						'from'         => $sender,
+						'message'      => $message,
+						'link'         => '',
+					);
+
+					$response = wp_remote_post(
+						$url,
+						array(
+							'headers' => array(
+								'Authorization' => 'Bearer ' . $access_token,
+								'Content-Type'  => 'application/json',
+							),
+							'body'    => wp_json_encode( $body ),
+							'timeout' => 45,
+						)
+					);
+
+					$body = wp_remote_retrieve_body( $response );
+					$data = json_decode( $body, true );
+
+					// Determine API status.
+					if ( is_wp_error( $response ) ) {
+						$api_status = 'Failed';
+					} elseif ( isset( $data['messageStatuses'][0]['statusText'] ) ) {
+							$api_status = $data['messageStatuses'][0]['statusText'];
+					} else {
+						$api_status = 'Pending';
+					}
+
+					// Set transient to false for 24 hours.
+					set_transient( 'topsms_send_sms', false, DAY_IN_SECONDS );
+				}
+			}
+		}
 	}
 }

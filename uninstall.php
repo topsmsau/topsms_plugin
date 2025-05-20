@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Fired when the plugin is uninstalled.
  *
@@ -22,10 +21,50 @@
  * @link       http://eux.com.au
  * @since      1.0.0
  *
- * @package    Price_Adjustment
+ * @package    Topsms
  */
 
 // If uninstall not called from WordPress, then exit.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
+
+// Delete automation settings options.
+delete_option( 'topsms_order_processing_enabled' );
+delete_option( 'topsms_order_processing_message' );
+delete_option( 'topsms_order_completed_enabled' );
+delete_option( 'topsms_order_completed_message' );
+delete_option( 'topsms_order_failed_enabled' );
+delete_option( 'topsms_order_failed_message' );
+delete_option( 'topsms_order_refunded_enabled' );
+delete_option( 'topsms_order_refunded_message' );
+delete_option( 'topsms_order_pending_enabled' );
+delete_option( 'topsms_order_pending_message' );
+delete_option( 'topsms_order_cancelled_enabled' );
+delete_option( 'topsms_order_cancelled_message' );
+delete_option( 'topsms_order_on-hold_enabled' );
+delete_option( 'topsms_order_on-hold_message' );
+delete_option( 'topsms_order_draft_enabled' );
+delete_option( 'topsms_order_draft_message' );
+
+// Delete general settings options.
+delete_option( 'topsms_settings_low_balance_alert' );
+delete_option( 'topsms_settings_customer_consent' );
+delete_option( 'topsms_settings_sms_surcharge' );
+delete_option( 'topsms_settings_sms_surcharge_amount' );
+
+// Delete registration/connection options.
+delete_option( 'topsms_access_token' );
+delete_option( 'topsms_refresh_token' );
+delete_option( 'topsms_registration_data' );
+delete_option( 'topsms_sender' );
+
+// Delete logs table.
+global $wpdb;
+$table_name = $wpdb->prefix . 'topsms_logs';
+$wpdb->query(
+	$wpdb->prepare(
+		'DROP TABLE IF EXISTS %1s',
+		$table_name
+	)
+);
