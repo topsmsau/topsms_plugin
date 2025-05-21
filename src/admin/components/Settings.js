@@ -10,6 +10,11 @@ import { __ } from '@wordpress/i18n';
 import Layout from './components/Layout';
 import TopupBalanceButton from './settings/TopupBalanceButton';
 import BalanceCard from './settings/BalanceCard';
+import ReviewCard from './settings/ReviewCard';
+
+import BannerIcon1 from './icons/AutomationBannerIcon1.svg';
+import BannerIcon2 from './icons/AutomationBannerIcon2.svg';
+import BannerIcon3 from './icons/AutomationBannerIcon3.svg';
 
 const Settings = () => {
     const [selectedAmount, setSelectedAmount] = useState(null);
@@ -56,6 +61,32 @@ const Settings = () => {
             discount: '44%',
             link: 'https://buy.stripe.com/dRm14m88g4SUdu91tbbQY06' 
         },
+    ];
+
+    // Review cards data
+    const reviewCards = [
+        {
+            icon: BannerIcon1,
+            title: 'Enjoying TopSMS?',
+            message: "Don't forget to leave us a review — your feedback helps us grow!", 
+            buttonText: 'Leave a review',
+            link: 'https://eux.com.au/product/woocommerce-sms-notification/#reviews'
+        },
+        {
+            icon: BannerIcon2,
+            title: 'Got ideas for new features?',
+            message: "Help shape the future of TopSMS by voting or suggesting new features.", 
+            buttonText: 'Request a feature',
+            link: '#'
+        },
+        {
+            icon: BannerIcon3,
+            title: 'Need something tailored to your business?',
+            message: "We offer custom development services to make TopSMS work exactly how you need it.", 
+            buttonText: 'Customisation services',
+            link: 'https://eux.com.au/contact-us/'
+
+        }
     ];
     
     // Handle click event on top-up items
@@ -181,6 +212,27 @@ const Settings = () => {
                         </Flex>
                     </CardBody>
                 </Card>
+            </div>
+
+            {/* Review Cards */}
+            <div className="grid grid-cols-3 gap-4 mt-4 py-3">
+                {/* <ReviewCard
+                    icon=''
+                    title='Customisation Services'
+                    message="Don't forget to leave us a review — your feedback helps us grow!"
+                    buttonText='Leave a review'
+                    /> */}
+                {reviewCards.map((card, index) => (
+                    <ReviewCard
+                        key={index}
+                        icon={card.icon}
+                        title={card.title}
+                        link={card.link}
+                        message={card.message}
+                        buttonText={card.buttonText}
+                        className={'topsms-review-card'}
+                    />
+                ))}
             </div>
         </Layout>
     );

@@ -2,10 +2,10 @@ import { __ } from '@wordpress/i18n';
 import { 
     Card, 
     CardBody, 
-    CardFooter, 
     Button, 
     Flex,
-    Icon
+    Icon,
+    CheckboxControl 
 } from '@wordpress/components';
 import { useState, useCallback, useEffect } from '@wordpress/element';
 
@@ -19,6 +19,7 @@ const Verification = ({ onComplete, userData }) => {
     const [countdown, setCountdown] = useState(60);
     const [phoneNumber, setPhoneNumber] = useState(userData.phoneNumber);
     const [isVerifying, setIsVerifying] = useState(false);
+    const [isChecked, setIsChecked] = useState(false);
 
     
     // Handle verification code input change
@@ -317,11 +318,26 @@ const Verification = ({ onComplete, userData }) => {
                         )}
                     </Flex>
 
+                    <CheckboxControl
+                        __nextHasNoMarginBottom
+                        label={
+                                <span>
+                                    {__('I have read and agree to the ', 'topsms')}
+                                    <a href="https://topsms.com.au/terms-conditions/" target="_blank" className="text-blue-600 hover:underline">Terms and Conditions</a> 
+                                    {__(' and ', 'topsms')}
+                                    <a href="https://topsms.com.au/privacy-policy/" target="_blank" className="text-blue-600 hover:underline">Privacy Policy</a>
+                                    {__('. I understand how my personal data will be used as described in the Privacy Policy. ', 'topsms')}
+                                </span>
+                            }
+                        checked={ isChecked }
+                        onChange={ setIsChecked }
+                    />
+
                     <Button 
                         primary
                         className={`topsms-button w-full mt-8 ${isVerifying ? 'animate-pulse' : ''}`}
                         onClick={handleSubmit}
-                        disabled={verificationCode.some(digit => !digit)}
+                        disabled={verificationCode.some(digit => !digit) || !isChecked}
                     >
                         {isVerifying ? __('Verifying...', 'topsms') : __('Next', 'topsms')}
                     </Button>

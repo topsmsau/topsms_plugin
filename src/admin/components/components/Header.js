@@ -64,7 +64,7 @@ const Header = () => {
         {isBlocked && 
             <Notice status="error" isDismissible={false}>
                 <p>
-                    {__("Thanks for installing the plugin! Your SMS account is currently under review — this process usually takes 24 to 48 hours. If you haven't heard from us after that time, feel free to reach out at ", 'topsms')}
+                    {__("Thanks for installing the plugin! Your SMS account is currently under review - this process usually takes 24 to 48 hours. If you haven't heard from us after that time, feel free to reach out at ", 'topsms')}
                      <a href="mailto:support@topsms.com.au" className="text-blue-600 hover:underline"> support@topsms.com.au </a>
                     {__("and we'll be happy to help. ", 'topsms')}
                 </p>

@@ -874,6 +874,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 }
+.topsms-app .py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
 .topsms-app .py-4 {
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -1100,7 +1104,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     padding: 1.25rem;
 }
 .topsms-app .topsms-header .components-notice {
-    background-color: #f4a2a263  !important;
+    background-color: #f4a2a24a   !important;
     border-left: 4px solid #d63638 !important;
 }
 
