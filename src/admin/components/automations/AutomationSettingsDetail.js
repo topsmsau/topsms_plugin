@@ -213,7 +213,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             }
 
             // Fetch sender name from backend
-            const response = await fetch('/wp-json/topsms/v1/settings/sender', {
+            const response = await fetch('/wp-json/topsms/v1/user', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -229,7 +229,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             }
 
             // Update the sender state
-            setSender(data.data.value || '');
+            setSender(data.data.data.sender || '');
         } catch (error) {
             console.error('Error fetching sender name:', error);
             

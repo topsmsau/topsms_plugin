@@ -82,7 +82,6 @@ class Topsms_Activator {
 		add_option( 'topsms_settings_sms_surcharge_amount', '' );
 
 		set_transient( 'topsms_activation_redirect', true, 30 );
-		set_transient( 'topsms_send_sms', true );
 
 		global $wpdb;
 

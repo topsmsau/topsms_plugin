@@ -238,7 +238,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             }
 
             // Fetch sender name from backend
-            const response = await fetch('/wp-json/topsms/v1/settings/sender', {
+            const response = await fetch('/wp-json/topsms/v1/user', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -247,14 +247,14 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             });
 
             const data = await response.json();
-            // console.log(`Fetch sender name:  ${data.data.value}`);
 
             if (!data.success) {
                 throw new Error(data.data.message || 'Unknown error');
             }
 
             // Update the sender state
-            setSender(data.data.value || '');
+            const sender_ = data.data.data.sender;
+            setSender(sender_ || '');
         } catch (error) {
             console.error('Error fetching sender name:', error);
             

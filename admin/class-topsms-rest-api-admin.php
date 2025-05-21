@@ -175,6 +175,10 @@ class Topsms_Rest_Api_Admin {
 		// Update the payload with formatted number.
 		$payload['phone_number'] = $formatted_number;
 
+		// Get the home/website url.
+		$website_url        = get_home_url();
+		$payload['website'] = $website_url;
+
 		// Make api request to topsms.
 		$response = wp_remote_post(
 			'https://api.topsms.com.au/functions/v1/verify',
@@ -737,6 +741,7 @@ class Topsms_Rest_Api_Admin {
 
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
+
 		// Check the status field in the response data.
 		if ( isset( $data['status'] ) && 'success' === $data['status'] ) {
 			return new WP_REST_Response(
