@@ -100,16 +100,3 @@ Your current credit balance is always visible in the TopSMS dashboard. You can a
 2. Automations editor with message template and status triggers
 3. Settings screen for configuring Stripe and SMS options
 4. Analytics dashboard showing delivery rates and usage
-
-== Changelog ==
-
-= 1.0.1 =
-* Initial release, with analytics functionality.
-
-= 1.0.0 =
-* Implemented core TopSMS functionality, including automation settings, general settings, and SMS sending on order status changes.
-
-== Upgrade Notice ==
-
-= 1.0.1 =
-Initial release of TopSMS WooCommerce Plugin, including SMS analytics and full Stripe integration.
