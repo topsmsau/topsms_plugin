@@ -15,7 +15,7 @@
  * Plugin Name:       TopSMS
  * Plugin URI:        https://topsms.com.au
  * Description:       An WooCommerce Add-On for SMS notifications
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 5.0
  * Requires PHP:      7.4
  * Author:            EUX

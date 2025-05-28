@@ -8,3 +8,13 @@
 
 ### Changed
 - Added website (home) url when making TopSMS request to send SMS.
+
+## [1.0.2] - 2025-05-28
+
+### Added
+- Added publicly documented resource for your the source files in the README.txt.
+- Added documentation on the use of a 3rd Party / external service (Supabase services).
+
+### Fixed
+- Replace the 'echo' codes with wp_add_inline_style() and wp_add_inline_script() to add inline CSS and JavaScript code.
+- Fixed functions, classes, constants, namespaces and option names with a unique prefix.
