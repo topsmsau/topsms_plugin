@@ -62,7 +62,7 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
         setIsLoading(true);
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 setIsLoading(false);
@@ -114,7 +114,7 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
     const saveStatusEnabled = async (isEnabled) => {
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 throw new Error('WordPress REST API nonce not available');
             }

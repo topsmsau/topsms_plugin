@@ -12,6 +12,11 @@
  * @subpackage Topsms/includes
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The core plugin class.
  *
@@ -74,7 +79,6 @@ class Topsms {
 		$this->plugin_name = 'topsms';
 
 		$this->load_dependencies();
-		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 	}
@@ -85,7 +89,6 @@ class Topsms {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Topsms_Loader. Orchestrates the hooks of the plugin.
-	 * - Topsms_I18n. Defines internationalization functionality.
 	 * - Topsms_Admin. Defines all hooks for the admin area.
 	 * - Topsms_Public. Defines all hooks for the public side of the site.
 	 *
@@ -104,12 +107,6 @@ class Topsms {
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-topsms-loader.php';
 
 		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-topsms-i18n.php';
-
-		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-topsms-admin.php';
@@ -123,21 +120,6 @@ class Topsms {
 		$this->loader = new Topsms_Loader();
 	}
 
-	/**
-	 * Define the locale for this plugin for internationalization.
-	 *
-	 * Uses the Price_Adjustment_i18n class in order to set the domain and to register the hook
-	 * with WordPress.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 */
-	private function set_locale() {
-
-		$plugin_i18n = new Topsms_I18n();
-
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-	}
 
 	/**
 	 * Register all of the hooks related to the admin area functionality
@@ -154,7 +136,7 @@ class Topsms {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
 		// Add admin menu.
-		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_admin_menu' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'topsms_add_admin_menu' );
 
 		// Actions for rest api routes.
 		$this->loader->add_action( 'rest_api_init', $plugin_admin, 'topsms_register_routes' );
@@ -186,20 +168,20 @@ class Topsms {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
 		// Customer consent checkbox on the checkout page.
-		$this->loader->add_action( 'woocommerce_review_order_before_submit', $plugin_public, 'add_topsms_customer_consent_checkout_checkbox', 20 );
-		$this->loader->add_action( 'woocommerce_checkout_update_order_meta', $plugin_public, 'save_topsms_customer_consent_checkout_checkbox' );
+		$this->loader->add_action( 'woocommerce_review_order_before_submit', $plugin_public, 'topsms_add_customer_consent_checkout_checkbox', 20 );
+		$this->loader->add_action( 'woocommerce_checkout_update_order_meta', $plugin_public, 'topsms_save_customer_consent_checkout_checkbox' );
 
 		// Add topsms surcharge to cart.
-		$this->loader->add_action( 'woocommerce_cart_calculate_fees', $plugin_public, 'add_topsms_surcharge_to_cart' );
+		$this->loader->add_action( 'woocommerce_cart_calculate_fees', $plugin_public, 'topsms_add_surcharge_to_cart' );
 
 		// AJAX handler to update the customer consent in session.
 		$this->loader->add_action( 'wp_ajax_topsms_update_consent', $plugin_public, 'topsms_update_customer_consent' );
 		$this->loader->add_action( 'wp_ajax_nopriv_topsms_update_consent', $plugin_public, 'topsms_update_customer_consent' );
 
 		// Add sms notifications menu item to my account.
-		$this->loader->add_filter( 'woocommerce_account_menu_items', $plugin_public, 'add_sms_notifications_tab' );
-		$this->loader->add_action( 'init', $plugin_public, 'sms_notifications_endpoint' );
-		$this->loader->add_action( 'woocommerce_account_sms-notifications_endpoint', $plugin_public, 'sms_notifications_content' );
+		$this->loader->add_filter( 'woocommerce_account_menu_items', $plugin_public, 'topsms_add_sms_notifications_tab' );
+		$this->loader->add_action( 'init', $plugin_public, 'topsms_sms_notifications_endpoint' );
+		$this->loader->add_action( 'woocommerce_account_sms-notifications_endpoint', $plugin_public, 'topsms_sms_notifications_content' );
 	}
 
 	/**

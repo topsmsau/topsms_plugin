@@ -211,7 +211,7 @@ const Registration = ({ onComplete }) => {
         
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 return;

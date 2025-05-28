@@ -9,6 +9,11 @@
  * @subpackage Topsms/includes
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Fired during plugin activation.
  *
@@ -29,7 +34,7 @@ class Topsms_Activator {
 	 * @since    1.0.0
 	 */
 	public static function activate() {
-		self::sms_notifications_endpoint();
+		self::topsms_notifications_endpoint();
 		flush_rewrite_rules();
 
 		// Default messages for each status.
@@ -82,6 +87,7 @@ class Topsms_Activator {
 		add_option( 'topsms_settings_sms_surcharge_amount', '' );
 
 		set_transient( 'topsms_activation_redirect', true, 30 );
+		set_transient( 'topsms_send_sms', true );
 
 		global $wpdb;
 
@@ -110,7 +116,7 @@ class Topsms_Activator {
 	 *
 	 * @since    1.0.0
 	 */
-	public static function sms_notifications_endpoint() {
+	public static function topsms_notifications_endpoint() {
 		add_rewrite_endpoint( 'sms-notifications', EP_ROOT | EP_PAGES );
 	}
 }

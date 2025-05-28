@@ -1,6 +1,7 @@
 === TopSMS ===
-Contributors: EUX Digital Agency
-Tags: woocommerce, sms, notifications, order status, analytics, australia
+Contributors: Soumitra123, sameecwx
+Source Code: https://github.com/topsmsau/topsms_plugin
+Tags: woocommerce, sms, notifications, order, analytics
 Requires at least: 5.0
 Tested up to: 6.8
 Stable tag: 1.0.1
@@ -11,7 +12,11 @@ Enhance your WooCommerce store with automated SMS notifications based on order s
 
 == Description ==
 
-TopSMS is a powerful WooCommerce plugin developed by EUX Digital Agency that revolutionizes how you communicate with your customers through SMS.
+TopSMS is a powerful WooCommerce plugin developed by EUX Digital Agency that revolutionizes how you communicate with your customers through SMS.\
+
+### Source Code
+
+The complete source code for this plugin is available on GitHub at https://github.com/topsmsau/topsms_plugin
 
 ### Key Features
 
@@ -46,6 +51,21 @@ TopSMS is a powerful WooCommerce plugin developed by EUX Digital Agency that rev
 * GDPR-compliant with explicit consent management
 * Lightweight design with minimal impact on site performance
 
+== External services ==
+
+This plugin connects to Supabase Edge Functions to process and store application data.
+
+### The plugin sends the following data to Supabase servers
+* User input data (form submissions, content, preferences)
+* User authentication tokens and session information
+
+### Data is transmitted when
+* Users submit forms or save content
+* Authentication and user sessions are managed
+* API calls are made to custom Edge Functions
+
+This service is provided by Supabase Inc: https://supabase.com/docs/company/terms, https://supabase.com/docs/company/privacy.
+
 == Installation ==
 
 1. Upload the topsms folder to the /wp-content/plugins/ directory
@@ -56,7 +76,6 @@ TopSMS is a powerful WooCommerce plugin developed by EUX Digital Agency that rev
 6. Purchase initial SMS credits under TopSMS → Settings
 
 == Frequently Asked Questions ==
-
 
 = Is TopSMS available outside of Australia? =
 No. TopSMS is built exclusively for Australian businesses. Our SMS delivery infrastructure and compliance standards are designed to meet ACMA regulations and ensure optimal delivery rates within Australia only.

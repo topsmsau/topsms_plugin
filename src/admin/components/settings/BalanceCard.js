@@ -117,7 +117,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
     const fetchSetting = async (key, stateKey) => {
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 setSettings(prev => ({
@@ -178,7 +178,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
     const fetchSurchargeAmount = async () => {
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 setSurchargeLoading(false);
@@ -230,7 +230,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
     const fetchSender = async () => {
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 setSenderLoading(false);
@@ -320,7 +320,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
     const saveSetting = async (key, enabled, stateKey) => {
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 throw new Error('WordPress REST API nonce not available');
             }
@@ -400,7 +400,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             setSurchargeLoading(true);
             
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 throw new Error('WordPress REST API nonce not available');
             }

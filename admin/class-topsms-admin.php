@@ -9,6 +9,11 @@
  * @subpackage Topsms/admin
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -59,7 +64,7 @@ class Topsms_Admin {
 			function () {
 				if ( isset( $_GET['page'] ) && 'topsms-setup' === $_GET['page'] ) {
 					// Hide admin menu and header.
-					add_action( 'admin_head', array( $this, 'hide_admin_ui' ) );
+					add_action( 'admin_head', array( $this, 'topsms_hide_admin_ui' ) );
 				}
 			}
 		);
@@ -83,8 +88,6 @@ class Topsms_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
-
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
 		wp_enqueue_style( 'topsms-admin-style', plugin_dir_url( __FILE__ ) . 'css/topsms-admin-app.css', array(), time(), 'all' );
 		wp_enqueue_style( 'wp-components' );
 	}
@@ -107,8 +110,6 @@ class Topsms_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
-
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-admin.js', array( 'jquery' ), time(), false );
 		wp_enqueue_script(
 			'topsms-admin-app',
 			plugin_dir_url( __FILE__ ) . 'js/topsms-admin-app.js',
@@ -125,9 +126,10 @@ class Topsms_Admin {
 			true
 		);
 
+		// Provide REST API settings for nonce to JavaScript.
 		wp_localize_script(
 			'wp-api',
-			'wpApiSettings',
+			'topsmsNonce',
 			array(
 				'root'  => esc_url_raw( rest_url() ),
 				'nonce' => wp_create_nonce( 'wp_rest' ),
@@ -151,12 +153,14 @@ class Topsms_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function hide_admin_ui() {
-		echo '<style>
+	public function topsms_hide_admin_ui() {
+		$custom_css = '
             #wpcontent { margin-left: 0 !important; }
             #adminmenumain, #wpadminbar, #wpfooter { display: none !important; }
             #topsms-admin-app { height: 100vh; }
-        </style>';
+        ';
+
+		wp_add_inline_style( 'topsms-admin-style', $custom_css );
 	}
 
 	/**
@@ -356,8 +360,8 @@ class Topsms_Admin {
 	 *
 	 * @since 1.0.0
 	 */
-	public function add_admin_menu() {
-		$is_connected = $this->check_topsms_connection();
+	public function topsms_add_admin_menu() {
+		$is_connected = $this->topsms_check_connection();
 
 		$icon = file_get_contents( plugin_dir_path( __FILE__ ) . 'assets/topsms-icon.svg' );
 
@@ -372,7 +376,7 @@ class Topsms_Admin {
 			__( 'TopSMS', 'topsms' ),
 			'manage_options',
 			$is_connected ? 'topsms' : 'topsms-setup',
-			$is_connected ? array( $this, 'display_automations_page' ) : array( $this, 'display_setup_page' ),
+			$is_connected ? array( $this, 'topsms_display_automations_page' ) : array( $this, 'display_setup_page' ),
 			$icon_data,
 			55
 		);
@@ -383,7 +387,7 @@ class Topsms_Admin {
 			__( 'Automation', 'topsms' ),
 			'manage_options',
 			'topsms-automations',
-			array( $this, 'display_automations_page' )
+			array( $this, 'topsms_display_automations_page' )
 		);
 
 		add_submenu_page(
@@ -392,7 +396,7 @@ class Topsms_Admin {
 			__( 'Settings', 'topsms' ),
 			'manage_options',
 			'topsms-settings',
-			array( $this, 'display_settings_page' )
+			array( $this, 'topsms_display_settings_page' )
 		);
 
 		add_submenu_page(
@@ -401,7 +405,7 @@ class Topsms_Admin {
 			__( 'Analytics', 'topsms' ),
 			'manage_options',
 			'topsms-analytics',
-			array( $this, 'display_analytics_page' )
+			array( $this, 'topsms_display_analytics_page' )
 		);
 
 		// Remove the duplicated submenu.
@@ -413,8 +417,8 @@ class Topsms_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function display_setup_page() {
-		$is_connected = $this->check_topsms_connection();
+	public function topsms_display_setup_page() {
+		$is_connected = $this->topsms_check_connection();
 
 		// Pass data to JavaScript.
 		wp_localize_script(
@@ -428,9 +432,11 @@ class Topsms_Admin {
 		);
 
 		// Container for React app.
-		echo '<div class="wrap">';
-		echo '<div id="topsms-admin-setup" class="topsms-app"></div>';
-		echo '</div>';
+		printf(
+			'<div class="wrap">
+                <div id="topsms-admin-setup" class="topsms-app"></div>
+            </div>'
+		);
 	}
 
 
@@ -439,9 +445,9 @@ class Topsms_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function display_analytics_page() {
+	public function topsms_display_analytics_page() {
 
-		$is_connected = $this->check_topsms_connection();
+		$is_connected = $this->topsms_check_connection();
 		if ( ! $is_connected ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=topsms-setup' ) );
 			exit;
@@ -456,9 +462,9 @@ class Topsms_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function display_automations_page() {
+	public function topsms_display_automations_page() {
 		// Check if connected, if not, redirect to the setup page.
-		$is_connected = $this->check_topsms_connection();
+		$is_connected = $this->topsms_check_connection();
 		if ( ! $is_connected ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=topsms-setup' ) );
 			exit;
@@ -476,9 +482,11 @@ class Topsms_Admin {
 		);
 
 		// Container for React app.
-		echo '<div class="wrap">';
-		echo '<div id="topsms-admin-automations" class="topsms-app"></div>';
-		echo '</div>';
+		printf(
+			'<div class="wrap">
+                <div id="topsms-admin-automations" class="topsms-app"></div>
+            </div>'
+		);
 	}
 
 	/**
@@ -486,9 +494,9 @@ class Topsms_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function display_settings_page() {
+	public function topsms_display_settings_page() {
 		// Check if connected, if not, redirect to the setup page.
-		$is_connected = $this->check_topsms_connection();
+		$is_connected = $this->topsms_check_connection();
 		if ( ! $is_connected ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=topsms-setup' ) );
 			exit;
@@ -506,9 +514,11 @@ class Topsms_Admin {
 		);
 
 		// Container for React app.
-		echo '<div class="wrap">';
-		echo '<div id="topsms-admin-settings" class="topsms-app"></div>';
-		echo '</div>';
+		printf(
+			'<div class="wrap">
+                <div id="topsms-admin-settings" class="topsms-app"></div>
+            </div>'
+		);
 	}
 
 	/**
@@ -519,7 +529,7 @@ class Topsms_Admin {
 	 * @access   private
 	 * @return   boolean    True if connected, false otherwise.
 	 */
-	private function check_topsms_connection() {
+	private function topsms_check_connection() {
 		$access_token  = get_option( 'topsms_access_token' );
 		$refresh_token = get_option( 'topsms_refresh_token' );
 
@@ -543,7 +553,7 @@ class Topsms_Admin {
 			delete_transient( 'topsms_activation_redirect' );
 
 			// Check if is connected.
-			$is_connected = $this->check_topsms_connection();
+			$is_connected = $this->topsms_check_connection();
 
 			// Only redirect if woocommerce is activated and both tokens exist and user has admin permissions and the plugin is connected.
 			if ( is_plugin_active( 'woocommerce/woocommerce.php' ) && ! $is_connected ) {
@@ -661,7 +671,7 @@ class Topsms_Admin {
 
 		// Get configuration from options table.
 		$access_token     = get_option( 'topsms_access_token' );
-		$sender           = $this->fetch_sender_name();
+		$sender           = $this->topsms_fetch_sender_name();
 		$is_enabled       = get_option( 'topsms_order_' . $status_to . '_enabled' );
 		$message_template = get_option( 'topsms_order_' . $status_to . '_message' );
 
@@ -744,7 +754,7 @@ class Topsms_Admin {
 
 		$balance = isset( $data['remainingBalance'] ) ? $data['remainingBalance'] : '';
 		if ( $balance ) {
-			$this->low_balance_alert( (int) $balance );
+			$this->topsms_low_balance_alert( (int) $balance );
 		}
 	}
 
@@ -754,7 +764,7 @@ class Topsms_Admin {
 	 * @since    1.0.1
 	 * @param    int $balance    Current account balance.
 	 */
-	private function low_balance_alert( $balance ) {
+	private function topsms_low_balance_alert( $balance ) {
 		// Get low balance alert option.
 		$low_balance_option = get_option( 'topsms_settings_low_balance_alert', 'no' );
 		if ( 'no' === $low_balance_option ) {
@@ -775,7 +785,7 @@ class Topsms_Admin {
 						$access_token = get_option( 'topsms_access_token' );
 						$user_phone   = isset( $registration_data['phone_number'] ) ? $registration_data['phone_number'] : '';
 						$user_company = isset( $registration_data['company'] ) ? $registration_data['company'] : '';
-						$sender       = $this->fetch_sender_name();
+						$sender       = $this->topsms_fetch_sender_name();
 						$message      = 'Alert: Your SMS balance is running low (under 50) on ' . $user_company . '. Please top up soon to avoid interruption to order notifications.';
 
 						// Send SMS.
@@ -827,7 +837,7 @@ class Topsms_Admin {
 	 * @since    1.0.1
 	 * @return   $sender Sender name of the SMS.
 	 */
-	private function fetch_sender_name() {
+	private function topsms_fetch_sender_name() {
 		$access_token = get_option( 'topsms_access_token' );
 		$sender       = '';
 

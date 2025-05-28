@@ -9,6 +9,11 @@
  * @subpackage Topsms/topsms-analytics
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * This file adds TopSMS Analytics functionality to WooCommerce Admin.
  *
@@ -22,7 +27,7 @@
  *
  * @since 1.0.0
  */
-function add_wc_admin_topsms_analytics_register_script() {
+function topsms_add_wc_admin_analytics_register_script() {
 
 	if ( ! class_exists( 'Automattic\WooCommerce\Admin\Loader' ) || ! \Automattic\WooCommerce\Admin\PageController::is_admin_page() ) {
 		return;
@@ -66,7 +71,7 @@ function add_wc_admin_topsms_analytics_register_script() {
  * @param array $report_pages Existing report pages.
  * @return array Modified report pages with TopSMS analytics added.
  */
-function add_to_analytics_menu( $report_pages ) {
+function topsms_add_to_analytics_menu( $report_pages ) {
 
 	$report_pages[] = array(
 		'id'     => 'wc-admin-topsms-analytics',
@@ -78,9 +83,9 @@ function add_to_analytics_menu( $report_pages ) {
 	return $report_pages;
 }
 
-add_action( 'admin_enqueue_scripts', 'add_wc_admin_topsms_analytics_register_script' );
+add_action( 'admin_enqueue_scripts', 'topsms_add_wc_admin_analytics_register_script' );
 
-add_filter( 'woocommerce_analytics_report_menu_items', 'add_to_analytics_menu' );
+add_filter( 'woocommerce_analytics_report_menu_items', 'topsms_add_to_analytics_menu' );
 
 add_action(
 	'init',

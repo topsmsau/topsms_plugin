@@ -13,22 +13,22 @@
  *
  * @wordpress-plugin
  * Plugin Name:       TopSMS
- * Plugin URI:        https://eux.com.au
+ * Plugin URI:        https://topsms.com.au
  * Description:       An WooCommerce Add-On for SMS notifications
  * Version:           1.0.1
+ * Requires at least: 5.0
+ * Requires PHP:      7.4
  * Author:            EUX
  * Author URI:        https://eux.com.au
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       topsms
- * Domain Path:       /languages
  */
 
 // If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
-
 /**
  * Currently plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
@@ -37,11 +37,11 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'TOPSMS_VERSION', '1.0.1' );
 define( 'TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Define path to the included plugin.
-define( 'ANALYTICS_PATH', plugin_dir_path( __FILE__ ) . 'topsms-analytics/' );
+define( 'TOPSMS_ANALYTICS_PATH', plugin_dir_path( __FILE__ ) . 'topsms-analytics/' );
 
 // Include the main file of the plugin you want to include.
-if ( file_exists( ANALYTICS_PATH . 'topsms-analytics.php' ) ) {
-	require_once ANALYTICS_PATH . 'topsms-analytics.php';
+if ( file_exists( TOPSMS_ANALYTICS_PATH . 'topsms-analytics.php' ) ) {
+	require_once TOPSMS_ANALYTICS_PATH . 'topsms-analytics.php';
 }
 
 /**
@@ -96,7 +96,7 @@ add_action( 'admin_init', 'topsms_check_woocommerce_dependency' );
  * The code that runs during plugin activation.
  * This action is documented in includes/class-topsms-activator.php
  */
-function activate_topsms() {
+function topsms_activate() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-topsms-activator.php';
 	Topsms_Activator::activate();
 }
@@ -105,13 +105,13 @@ function activate_topsms() {
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-topsms-deactivator.php
  */
-function deactivate_topsms() {
+function topsms_deactivate() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-topsms-deactivator.php';
 	Topsms_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_topsms' );
-register_deactivation_hook( __FILE__, 'deactivate_topsms' );
+register_activation_hook( __FILE__, 'topsms_activate' );
+register_deactivation_hook( __FILE__, 'topsms_deactivate' );
 
 /**
  * The core plugin class that is used to define internationalization,
@@ -129,9 +129,9 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-topsms.php';
  *
  * @since    1.0.0
  */
-function run_topsms() {
+function topsms_run() {
 
 	$plugin = new Topsms();
 	$plugin->run();
 }
-run_topsms();
+topsms_run();

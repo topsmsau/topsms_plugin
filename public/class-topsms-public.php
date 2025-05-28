@@ -9,6 +9,11 @@
  * @subpackage Topsms/public
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The public-facing functionality of the plugin.
  *
@@ -101,7 +106,7 @@ class Topsms_Public {
 	 *
 	 * @since    1.0.0
 	 */
-	public function add_topsms_customer_consent_checkout_checkbox() {
+	public function topsms_add_customer_consent_checkout_checkbox() {
 		// Check if the customer consent is enabled.
 		$consent_enabled = get_option( 'topsms_settings_customer_consent', 'yes' );
 
@@ -120,7 +125,7 @@ class Topsms_Public {
 			$is_subscribed = true;
 		}
 
-		echo '<div id="topsms-customer-consent">';
+		printf( '<div id="topsms-customer-consent">' );
 			woocommerce_form_field(
 				'topsms_customer_consent',
 				array(
@@ -130,9 +135,9 @@ class Topsms_Public {
 				),
 				$is_subscribed
 			);
-			// Add nonce field for security.
+
 			wp_nonce_field( 'topsms_consent_action', 'topsms_consent_nonce' );
-		echo '</div>';
+		printf( '</div>' );
 	}
 
 	/**
@@ -141,7 +146,7 @@ class Topsms_Public {
 	 * @since    1.0.0
 	 * @param    int $order_id    The ID of the order being processed.
 	 */
-	public function save_topsms_customer_consent_checkout_checkbox( $order_id ) {
+	public function topsms_save_customer_consent_checkout_checkbox( $order_id ) {
 		// Check if the customer consent is enabled.
 		$consent_enabled = get_option( 'topsms_settings_customer_consent', 'yes' );
 
@@ -180,7 +185,7 @@ class Topsms_Public {
 	 * @since    1.0.0
 	 * @param    WC_Cart $cart    The WooCommerce cart object.
 	 */
-	public function add_topsms_surcharge_to_cart( $cart ) {
+	public function topsms_add_surcharge_to_cart( $cart ) {
 		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
 			return;
 		}
@@ -283,7 +288,7 @@ class Topsms_Public {
 	 * @param    array $menu_items    The existing menu items.
 	 * @return   array                   Modified menu items with SMS notifications tab.
 	 */
-	public function add_sms_notifications_tab( $menu_items ) {
+	public function topsms_add_sms_notifications_tab( $menu_items ) {
 		// Create a new array to hold the reordered items.
 		$new_menu_items = array();
 
@@ -315,7 +320,7 @@ class Topsms_Public {
 	 *
 	 * @since    1.0.0
 	 */
-	public function sms_notifications_endpoint() {
+	public function topsms_sms_notifications_endpoint() {
 		add_rewrite_endpoint( 'sms-notifications', EP_ROOT | EP_PAGES );
 	}
 
@@ -324,7 +329,7 @@ class Topsms_Public {
 	 *
 	 * @since    1.0.0
 	 */
-	public function sms_notifications_content() {
+	public function topsms_sms_notifications_content() {
 		$user_id = get_current_user_id();
 		$message = '';
 
@@ -341,18 +346,20 @@ class Topsms_Public {
 			}
 
 			// This prevents form resubmission on refresh.
-			echo '<script>
+			$script = '
                 if (window.history.replaceState) {
                     window.history.replaceState(null, null, window.location.href);
                 }
-            </script>';
+            ';
+			wp_add_inline_script( 'topsms-admin-app', $script );
 		}
 
 		// Get current setting.
 		$is_enabled = get_user_meta( $user_id, 'topsms_customer_consent', true );
 
 		// Display success message if any.
-		echo wp_kses_post( $message );
+		$message = '<div class="woocommerce-message">SMS notification preferences updated.</div>';
+		printf( '%s', wp_kses_post( $message ) );
 
 		// Display the form.
 		?>

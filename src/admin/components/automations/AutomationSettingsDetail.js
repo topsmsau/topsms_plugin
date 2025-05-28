@@ -87,7 +87,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
     const fetchTemplateSettings = async () => {
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 return;
@@ -142,7 +142,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
         
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 throw new Error('WordPress REST API nonce not available');
             }
@@ -206,7 +206,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
     const fetchSender = async () => {
         try {
             // Get the nonce from WordPress
-            const nonce = window.wpApiSettings?.nonce;
+            const nonce = window.topsmsNonce?.nonce;
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 return;
