@@ -63,16 +63,19 @@ class Topsms_Admin {
 			'admin_init',
 			function () {
 				if ( isset( $_GET['page'] ) && 'topsms-setup' === $_GET['page'] ) {
-					// Hide admin menu and header.                    
-                    add_action( 'admin_head', function() {
-                        ?>
-                        <style>
-                            #wpcontent { margin-left: 0 !important; }
-                            #adminmenumain, #wpadminbar, #wpfooter { display: none !important; }
-                            #topsms-admin-app { height: 100vh; }
-                        </style>
-                        <?php
-                    });
+					// Hide admin menu and header.
+					add_action(
+						'admin_head',
+						function () {
+							?>
+						<style>
+							#wpcontent { margin-left: 0 !important; }
+							#adminmenumain, #wpadminbar, #wpfooter { display: none !important; }
+							#topsms-admin-app { height: 100vh; }
+						</style>
+							<?php
+						}
+					);
 
 				}
 			}
