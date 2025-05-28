@@ -63,8 +63,17 @@ class Topsms_Admin {
 			'admin_init',
 			function () {
 				if ( isset( $_GET['page'] ) && 'topsms-setup' === $_GET['page'] ) {
-					// Hide admin menu and header.
-					add_action( 'admin_head', array( $this, 'topsms_hide_admin_ui' ) );
+					// Hide admin menu and header.                    
+                    add_action( 'admin_head', function() {
+                        ?>
+                        <style>
+                            #wpcontent { margin-left: 0 !important; }
+                            #adminmenumain, #wpadminbar, #wpfooter { display: none !important; }
+                            #topsms-admin-app { height: 100vh; }
+                        </style>
+                        <?php
+                    });
+
 				}
 			}
 		);
@@ -146,21 +155,6 @@ class Topsms_Admin {
 	private function load_dependencies() {
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-topsms-rest-api-admin.php';
 		$this->rest_api = new Topsms_Rest_Api_Admin( $this->plugin_name, $this->version );
-	}
-
-	/**
-	 * Hide WordPress admin UI elements when on the setup page.
-	 *
-	 * @since    1.0.0
-	 */
-	public function topsms_hide_admin_ui() {
-		$custom_css = '
-            #wpcontent { margin-left: 0 !important; }
-            #adminmenumain, #wpadminbar, #wpfooter { display: none !important; }
-            #topsms-admin-app { height: 100vh; }
-        ';
-
-		wp_add_inline_style( 'topsms-admin-style', $custom_css );
 	}
 
 	/**
@@ -376,7 +370,7 @@ class Topsms_Admin {
 			__( 'TopSMS', 'topsms' ),
 			'manage_options',
 			$is_connected ? 'topsms' : 'topsms-setup',
-			$is_connected ? array( $this, 'topsms_display_automations_page' ) : array( $this, 'display_setup_page' ),
+			$is_connected ? array( $this, 'topsms_display_automations_page' ) : array( $this, 'topsms_display_setup_page' ),
 			$icon_data,
 			55
 		);

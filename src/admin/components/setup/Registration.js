@@ -212,6 +212,7 @@ const Registration = ({ onComplete }) => {
         try {
             // Get the nonce from WordPress
             const nonce = window.topsmsNonce?.nonce;
+            console.log("nonce", nonce);
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 return;
@@ -222,7 +223,7 @@ const Registration = ({ onComplete }) => {
             }
             // console.log("form data:", formData);
             
-            const response = await fetch("/wp-json/topsms/v1/send-otp/", {
+            const response = await fetch("/wp-json/topsms/v1/send-otp", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
