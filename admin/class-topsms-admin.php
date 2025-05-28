@@ -420,7 +420,7 @@ class Topsms_Admin {
 		// Pass data to JavaScript.
 		wp_localize_script(
 			'topsms-admin-app',
-			'topsmsData',
+			'topsmsNonce',
 			array(
 				'restUrl'     => esc_url_raw( rest_url() ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
@@ -470,7 +470,7 @@ class Topsms_Admin {
 		// Pass data to JavaScript.
 		wp_localize_script(
 			'topsms-admin-app',
-			'topsmsData',
+			'topsmsNonce',
 			array(
 				'restUrl'   => esc_url_raw( rest_url() ),
 				'nonce'     => wp_create_nonce( 'wp_rest' ),
@@ -502,7 +502,7 @@ class Topsms_Admin {
 		// Pass data to JavaScript.
 		wp_localize_script(
 			'topsms-admin-app',
-			'topsmsData',
+			'topsmsNonce',
 			array(
 				'restUrl'   => esc_url_raw( rest_url() ),
 				'nonce'     => wp_create_nonce( 'wp_rest' ),
