@@ -4,7 +4,7 @@ Source Code: https://github.com/topsmsau/topsms_plugin
 Tags: woocommerce, sms, notifications, order, analytics
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.0.1
+Stable tag: 1.0.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,68 +12,110 @@ Enhance your WooCommerce store with automated SMS notifications based on order s
 
 == Description ==
 
-TopSMS is a powerful WooCommerce plugin developed by EUX Digital Agency that revolutionizes how you communicate with your customers through SMS.\
+TopSMS is a powerful WooCommerce plugin developed by **EUX Digital Agency** that revolutionizes how you communicate with your customers through SMS.
 
 ### Source Code
 
-The complete source code for this plugin is available on GitHub at https://github.com/topsmsau/topsms_plugin
+The complete source code for this plugin is available on our [Github repository](https://github.com/topsmsau/topsms_plugin).
 
 ### Key Features
 
-*1. Automated SMS System Based on Order Status*
-* Send instant SMS notifications when order status changes (processing, completed, shipped, etc.)
-* Fully customizable message templates for each order status
-* Personalize messages with dynamic variables (customer name, customer last name, order ID.)
-* Schedule delayed notifications for specific order statuses
-* Supports multiple languages for global-ready WooCommerce stores (SMS sending remains AU-only)
+**1. Automated SMS System Based on Order Status**
+* Send instant SMS notifications when order status changes (processing, completed, shipped, etc.).
+* Fully customizable message templates for each order status.
+* Personalize messages with dynamic variables (customer name, customer last name, order ID).
+* Schedule delayed notifications for specific order statuses.
+* Supports multiple languages for global-ready WooCommerce stores (SMS sending remains AU-only).
 
-*2. Comprehensive SMS Analytics*
-* Track delivery rates and read receipts for all sent messages
-* Monitor SMS credit usage with detailed reports
-* Visual dashboard with key performance metrics and trends
+**2. Comprehensive SMS Analytics**
+* Track delivery rates and read receipts for all sent messages.
+* Monitor SMS credit usage with detailed reports.
+* Visual dashboard with key performance metrics and trends.
 
-*3. In-Store SMS Credit Recharging*
-* Purchase SMS credits directly through your WooCommerce store
-* Multiple credit packages to suit businesses of all sizes
-* Automatic low-credit alerts and recharge reminders
-* Special discount offers for bulk credit purchases
+**3. In-Store SMS Credit Recharging**
+* Purchase SMS credits directly through your WooCommerce store.
+* Multiple credit packages to suit businesses of all sizes.
+* Automatic low-credit alerts and recharge reminders.
+* Special discount offers for bulk credit purchases.
 
 ### Benefits for Store Owners
-* Reduce customer support inquiries with proactive order updates
-* Increase customer satisfaction through timely communication
-* Lower cart abandonment rates with strategic SMS campaigns
-* Build customer loyalty through consistent engagement
-* Save time with automated workflows and notifications
+* Reduce customer support inquiries with proactive order updates.
+* Increase customer satisfaction through timely communication.
+* Lower cart abandonment rates with strategic SMS campaigns.
+* Build customer loyalty through consistent engagement.
+* Save time with automated workflows and notifications.
 
 ### Technical Features
-* Built exclusively for Australian businesses
-* ACMA-compliant sender IDs and privacy protocols
-* GDPR-compliant with explicit consent management
-* Lightweight design with minimal impact on site performance
+* Built exclusively for Australian businesses.
+* ACMA-compliant sender IDs and privacy protocols.
+* GDPR-compliant with explicit consent management.
+* Lightweight design with minimal impact on site performance.
 
 == External services ==
 
-This plugin connects to Supabase Edge Functions to process and store application data.
+This plugin connects to the TopSMS API (provided by EUX Digital Agency) to send SMS messages and retrieve analytics data.
 
-### The plugin sends the following data to Supabase servers
-* User input data (form submissions, content, preferences)
-* User authentication tokens and session information
+**What the service is and what it is used for:**
+- TopSMS API is used to send SMS messages to customers when order statuses change, track message delivery, recharge credit balances, and provide analytics to the store owner.
 
-### Data is transmitted when
-* Users submit forms or save content
-* Authentication and user sessions are managed
-* API calls are made to custom Edge Functions
+**What data is sent and when:**
+- When an SMS is triggered (e.g., from an order update), the following data is sent to the TopSMS API: customer's mobile number, order ID, order status, and the customized SMS message content.
+- Store and site identifiers may also be sent for authentication and analytics purposes.
+- When viewing analytics or credit balances, the plugin may request delivery status updates, read receipts, and account credit levels.
 
-This service is provided by Supabase Inc: https://supabase.com/docs/company/terms, https://supabase.com/docs/company/privacy.
+**Who provides the service:**
+- EUX Digital Agency (Australia), the developer and maintainer of the TopSMS API.
+
+**Links:**
+- [TopSMS Terms of Service](https://www.topsms.com.au/terms)
+- [TopSMS Privacy Policy](https://www.topsms.com.au/privacy)
+
+**Geographic Limitation:**
+- TopSMS is an Australia-only service and is not intended for international use.
 
 == Installation ==
 
-1. Upload the topsms folder to the /wp-content/plugins/ directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Go to TopSMS → Settings to configure your SMS gateway credentials
-4. Set up your message templates under TopSMS → Automations
-5. Configure order status triggers under TopSMS → Automations
-6. Purchase initial SMS credits under TopSMS → Settings
+1. Upload the topsms folder to the /wp-content/plugins/ directory.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. Go to TopSMS → Settings to configure your SMS gateway credentials.
+4. Set up your message templates under TopSMS → Automations.
+5. Configure order status triggers under TopSMS → Automations.
+6. Purchase initial SMS credits under TopSMS → Settings.
+
+== Development ==
+
+**Note:** The plugin is ready to use out-of-the-box after standard installation. The following steps are only required if you want to extend functionality or build custom components from the source code.
+
+**Step 1: Install Dependencies**
+
+```bash
+cd topsms
+npm install
+```
+
+**Step 2: Build Assets**
+
+```bash
+npm run build
+```
+
+**Step 3: Install Dependencies for TopSMS Analytics**
+```bash
+cd topsms/topsms-analytics
+npm install
+```
+
+**Step 4: Build Assets for TopSMS Analytics**
+
+```bash
+npm run build
+```
+
+**Development Commands:**
+- `npm run dev` - Start development mode with file watching.
+- `npm run build` - Build production-ready assets.
+
+The plugin is ready to use after installation. For more development information, visit our [GitHub repository](https://github.com/topsmsau/topsms_plugin).
 
 == Frequently Asked Questions ==
 

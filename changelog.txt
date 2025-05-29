@@ -3,8 +3,8 @@
 ## [1.0.1] - 2025-05-19
 
 ### Added
-- TopSMS Analytics 
-- Full Stripe Integration
+- Added TopSMS Analytics functionality.
+- Added full Stripe integration.
 
 ### Changed
 - Added website (home) url when making TopSMS request to send SMS.
@@ -16,5 +16,15 @@
 - Added documentation on the use of a 3rd Party / external service (Supabase services).
 
 ### Fixed
-- Replace the 'echo' codes with wp_add_inline_style() and wp_add_inline_script() to add inline CSS and JavaScript code.
-- Fixed functions, classes, constants, namespaces and option names with a unique prefix.
+- Replace direct echo output with WordPress's `wp_add_inline_style()` and `wp_add_inline_script()` functions for inline styles and scripts.
+- Prefixed all functions, classes, constants, namespaces, and option names with unique identifiers.
+
+## [1.0.3] - 2025-05-29
+
+### Added
+- Documented the integration and usage of external third-party services (TopSMS API).
+- Added full source code, including **uncompiled React source code**.
+
+### Fixed
+- Move the CSS rules for hiding the WordPress admin sidebar and header from inline styles to the `topsms-admin.css` file for the setup page.
+

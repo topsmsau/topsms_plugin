@@ -57,29 +57,6 @@ class Topsms_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 		$this->load_dependencies();
-
-		// Hide the wp admin header and sidebar menu if on setup page.
-		add_action(
-			'admin_init',
-			function () {
-				if ( isset( $_GET['page'] ) && 'topsms-setup' === $_GET['page'] ) {
-					// Hide admin menu and header.
-					add_action(
-						'admin_head',
-						function () {
-							?>
-						<style>
-							#wpcontent { margin-left: 0 !important; }
-							#adminmenumain, #wpadminbar, #wpfooter { display: none !important; }
-							#topsms-admin-app { height: 100vh; }
-						</style>
-							<?php
-						}
-					);
-
-				}
-			}
-		);
 	}
 
 	/**
