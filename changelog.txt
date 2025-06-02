@@ -28,3 +28,21 @@
 ### Fixed
 - Move the CSS rules for hiding the WordPress admin sidebar and header from inline styles to the `topsms-admin.css` file for the setup page.
 
+## [1.0.4] - 2025-06-02
+
+### Added
+- Added a link for the 'Request a feature' banner.
+
+### Fixed
+- Fixed timeout error when making request to TopSMS API.
+- Removed unnecessary text from the Registration page.
+
+## [1.0.5] - 2025-06-02
+
+### Fixed
+- Fixed the WooCommerce HPOS incompatibility issue.
+
+## [1.0.6] - 2025-06-02
+
+### Fixed
+- Moved the custom CSS snippet for Setup pages (Remove the admin sidebar and header) to another custom CSS file in the `admin/css` folder to prevent overwritten when compiling source code.

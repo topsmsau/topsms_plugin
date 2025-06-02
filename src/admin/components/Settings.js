@@ -70,14 +70,14 @@ const Settings = () => {
             title: 'Enjoying TopSMS?',
             message: "Don't forget to leave us a review — your feedback helps us grow!", 
             buttonText: 'Leave a review',
-            link: 'https://eux.com.au/product/woocommerce-sms-notification/#reviews'
+            link: 'https://wordpress.org/plugins/topsms/#reviews'
         },
         {
             icon: BannerIcon2,
             title: 'Got ideas for new features?',
             message: "Help shape the future of TopSMS by voting or suggesting new features.", 
             buttonText: 'Request a feature',
-            link: '#'
+            link: 'https://topsms.canny.io/'
         },
         {
             icon: BannerIcon3,

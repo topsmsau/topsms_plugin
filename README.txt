@@ -4,7 +4,7 @@ Source Code: https://github.com/topsmsau/topsms_plugin
 Tags: woocommerce, sms, notifications, order, analytics
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.0.3
+Stable tag: 1.0.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -50,6 +50,17 @@ The complete source code for this plugin is available on our [Github repository]
 * ACMA-compliant sender IDs and privacy protocols.
 * GDPR-compliant with explicit consent management.
 * Lightweight design with minimal impact on site performance.
+
+
+### Regulatory Compliance
+TopSMS is fully compliant with **Australian Communications and Media Authority (ACMA)** requirements for SMS usage.
+- **Sender ID Validation:** Businesses must use a registered, non-misleading sender ID matching their trading name.
+- **Verification Required:** TopSMS enforces sender ID registration before sending messages.
+- **No International Use:** Only Australian numbers are supported to align with local laws.
+**Learn more:**
+- [ACMA SMS Spam Rules](https://www.acma.gov.au/sms-and-mms-spam)
+- [ACMA Scam SMS Guidelines](https://www.acma.gov.au/reducing-scam-calls-and-sms)
+
 
 == External services ==
 

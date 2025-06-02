@@ -77,6 +77,7 @@ class Topsms_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
+        wp_enqueue_style( 'topsms-admin-style-custom', plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
 		wp_enqueue_style( 'topsms-admin-style', plugin_dir_url( __FILE__ ) . 'css/topsms-admin-app.css', array(), time(), 'all' );
 		wp_enqueue_style( 'wp-components' );
 	}
@@ -581,7 +582,7 @@ class Topsms_Admin {
 						'refresh_token' => $refresh_token,
 					)
 				),
-				'timeout' => 30,
+				'timeout' => 50,
 			)
 		);
 
@@ -631,7 +632,7 @@ class Topsms_Admin {
 	 */
 	public function topsms_order_status_changed( $order_id, $status_from, $status_to, $order ) {
 		// Check if the customer consent is enabled.
-		$consent_enabled = get_post_meta( $order_id, 'topsms_customer_consent', true );
+		$consent_enabled = $order->get_meta( 'topsms_customer_consent' );
 
 		// Only show the checkbox if this setting is enabled; Return if disabled.
 		if ( ! $consent_enabled || 'no' === $consent_enabled ) {
@@ -690,7 +691,7 @@ class Topsms_Admin {
 					'Content-Type'  => 'application/json',
 				),
 				'body'    => wp_json_encode( $body ),
-				'timeout' => 45,
+				'timeout' => 50,
 			)
 		);
 
@@ -779,7 +780,7 @@ class Topsms_Admin {
 									'Content-Type'  => 'application/json',
 								),
 								'body'    => wp_json_encode( $body ),
-								'timeout' => 45,
+								'timeout' => 50,
 							)
 						);
 
@@ -823,6 +824,7 @@ class Topsms_Admin {
 					'Content-Type'  => 'application/json',
 					'Authorization' => 'Bearer ' . $access_token,
 				),
+				'timeout' => 50,
 			)
 		);
 

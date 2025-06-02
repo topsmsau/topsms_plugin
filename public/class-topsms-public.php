@@ -161,16 +161,24 @@ class Topsms_Public {
 			return;
 		}
 
+		// Get the order object.
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+
 		if ( isset( $_POST['topsms_customer_consent'] ) && ! empty( $_POST['topsms_customer_consent'] ) ) {
 			// Update value to order data.
-			update_post_meta( $order_id, 'topsms_customer_consent', 'yes' );
+			$order->update_meta_data( 'topsms_customer_consent', 'yes' );
+			$order->save();
 
 			// Update value to user data.
 			$user_id = get_current_user_id();
 			update_user_meta( $user_id, 'topsms_customer_consent', 'yes' );
 		} else {
 			// Update value to order data.
-			update_post_meta( $order_id, 'topsms_customer_consent', 'no' );
+			$order->update_meta_data( 'topsms_customer_consent', 'no' );
+			$order->save();
 
 			// Update value to user data.
 			$user_id = get_current_user_id();

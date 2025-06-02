@@ -14,10 +14,12 @@
  * @wordpress-plugin
  * Plugin Name:       TopSMS
  * Plugin URI:        https://topsms.com.au
- * Description:       An WooCommerce Add-On for SMS notifications
- * Version:           1.0.3
+ * Description:       Enhance your WooCommerce store with automated SMS notifications based on order status changes. Built exclusively for Australian businesses.
+ * Version:           1.0.6
  * Requires at least: 5.0
  * Requires PHP:      7.4
+ * WC requires at least: 7.0
+ * WC tested up to: 8.8
  * Author:            EUX
  * Author URI:        https://eux.com.au
  * License:           GPL-2.0+
@@ -34,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'TOPSMS_VERSION', '1.0.1' );
+define( 'TOPSMS_VERSION', '1.0.6' );
 define( 'TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Define path to the included plugin.
 define( 'TOPSMS_ANALYTICS_PATH', plugin_dir_path( __FILE__ ) . 'topsms-analytics/' );
@@ -91,6 +93,16 @@ function topsms_check_woocommerce_dependency() {
 	}
 }
 add_action( 'admin_init', 'topsms_check_woocommerce_dependency' );
+
+// Declare HPOS compatibility.
+add_action(
+	'before_woocommerce_init',
+	function () {
+		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		}
+	}
+);
 
 /**
  * The code that runs during plugin activation.

@@ -212,7 +212,7 @@ const Registration = ({ onComplete }) => {
         try {
             // Get the nonce from WordPress
             const nonce = window.topsmsNonce?.nonce;
-            console.log("nonce", nonce);
+            // console.log("nonce", nonce);
             if (!nonce) {
                 console.error('WordPress REST API nonce not available');
                 return;
@@ -298,9 +298,9 @@ const Registration = ({ onComplete }) => {
                         {__('Register', 'topsms')}
                     </h3>
 
-                    <p className="text-gray-600 ">
+                    {/* <p className="text-gray-600 ">
                         {__('Lorem ipsum dolor sit amet consectetur. Arcu sed aliquam blandit ut magna nullam magna sagittis.', 'topsms')}
-                    </p>
+                    </p> */}
                 </div>
                 
                 <form onSubmit={handleSubmit}>

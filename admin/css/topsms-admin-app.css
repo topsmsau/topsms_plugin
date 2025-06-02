@@ -1012,19 +1012,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
 
 /******************************************** Custom css ***********************************************/
-/* Hide admin sidebar and header on setup page */
-.toplevel_page_topsms-setup #wpcontent { 
-    margin-left: 0 !important; 
-}
-.toplevel_page_topsms-setup #adminmenumain, 
-.toplevel_page_topsms-setup #wpadminbar, 
-.toplevel_page_topsms-setup #wpfooter { 
-    display: none !important; 
-}
-.toplevel_page_topsms-setup #topsms-admin-app { 
-    height: 100vh; 
-}
-
 /* Custom label above inputs */
 .topsms-app .topsms-label {
   display: block;

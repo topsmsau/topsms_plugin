@@ -98,6 +98,7 @@ class Topsms_Rest_Api_Admin {
 						'phone_number' => $formatted_number,
 					)
 				),
+				'timeout' => 50,
 			)
 		);
 
@@ -192,6 +193,7 @@ class Topsms_Rest_Api_Admin {
 					'Content-Type' => 'application/json',
 				),
 				'body'    => wp_json_encode( $payload ),
+				'timeout' => 50,
 			)
 		);
 
@@ -646,6 +648,7 @@ class Topsms_Rest_Api_Admin {
 						'sender' => $sender,
 					)
 				),
+				'timeout' => 50,
 			)
 		);
 
@@ -730,6 +733,7 @@ class Topsms_Rest_Api_Admin {
 					'Content-Type'  => 'application/json',
 					'Authorization' => 'Bearer ' . $access_token,
 				),
+				'timeout' => 50,
 			)
 		);
 
