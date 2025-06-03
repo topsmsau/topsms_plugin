@@ -46,3 +46,9 @@
 
 ### Fixed
 - Moved the custom CSS snippet for Setup pages (Remove the admin sidebar and header) to another custom CSS file in the `admin/css` folder to prevent overwritten when compiling source code.
+
+## [1.0.7] - 2025-06-03
+
+### Fixed
+- Changed README.txt to readme.txt.
+- Added the `Tested up to` header to the main plugin file.
