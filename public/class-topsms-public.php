@@ -155,10 +155,13 @@ class Topsms_Public {
 			return;
 		}
 
-		// Verify nonce for security.
-		if ( ! isset( $_POST['topsms_consent_nonce'] ) ||
-			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['topsms_consent_nonce'] ) ), 'topsms_consent_action' ) ) {
-			return;
+		// Skip nonce verification if account creation is enabled.
+		if ( ! isset( $_POST['createaccount'] ) || '1' !== $_POST['createaccount'] ) {
+			// Verify nonce for security - return if verification fails.
+			if ( ! isset( $_POST['topsms_consent_nonce'] ) ||
+				! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['topsms_consent_nonce'] ) ), 'topsms_consent_action' ) ) {
+				return;
+			}
 		}
 
 		// Get the order object.

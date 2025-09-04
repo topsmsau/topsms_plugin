@@ -26,6 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Topsms_Admin {
 	const LOW_BALANCE_THRESHOLD = 50;
+	const SMS_LOWEST_BUFFER     = 2;
 
 	/**
 	 * The ID of this plugin.
@@ -77,7 +78,7 @@ class Topsms_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
-        wp_enqueue_style( 'topsms-admin-style-custom', plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
+		wp_enqueue_style( 'topsms-admin-style-custom', plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
 		wp_enqueue_style( 'topsms-admin-style', plugin_dir_url( __FILE__ ) . 'css/topsms-admin-app.css', array(), time(), 'all' );
 		wp_enqueue_style( 'wp-components' );
 	}
@@ -666,6 +667,11 @@ class Topsms_Admin {
 			return; // No message template configured.
 		}
 
+		// Check if user has enough sms balance.
+		if ( ! $this->check_user_balance() ) {
+			return;
+		}
+
 		// Replace placeholders.
 		$replacements = array(
 			'[order_id]'   => $order->get_order_number(),
@@ -742,7 +748,7 @@ class Topsms_Admin {
 	private function topsms_low_balance_alert( $balance ) {
 		// Get low balance alert option.
 		$low_balance_option = get_option( 'topsms_settings_low_balance_alert', 'no' );
-		if ( 'no' === $low_balance_option ) {
+		if ( 'no' === $low_balance_option || ! $this->check_user_balance() ) {
 			return;
 		} else {
 			// Check if the transient exists.
@@ -841,6 +847,48 @@ class Topsms_Admin {
 			$sender = isset( $data['data']['sender'] ) ? $data['data']['sender'] : '';
 		}
 
+		// Update the option if sender name exists.
+		if ( ! empty( $sender ) ) {
+			update_option( 'topsms_sender', $sender );
+		}
+
 		return $sender;
+	}
+
+	/**
+	 * Check user SMS balance to ensure there's enough buffer before sending SMS.
+	 *
+	 * @since    1.0.8
+	 * @return   boolean    True if enough balance, false otherwise.
+	 */
+	private function check_user_balance() {
+		$access_token = get_option( 'topsms_access_token' );
+
+		// Make api request to Topsms.
+		$response = wp_remote_get(
+			'https://api.topsms.com.au/functions/v1/user',
+			array(
+				'headers' => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $access_token,
+				),
+				'timeout' => 50,
+			)
+		);
+
+		// Check for connection errors.
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		// Check the balance data in the response data. If there's enough buffer to send sms, return true.
+		if ( isset( $data['data']['balance'] ) && $data['data']['balance'] >= self::SMS_LOWEST_BUFFER ) {
+			return true;
+		}
+
+		return false;
 	}
 }

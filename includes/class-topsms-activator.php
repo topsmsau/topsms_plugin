@@ -85,6 +85,7 @@ class Topsms_Activator {
 		add_option( 'topsms_settings_customer_consent', 'yes' );
 		add_option( 'topsms_settings_sms_surcharge', 'no' );
 		add_option( 'topsms_settings_sms_surcharge_amount', '' );
+		add_option( 'topsms_sender', '' );
 
 		set_transient( 'topsms_activation_redirect', true, 30 );
 		set_transient( 'topsms_send_sms', true );

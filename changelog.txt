@@ -52,3 +52,12 @@
 ### Fixed
 - Changed README.txt to readme.txt.
 - Added the `Tested up to` header to the main plugin file.
+
+## [1.0.8] - 2025-09-04
+
+### Added
+- Added a function `check_user_balance()` to check user SMS balance before sending SMS. The function is called before sending SMS when order status changed, or when the low balance alert message is sent.
+- When sending an SMS, the sender name is fetched from the API. The value is saved to the options for further use.
+
+### Changed
+- Highlighted the important note in the admin settings page, under the Top Up Your Balance section. 

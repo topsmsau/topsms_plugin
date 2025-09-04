@@ -187,9 +187,11 @@ const Settings = () => {
                                 <p className="text-sm text-gray-600">
                                     {__('Select an amount to add to your account', 'topsms')}
                                 </p>
-                                <p variant='muted' className="text-xs text-gray-600 mt-2">
+                                <p variant='muted' className="text-sm text-amber-600 mt-2">
                                     <span className="font-bold">Important: </span>
-                                    {__('Please use the same email address and phone number you used when registering your account. This ensures your top-up is correctly linked to your balance. If the details don’t match, the credit may not be applied automatically.', 'topsms')}
+                                    {__('Please use the ') }
+                                    <span className="font-bold">same email address and phone number you used when registering your account.</span>
+                                    {__('This ensures your top-up is correctly linked to your balance. If the details don’t match, the credit may not be applied automatically.', 'topsms')}
                                 </p>
                             </div>
 
