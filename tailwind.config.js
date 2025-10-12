@@ -4,7 +4,12 @@ module.exports = {
       "./src/**/*.{js,jsx,ts,tsx,html}",
     ],
     theme: {
-      extend: {},
+        extend: {
+            backgroundImage: {
+                iphone: 'url("/src/public/iphoneXMock.png")',
+                messageMock: 'url("/src/public/messageMock.svg")',
+            },
+        },
     },
     plugins: [],
-  }
+}

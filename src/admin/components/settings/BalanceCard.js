@@ -75,9 +75,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
         if (surchargeSuccess) {
             const message = __('Surcharge amount saved successfully', 'topsms');
             
-            if (onSuccessMessage) {
-                onSuccessMessage(message);
-            }
+            onSuccessMessage(message);
             
             // Reset local success state
             setTimeout(() => {
@@ -168,9 +166,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             }));
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__('Failed to load settings. Please refresh and try again.', 'topsms'));
-            }
+            onErrorMessage(__('Failed to load settings. Please refresh and try again.', 'topsms'));
         } 
     };
     
@@ -218,9 +214,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             console.error('Error fetching surcharge amount:', error);
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__('Failed to load surcharge amount. Please refresh and try again.', 'topsms'));
-            }
+            onErrorMessage(__('Failed to load surcharge amount. Please refresh and try again.', 'topsms'));
         } finally {
             setSurchargeLoading(false);
         }
@@ -259,9 +253,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             console.error('Error fetching sender name:', error);
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__('Failed to load sender name. Please refresh and try again.', 'topsms'));
-            }
+            onErrorMessage(__('Failed to load sender name. Please refresh and try again.', 'topsms'));
         } finally {
             setSenderLoading(false);
         }
@@ -277,9 +269,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             // Check if trying to enable SMS surcharge but customer consent is disabled
             if (stateKey === 'smsSurcharge' && newValue === true && settings.customerConsent.enabled === false) {
                 // Show error message to user
-                if (onErrorMessage) {
-                    onErrorMessage(__('Customer consent at the checkout must be enabled.', 'topsms'));
-                }
+                onErrorMessage(__('Customer consent at the checkout must be enabled.', 'topsms'));
                 return; 
             }
             
@@ -370,9 +360,7 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             }));
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__('Failed to save setting. Please try again.', 'topsms'));
-            }
+            onErrorMessage(__('Failed to save setting. Please try again.', 'topsms'));
         }
     };
 

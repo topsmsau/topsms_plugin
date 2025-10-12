@@ -51,10 +51,11 @@ class Topsms_Rest_Api_Admin {
 	 * @param      string $plugin_name       The name of this plugin.
 	 * @param      string $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct( $plugin_name, $version, $helper ) {
 
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
+		$this->helper      = $helper;
 	}
 
 	/**
@@ -72,7 +73,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => 'Phone number is required' ),
+					'data'    => array( 
+                        'message' => 'Phone number is required' 
+                    ),
 				),
 				400
 			);
@@ -107,7 +110,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => $response->get_error_message() ),
+					'data'    => array( 
+                        'message' => $response->get_error_message() 
+                    ),
 				),
 				500
 			);
@@ -121,7 +126,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => isset( $data['message'] ) ? $data['message'] : 'Failed to send OTP' ),
+					'data'    => array( 
+                        'message' => isset( $data['message'] ) ? $data['message'] : 'Failed to send OTP' 
+                    ),
 				),
 				wp_remote_retrieve_response_code( $response )
 			);
@@ -142,9 +149,11 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => $error_message ),
+					'data'    => array( 
+                        'message' => $error_message 
+                    ),
 				),
-				400
+				500
 			);
 		}
 	}
@@ -164,7 +173,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => 'Verification data is required' ),
+					'data'    => array( 
+                        'message' => 'Verification data is required' 
+                    ),
 				),
 				400
 			);
@@ -202,7 +213,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => $response->get_error_message() ),
+					'data'    => array( 
+                        'message' => $response->get_error_message() 
+                    ),
 				),
 				500
 			);
@@ -221,9 +234,11 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => $error_message ),
+					'data'    => array( 
+                        'message' => $error_message 
+                    ),
 				),
-				400
+				500
 			);
 		} elseif ( isset( $data['mailchimp']['data']['errors'] ) && is_array( $data['mailchimp']['data']['errors'] ) && ! empty( $data['mailchimp']['data']['errors'] ) ) {
 			// Check for the mailchimp nested error.
@@ -232,9 +247,11 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => $error_message ),
+					'data'    => array( 
+                        'message' => $error_message 
+                    ),
 				),
-				400
+				500
 			);
 		} else {
 			// Store tokens.
@@ -246,9 +263,11 @@ class Topsms_Rest_Api_Admin {
 				return new WP_REST_Response(
 					array(
 						'success' => false,
-						'data'    => array( 'message' => $error_message ),
+						'data'    => array( 
+                            'message' => $error_message 
+                        ),
 					),
-					400
+					500
 				);
 			} else {
 				$this->topsms_store_tokens( $access_token, $refresh_token );
@@ -321,7 +340,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => 'Status key is required' ),
+					'data'    => array( 
+                        'message' => 'Status key is required' 
+                    ),
 				),
 				400
 			);
@@ -370,7 +391,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => 'Missing required parameters: status_key and enabled.' ),
+					'data'    => array( 
+                        'message' => 'Missing required parameters: status_key and enabled.' 
+                    ),
 				),
 				400
 			);
@@ -411,7 +434,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => 'Missing required parameters: status_key and template.' ),
+					'data'    => array( 
+                        'message' => 'Missing required parameters: status_key and template.' 
+                    ),
 				),
 				400
 			);
@@ -630,7 +655,7 @@ class Topsms_Rest_Api_Admin {
 						'value'   => $sender,
 					),
 				),
-				200
+				400
 			);
 		}
 
@@ -658,12 +683,12 @@ class Topsms_Rest_Api_Admin {
 				array(
 					'success' => false,
 					'data'    => array(
-						'message' => 'Error saving sender name: ' . $response->get_error_message(),
+						'message' => $response->get_error_message(),
 						'key'     => $key,
 						'value'   => $sender,
 					),
 				),
-				200
+				500
 			);
 		}
 
@@ -700,7 +725,7 @@ class Topsms_Rest_Api_Admin {
 						'value'   => $sender,
 					),
 				),
-				200
+				500
 			);
 		}
 	}
@@ -742,7 +767,9 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => $response->get_error_message() ),
+					'data'    => array( 
+                        'message' => $response->get_error_message() 
+                    ),
 				),
 				500
 			);
@@ -766,9 +793,11 @@ class Topsms_Rest_Api_Admin {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
-					'data'    => array( 'message' => $error_message ),
+					'data'    => array( 
+                        'message' => $error_message 
+                    ),
 				),
-				400
+				500
 			);
 		}
 	}
@@ -1350,4 +1379,1099 @@ class Topsms_Rest_Api_Admin {
 
 		return $response;
 	}
+
+	/**
+	 * Sending a single test SMS via TopSMS API.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response.
+	 */
+	public function topsms_send_test_sms( WP_REST_Request $request ) {
+		// Get payload from the request.
+		$body_params = $request->get_json_params();
+		$payload     = $body_params['payload'];
+
+		if ( empty( $payload ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array( 
+                        'message' => 'SMS data is required' 
+                    ),
+				),
+				400
+			);
+		}
+
+		// Validate required fields: phone_number, sender and message.
+		$required_fields = array( 'phone_number', 'sender', 'message' );
+		foreach ( $required_fields as $field ) {
+			if ( empty( $payload[ $field ] ) ) {
+				return new WP_REST_Response(
+					array(
+						'success' => false,
+						'data'    => array( 
+                            'message' => $field . ' is required' 
+                        ),
+					),
+					400
+				);
+			}
+		}
+
+		// Format the phone number (remove all non-digits).
+        $phone    = $payload['phone_number'];
+		$phone = preg_replace( '/[^0-9]/', '', $phone );
+
+		// Remove leading 61 if present.
+		if ( substr( $phone, 0, 2 ) === '61' ) {
+			$phone = substr( $phone, 2 );
+		}
+
+		// Get data from payload.
+		$sender   = isset( $payload['sender'] ) ? sanitize_text_field( $payload['sender'] ) : '';
+		$message_ = isset( $payload['message'] ) ? $payload['message'] : '';
+		$url      = isset( $payload['url'] ) ? esc_url_raw( $payload['url'] ) : '';
+
+		// Generate the unsub link.
+		$unsub_link = get_home_url() . '?phone=' . $phone;
+
+        // Get sample customer data from db (only get the first one)
+        global $wpdb;
+        $filters = array(); 
+        $sql = $this->helper->topsms_build_contacts_query_( $filters, null, 'display_name', 'ASC', true, 1, 1 );
+        $sample_customer = $wpdb->get_row( $sql );
+
+        // Replace tag with the data.
+        if ( $sample_customer ) {
+            $replacements = array(
+                '[first_name]'  => $sample_customer->first_name ? $sample_customer->first_name : 'John',
+                '[last_name]'   => $sample_customer->last_name ? $sample_customer->last_name : 'Doe',
+                '[mobile]'      => $sample_customer->phone ? $sample_customer->phone : $phone,
+                '[city]'        => $sample_customer->city ? $sample_customer->city : 'Sydney',
+                '[state]'       => $sample_customer->state ? $sample_customer->state : 'NSW',
+                '[postcode]'    => $sample_customer->postcode ? $sample_customer->postcode : '2000',
+                '[orders]'      => $sample_customer->order_count ? $sample_customer->order_count : 20,
+                '[total_spent]' => $sample_customer->total_spent ? number_format( $sample_customer->total_spent, 2 ) : '1500.00',
+                '[url]'         => $url,
+                '[unsubscribe]' => $unsub_link,
+            );
+        } else {
+            // Fallback if no customers found
+            $replacements = array(
+                '[first_name]'  => 'John',
+                '[last_name]'   => 'Doe',
+                '[mobile]'      => $phone,
+                '[city]'        => 'Sydney',
+                '[state]'       => 'NSW',
+                '[postcode]'    => '2000',
+                '[orders]'      => 20,
+                '[total_spent]' => 1500.00,
+                '[url]'         => $url,
+                '[unsubscribe]' => $unsub_link,
+            );
+        }
+		$message      = str_replace( array_keys( $replacements ), array_values( $replacements ), $message_ );
+        
+		// Send sms.
+		$status = $this->topsms_send_sms( $phone, $sender, $message, $url );
+
+		// Check for errors.
+		if ( $status !== 'Delivered' ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array( 
+                        'message' => 'Failed to send SMS' 
+                    ),
+				),
+				500
+			);
+		} else {
+			// SMS delivered.
+			return new WP_REST_Response(
+				array(
+					'success' => true,
+					'data'    => array( 
+                        'message' => 'SMS sent successfully' 
+                    ),
+				),
+				200
+			);
+		}
+	}
+
+	private function topsms_send_sms( $phone, $sender, $message, $link ) {
+		// Check if required fields: phone, sender and message exist.
+		if ( ! $phone || ! $sender || ! $message ) {
+			return;
+		}
+
+		$access_token = get_option( 'topsms_access_token' );
+		if ( ! $access_token ) {
+			return;  // Access token not found.
+		}
+
+		// Check if user has enough sms balance.
+		if ( ! $this->helper->check_user_balance() ) {
+			return;
+		}
+
+		// Send SMS.
+		$url  = 'https://api.topsms.com.au/functions/v1/sms';
+		$body = array(
+			'phone_number' => $phone,
+			'from'         => $sender,
+			'message'      => $message,
+			'link'         => $link,
+		);
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $access_token,
+					'Content-Type'  => 'application/json',
+				),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 50,
+			)
+		);
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		// Determine API status.
+		if ( is_wp_error( $response ) ) {
+			$api_status = 'Failed';
+		} elseif ( isset( $data['messageStatuses'][0]['statusText'] ) ) {
+			$api_status = $data['messageStatuses'][0]['statusText'];
+		} else {
+			$api_status = 'Pending';
+		}
+
+		// Check balance after sending the sms.
+		$balance = isset( $data['remainingBalance'] ) ? $data['remainingBalance'] : '';
+		if ( $balance ) {
+			$this->helper->topsms_low_balance_alert( (int) $balance );
+		}
+
+		return $api_status;
+	}
+
+	/**
+	 * Get user saved segments/filters from the contact lists.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response.
+	 */
+	public function topsms_get_saved_filters( WP_REST_Request $request ) {
+        // Get all filters.
+        $filters = $this->get_contacts_lists();
+
+        $transient_key = 'topsms_contacts_lists';
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'data'    => array(
+					'filters'       => $filters,
+					'transient_key' => $transient_key,
+				),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Get the selected contact list data based on the specified filter ID.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response.
+	 */
+	public function topsms_get_list( WP_REST_Request $request ) {
+		// Get filter id from the url params.
+		$filter_id = $request->get_param( 'filter_id' );
+		if ( empty( $filter_id ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array( 
+                        'message' => 'Filter ID is required' 
+                    ),
+				),
+				400
+			);
+		}
+
+		// Get lists from transient.
+        // If transient not found, do an sql query and get list data.
+		$lists = get_transient( 'topsms_contacts_lists' );
+		if ( false === $lists ) {
+			$lists = $this->get_contacts_lists();
+		}
+
+		// Check if the specified filter exists.
+		$list = $lists[ $filter_id ];
+		if ( ! isset( $list ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array( 
+                        'message' => 'List not found' 
+                    ),
+				),
+				404
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'data'    => array(
+					'count' => $list['count'],
+				),
+			),
+			200
+		);
+	}
+
+    private function get_contacts_lists() {
+        // Try to get lists from transient.
+        $lists = get_transient( 'topsms_contacts_lists' );
+        
+        // If transient exists, return it.
+        if ( false !== $lists ) {
+            return $lists;
+        }
+
+        // Transient doesn't exist, do an sql query to get the contacts list and save to transient.
+        global $wpdb;
+        
+        // Get saved filters from options.
+        $saved_filters = get_option( 'topsms_contacts_list_saved_filters', array() );
+        
+        // Extract contacts data.
+		$lists   = array();
+		$filters = array();
+		foreach ( $saved_filters as $filter_id => $filter ) {
+            // Skip filters if status filter is unsubscribed (don't send to unsubscribed contacts).
+            if ( isset( $filter['status'] ) && $filter['status'] === 'no' ) {
+                // For transient data.
+                $lists[ $filter_id ] = array(
+                    'filter_id'   => $filter_id,
+                    'filter_name' => $filter['name'],
+                    'count'       => 0,
+                    'contacts'    => array(),
+                );
+
+                // For return data.
+                $filters[ $filter_id ] = array(
+                    'id'    => $filter_id,
+                    'name'  => $filter['name'],
+                    'count' => 0,
+                );
+                continue;
+            }
+
+            // If no status is set for filters, set to subscribed only.
+            if ( empty( $filter['status'] ) ) {
+                $filter['status'] = 'yes';
+            }
+
+			// Get the contacts by filter.
+			$sql      = $this->helper->topsms_build_contacts_query_( $filter, null, false );
+			$contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
+			$count    = count( $contacts );
+
+			// For transient data.
+			$lists[ $filter_id ] = array(
+				'filter_id'   => $filter_id,
+				'filter_name' => $filter['name'],
+				'count'       => $count,
+				'contacts'    => $contacts,
+			);
+
+			// For return data.
+			$filters[ $filter_id ] = array(
+				'id'    => $filter_id,
+				'name'  => $filter['name'],
+				'count' => $count,
+			);
+		}
+
+        // Store all contacts lists data in transient.
+        $transient_key = 'topsms_contacts_lists';
+        set_transient( $transient_key, $lists );
+
+        return $filters;
+    }
+
+	/**
+	 * Clear the stored contact list transient.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response.
+	 */
+	public function topsms_clear_list_transient( WP_REST_Request $request ) {
+		// Check if transient exists.
+		$lists = get_transient( 'topsms_contacts_lists' );
+		if ( false === $lists ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array( 
+                        'message' => 'Transient not found' 
+                    ),
+				),
+				404
+			);
+		}
+
+		// Clear the transient.
+		$deleted = delete_transient( 'topsms_contacts_lists' );
+		if ( ! $deleted ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array( 
+                        'message' => 'Failed to delete transient' 
+                    ),
+				),
+				500
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'data'    => array( 
+                    'message' => 'Transient cleared successfully' 
+                ),
+			),
+			200
+		);
+	}
+
+    /**
+	 * Schedule bulk sms campaign via TopSms API.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response.
+	 */
+	public function topsms_schedule_campaign( WP_REST_Request $request ) {
+        // Get payload from the request.
+        $body_params = $request->get_json_params();
+        error_log("body params:" . print_r($body_params, true));
+
+        if ( ! isset( $body_params['is_scheduled'] ) || ! isset( $body_params['campaign_data'] ) || ! isset( $body_params['cost'] ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array( 
+                        'message' => 'Missing required parameters: is_scheduled,  campaign_data and cost.' 
+                    ),
+				),
+				400
+			);
+		}
+
+        $is_scheduled = isset($body_params['is_scheduled']) ? (bool) $body_params['is_scheduled'] : false;
+        $datetime = isset($body_params['datetime']) ? $body_params['datetime'] : '';
+        $campaign_data = isset($body_params['campaign_data']) ? $body_params['campaign_data'] : array();
+        $cost = isset($body_params['cost']) ? $body_params['cost'] : 0;
+        $campaign_id = isset($body_params['campaign_id']) ? $body_params['campaign_id'] : '';
+
+        // Validate campaign cost (Total sms count should be at least 1).
+        if ($cost < 1) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data' => array(
+                        'message' => 'Invalid cost. Campaign cost should be at least 1.'
+                    )
+                ),
+                400
+            );
+        }
+
+        // Validate datetime for scheduled campaign.
+        if ($is_scheduled && empty($datetime)) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data' => array(
+                        'message' => 'DateTime is required for scheduled campaigns'
+                    )
+                ),
+                400
+            );
+        }
+
+        // Validate datetime format and value (if schedule enabled).
+        if ($is_scheduled) {
+            // Validate datetime format.
+            $parsed_date = strtotime($datetime);
+            // error_log("parsed_date:" . print_r($parsed_date, true));
+            if (false === $parsed_date) {
+                return new WP_REST_Response(
+                    array(
+                        'success' => false,
+                        'data' => array(
+                            'message' => 'Invalid datetime format'
+                            )
+                    ),
+                    400
+                );
+            }
+            
+            // Check if is in the future datetime.
+            if ($parsed_date <= current_time('timestamp')) {
+                return new WP_REST_Response(
+                    array(
+                        'success' => false,
+                        'data' => array(
+                            'message' => 'Scheduled datetime must be in the future'
+                        )
+                    ),
+                    400
+                );
+            }
+        }
+
+		// Validate required form fields: campaign_name, list, sender, message.
+		$required_fields = array( 'campaign_name', 'list', 'sender', 'message' );
+		foreach ( $required_fields as $field ) {
+			if ( empty( $campaign_data[ $field ] ) ) {
+				return new WP_REST_Response(
+					array(
+						'success' => false,
+						'data'    => array( 
+                            'message' => $field . ' is required' 
+                        ),
+					),
+					400
+				);
+			}
+		}
+
+        $campaign_name = isset( $campaign_data['campaign_name'] ) ? sanitize_text_field( $campaign_data['campaign_name'] ) : '';
+        $list_id = isset( $campaign_data['list'] ) ? sanitize_text_field( $campaign_data['list'] ) : '';
+        $sender = isset( $campaign_data['sender'] ) ? sanitize_text_field( $campaign_data['sender'] ) : '';
+        $message = isset( $campaign_data['message'] ) ?  $campaign_data['message'] : '';
+        $link = isset( $campaign_data['url'] ) ? esc_url_raw( $campaign_data['url'] ) : '';
+
+        // Get access token for API request.
+		$access_token = get_option( 'topsms_access_token' );
+
+		if ( ! $access_token ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array(
+						'message' => 'Access token not found'
+					),
+				),
+				400
+			);
+		}
+
+        // If enabled schedule, convert datetime to UTC.
+        if ($is_scheduled && !empty($datetime)) {
+            // Create datetime in local timezone.
+            $wp_timezone = wp_timezone_string(); 
+            $dt = new DateTime($datetime, new DateTimeZone($wp_timezone));
+            $dt->setTimezone(new DateTimeZone('UTC'));
+            $scheduled_datetime_utc = $dt->format('Y-m-d\TH:i:s\Z');
+
+            $scheduled_datetime_local = $datetime;
+        } else {
+            $scheduled_datetime_utc = gmdate('Y-m-d\TH:i:s\Z');
+
+            $scheduled_datetime_local = current_time('Y-m-d H:i:s');
+        }
+
+        // Get list from transient based on selected list id.
+        $lists = get_transient( 'topsms_contacts_lists' );
+        if ( false === $lists ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data'    => array( 
+                        'message' => 'Transient key not found' 
+                    ),
+                ),
+                404
+            );
+        }
+
+        // Check if the selected list exists.
+        $list = $lists[ $list_id ];
+        if ( ! isset( $list ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data'    => array( 
+                        'message' => 'List not found'
+                    )
+                ),
+                404
+            );
+        }
+
+        // Get contacts data (phone numbers and shortcodes).
+        $contacts_data = $this->get_contacts_data( $list, $link );
+        $phone_numbers = $contacts_data['phone_numbers'];
+        $shortcodes = $contacts_data['shortcodes'];
+
+        // Generate unique job name.
+        // Campaign name concat with current timestamp.
+        $job_name = $campaign_name . '_' . time();
+
+        $action = $is_scheduled ? 'schedule' : 'instant';
+
+        // Webhook url for campaign status.
+        $website_url        = get_home_url();
+        $webhook_url        = $website_url . '/wp-json/topsms/v2/bulksms/campaign-status';
+
+        // Webhook token for campaign status.
+        $webhook_token = hash_hmac('sha256', $job_name, SECURE_AUTH_KEY);
+
+        // Send campaign.
+		$url  = 'https://api.topsms.com.au/functions/v1/schedule';
+		$body = array(
+			'action'            => $action,
+            'scheduledDateTime' => $scheduled_datetime_utc,
+            'jobName'           => $job_name,
+            'token'             => $access_token,
+            'smsPayload'        => array(
+                'phoneNumbers' => $phone_numbers,
+                'message'      => $message,
+                'shortcodes'   => $shortcodes,
+                'link'         => $link,
+                'sender'       => $sender,
+                'cost'         => $cost,
+            ),
+            'webhook_url'      => $webhook_url, 
+            'webhook_token'    => $webhook_token, 
+		);
+        error_log("body" . print_r($body, true));
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $access_token,
+					'Content-Type'  => 'application/json',
+				),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 50,
+			)
+		);
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+        error_log("data" . print_r($data, true));
+
+		// Determine response.
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data'    => array(
+                        'message' => $response->get_error_message(),
+                    ),
+                ),
+                500
+            );
+		} 
+
+        $campaign_uid = isset($data['campaign_uid']) ? $data['campaign_uid'] : '';
+
+        if (isset( $data['success'] ) && $data['success']) {
+            $status = $is_scheduled ? 'scheduled' : 'processing';
+
+            // Save campaign to table.
+            $campaign_data = array(
+                'campaign_id'        => $campaign_id,
+                'job_name'           => $job_name,
+                'campaign_uid'       => $campaign_uid,
+                'list'               => $list_id,
+                'message'            => $message,
+                'url'                => $link,
+                'sender'             => $sender,
+                'action'             => $action,
+                'status'             => $status,
+                'campaign_datetime'  => $scheduled_datetime_local,
+                'cost'               => $cost,
+                'webhook_token'      => $webhook_token,
+            );
+            $this->save_campaigns_to_db($campaign_data);
+
+            $message = $is_scheduled ? 'SMS scheduled successfully on ' . $scheduled_datetime_local : 'SMS sent successfully';
+            return new WP_REST_Response(
+                array(
+                    'success' => true,
+                    'data'    => array(
+                        'message' => $message,
+                        'jobName'         => $job_name,
+                        'campaign_uid'   => isset($data['campaign_uid']) ? $data['campaign_uid'] : ''
+                    ),
+                ),
+                200
+            );
+        } else {
+            $status = 'scheduled';
+
+            $message = '';
+            if (isset($data['error'])) {
+                $message = $data['error'];
+            } else if (isset($data['message'])) {
+                $message = $data['message'];
+            }
+
+            // Save campaign to table.
+            $campaign_data = array(
+                'campaign_id'        => $campaign_id,
+                'job_name'           => $job_name,
+                'campaign_uid'       => $campaign_uid,
+                'list'               => $list_id,
+                'message'            => $message,
+                'url'                => $link,
+                'sender'             => $sender,
+                'action'             => $action,
+                'status'             => $status,
+                'campaign_datetime'  => $scheduled_datetime_local,
+                'cost'               => $cost,
+                'details'            => $message,
+                'webhook_token'      => $webhook_token,
+            );
+            $this->save_campaigns_to_db($campaign_data);
+
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data'    => array(
+                        'message'         => $message,
+                        'jobName'         => $job_name,
+                        'campaign_uid'   => isset($data['campaign_uid']) ? $data['campaign_uid'] : ''
+
+                    ),
+                ),
+                500
+            );
+        }
+    }
+
+    /**
+     * Get contacts data from list by extracting phone numbers and creating shortcodes.
+     *
+     * @param array $list Contacts list.
+     * @return array Array with phone_numbers and shortcodes.
+     */
+    private function get_contacts_data( $list, $url ) {
+        $contacts = $list['contacts'];
+
+        // Check if there's contact in the list. 
+        // If no contacts, return empty array.
+        if ( ! isset( $contacts ) || empty( $contacts )  ) {
+            return array();
+        }
+
+        $phone_numbers = array();
+        $shortcodes = array();
+
+        foreach ( $contacts as $contact ) {
+            // Skip if phone number is missing.
+            if ( empty( $contact['phone'] ) ) {
+                continue;
+            }
+
+            // Add phone to phone numbers array.
+            $phone = sanitize_text_field( $contact['phone'] );
+            $phone_numbers[] = $phone;
+            
+            // Build shortcode data for each contact.
+            $shortcode = array(
+                'first_name'   => isset( $contact['first_name'] ) ? sanitize_text_field( $contact['first_name'] ) : '',
+                'last_name'    => isset( $contact['last_name'] ) ? sanitize_text_field( $contact['last_name'] ) : '',
+                'mobile'        => $phone,
+                'city'    => isset( $contact['city'] ) ? sanitize_text_field( $contact['city'] ) : '',
+                'state'    => isset( $contact['state'] ) ? sanitize_text_field( $contact['state'] ) : '',
+                'postcode'    => isset( $contact['postcode'] ) ? sanitize_text_field( $contact['postcode'] ) : '',
+                'orders'  => isset( $contact['order_count'] ) ? absint( $contact['order_count'] ) : 0,
+                'total_spent'  => isset( $contact['total_spent'] ) ? number_format( $contact['total_spent'], 2 ) : 0,
+                'url'  => $url,
+                'unsubscribe'  => get_home_url() . "?phone=" . $phone
+            );
+            $shortcodes[] = $shortcode;
+        }
+
+        // If no phone numbers, return empty array.
+        if ( empty( $phone_numbers ) ) {
+            return array();
+        }
+
+        return array(
+            'phone_numbers' => $phone_numbers,
+            'shortcodes'    => $shortcodes,
+        );
+    }
+
+    private function save_campaigns_to_db($campaign_data) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'topsms_campaigns';
+
+        // Convert id to integer if exists.
+        $campaign_id = isset($campaign_data['campaign_id']) ? intval($campaign_data['campaign_id']) : 0;
+
+        $data = array(
+            'list'      => isset($campaign_data['list']) ? $campaign_data['list'] : '',
+            'message'   => isset($campaign_data['message']) ? $campaign_data['message'] : '',
+            'url'       => isset($campaign_data['url']) ? $campaign_data['url'] : '',
+            'sender'    => isset($campaign_data['sender']) ? $campaign_data['sender'] : '',
+        );
+
+        // Fields to update/insert.
+        $db_data = array(
+            'job_name'          => $campaign_data['job_name'] ?? 'Untitled Campaign',
+            'campaign_uid'      => $campaign_data['campaign_uid'] ?? '',
+            'data'              => json_encode($data),
+            'action'            => $campaign_data['action'] ?? '',
+            'status'            => $campaign_data['status'] ?? 'draft',
+            'campaign_datetime' => $campaign_data['campaign_datetime'] ?? null,
+            'cost'              => $campaign_data['cost'] ?? 0,
+            'details'           => $campaign_data['details'] ?? '',
+            'webhook_token'     => $campaign_data['webhook_token'] ?? null,
+        );
+        $db_format = array(
+            '%s',  
+            '%s',  
+            '%s',  
+            '%s',
+            '%s',  
+            '%s',  
+            '%d', 
+            '%s', 
+            '%s'
+        );
+        
+        // Check if campaign exists.
+        $existing_campaign = null;
+        if ($campaign_id > 0) {
+            $existing_campaign = $wpdb->get_row(
+                $wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $campaign_id)
+            );
+        }
+
+        if ($existing_campaign) {
+            // Update existing campaign.
+            $result = $wpdb->update(
+                $table_name,
+                $db_data,
+                array('id' => $existing_campaign->id),
+                $db_format,
+                array('%d')
+            );
+
+            // Clear cache for table status counts.
+            wp_cache_delete( 'topsms_campaigns_status_counts' );
+
+            if ($result !== false) {
+                return $campaign_id;
+            } 
+        } else {
+            // Insert new campaign.
+            $result = $wpdb->insert(
+                $table_name, 
+                $db_data, 
+                $db_format
+            );
+
+            // Clear cache for table status counts.
+            wp_cache_delete( 'topsms_campaigns_status_counts' );
+
+            if ($result) {
+                return $wpdb->insert_id;
+            } else {
+                return $wpdb->insert_id;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Save draft campaign to database.
+     *
+     * @param WP_REST_Request $request The request object.
+     * @return WP_REST_Response The response.
+     */
+    public function topsms_save_campaign_as_draft( WP_REST_Request $request ) {
+        // Get payload from the request.
+        $body_params = $request->get_json_params();
+        error_log("body params:" . print_r($body_params, true));
+
+        // Check if fields exist.
+        $is_scheduled = isset($body_params['is_scheduled']) ? (bool) $body_params['is_scheduled'] : false;
+        $datetime = isset($body_params['datetime']) ? $body_params['datetime'] : '';
+        $campaign_id = isset($body_params['campaign_id']) ? intval($body_params['campaign_id']) : 0;
+        $campaign_data = isset($body_params['campaign_data']) ? $body_params['campaign_data'] : array();
+
+        // Campaign datetime: if schedule enabled, save datetime; otherwise, leave null.
+        $campaign_datetime = '';
+        if ($is_scheduled && !empty($datetime)) {
+            $campaign_datetime = $datetime;
+        }
+
+        $action = $is_scheduled ? 'schedule' : 'instant';
+
+
+        if ($campaign_data) {
+            // Extract campaign data: campaign name, list, sender, message and url if exist.
+            $campaign_name = isset($campaign_data['campaign_name']) ? sanitize_text_field($campaign_data['campaign_name']) : '';
+            $list = isset($campaign_data['list']) ? sanitize_text_field($campaign_data['list']) : '';
+            $sender = isset($campaign_data['sender']) ? sanitize_text_field($campaign_data['sender']) : '';
+            $message = isset($campaign_data['message']) ? $campaign_data['message'] : '';
+            $url = isset($campaign_data['url']) ? esc_url_raw($campaign_data['url']) : '';
+        }
+
+        $data = array();
+        $data['list'] = !empty($list) ? $list: '';
+        $data['sender'] = !empty($sender) ? $sender: '';
+        $data['message'] = !empty($message) ? $message: '';
+        $data['url'] = !empty($url) ? $url: '';
+
+        $db_data = array(
+            'job_name' => !empty($campaign_name) ? $campaign_name : 'Untitled Campaign',
+            'data' => json_encode($data),
+            'action' => $action,
+            'status' => 'draft',
+        );
+
+        $db_format = array(
+            '%s', 
+            '%s', 
+            '%s', 
+            '%s', 
+        );
+
+        // Add campaign_datetime only not empty.
+        if (!empty($campaign_datetime)) {
+            $db_data['campaign_datetime'] = $campaign_datetime;
+            $db_format[] = '%s'; 
+        }
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'topsms_campaigns';
+
+        // Check if campaign exists by id.
+        $existing_campaign = null;
+        if ($campaign_id > 0) {
+            $existing_campaign = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$table_name} WHERE id = %d",
+                    $campaign_id
+                )
+            );
+        } 
+
+        if ($existing_campaign) {
+            // Update campaign if exists.
+            $result = $wpdb->update(
+                $table_name,
+                $db_data,
+                array('id' => $existing_campaign->id),
+                $db_format,
+                array('%d')
+            );
+
+            // Clear cache for table status counts.
+            wp_cache_delete( 'topsms_campaigns_status_counts' );
+
+            if ($result !== false) {
+                return new WP_REST_Response(
+                    array(
+                        'success' => true,
+                        'data' => array(
+                            'message' => 'Campaign draft saved successfully',
+                            'campaign_id' => $existing_campaign->id
+                        ),
+                    ),
+                    200
+                );
+            } else {
+                return new WP_REST_Response(
+                    array(
+                        'success' => false,
+                        'data' => array(
+                            'message' => 'Failed to save campaign draft'
+                        ),
+                    ),
+                    500
+                );
+            }
+        } else {
+            // Insert campaign if doesn't exist.
+            $result = $wpdb->insert(
+                $table_name,
+                $db_data,
+                $db_format
+            );
+
+            // Clear cache for table status counts.
+            wp_cache_delete( 'topsms_campaigns_status_counts' );
+
+            if ($result) {
+                return new WP_REST_Response(
+                    array(
+                        'success' => true,
+                        'data' => array(
+                            'message' => 'Campaign draft saved successfully',
+                            'campaign_id' => $wpdb->insert_id
+                        ),
+                    ),
+                    200
+                );
+            } else {
+                return new WP_REST_Response(
+                    array(
+                        'success' => false,
+                        'data' => array(
+                            'message' => 'Failed to save campaign draft'
+                        ),
+                    ),
+                    500
+                );
+            }
+        }
+    }
+
+    /**
+     * Update campaign status from webhook
+     *
+     * @param WP_REST_Request $request The request object.
+     * @return WP_REST_Response The response.
+     */
+    public function topsms_scheduled_campaign_status( WP_REST_Request $request ) {
+        // Get token from the header.
+        $auth_header = $request->get_header('authorization');
+        if (empty($auth_header)) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => 'Authorization header missing'
+                ),
+                401
+            );
+        }
+        
+        // Extract token from the bearer token.
+        $webhook_token = str_replace('Bearer ', '', $auth_header);
+        
+        // Get campaign uid and status from the request.
+        $body_params = $request->get_json_params();
+        error_log("boday_params:" . print_r($body_params, true));
+        if (!isset($body_params['campaign_uid']) || !isset($body_params['status'])) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => 'Missing required parameters: campaign_uid and status'
+                ),
+                400
+            );
+        }
+        
+        $campaign_uid = sanitize_text_field($body_params['campaign_uid']);
+        $status = sanitize_text_field($body_params['status']);
+        
+        // Get message if provided.
+        $message = isset($body_params['message']) ? sanitize_text_field($body_params['message']) : null;
+        
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'topsms_campaigns';
+
+        // Search for campaign by campaign uid.
+        $query = $wpdb->prepare(
+            "SELECT * FROM `{$table_name}` WHERE campaign_uid = %s",
+            $campaign_uid
+        );
+
+        $campaign = $wpdb->get_row($query);
+
+        // Campaign not found.
+        if (!$campaign) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => 'Campaign not found with uid: ' . $campaign_uid
+                ),
+                404
+            );
+        }
+        
+        // Verify the webhook token matches the stored token for this campaign.
+        if (!hash_equals($campaign->webhook_token, $webhook_token)) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => 'Invalid webhook token'
+                ),
+                403
+            );
+        }
+
+        error_log("here2:");
+        
+        // Update status.
+        // If status is success, then update status to completed;
+        // If status is failed, then update status to failed.
+        $status_ = strtolower($status);
+        error_log("status:" . print_r($status, true));
+
+        if ($status_ === 'success') {
+            $status = 'completed';
+        } else {
+            $status_ = 'failed';
+        }
+        
+        // Update status for the campaign.
+        $update_data = array(
+            'status' => $status
+        );
+        $update_format = array('%s');
+        
+        // Add any error message to details (if givem).
+        if ($message !== null) {
+            $update_data['details'] = $message;
+            $update_format[] = '%s';
+        }
+        
+        $result = $wpdb->update(
+            $table_name,
+            $update_data,
+            array('campaign_uid' => $campaign_uid),
+            $update_format,
+            array('%s')
+        );
+        
+        if ($result === false) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => 'Failed to update campaign status'
+                ),
+                500
+            );
+        }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => 'Campaign status updated successfully',
+                'campaign_uid' => $campaign_uid,
+                'status' => $status
+            ),
+            200
+        );
+    }
 }

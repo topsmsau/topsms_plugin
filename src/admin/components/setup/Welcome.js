@@ -5,12 +5,11 @@ import {
     Button,
     Icon
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
 
 import StepIndicator from './StepIndicator.js';
 import WelcomeIcon from '../icons/WelcomeIcon.svg';
 
-const Welcome = ({ onComplete }) => {
+const Welcome = ({ }) => {
     const handleClick = () => {
         // Navigate to the automations page
         window.location.href = '/wp-admin/admin.php?page=topsms-automations';

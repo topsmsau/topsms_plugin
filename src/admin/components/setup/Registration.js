@@ -3,9 +3,7 @@ import {
     Card, 
     CardBody, 
     Button, 
-    TextControl,
     Icon,
-    SelectControl
 } from '@wordpress/components';
 import { useState, memo, useCallback } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
@@ -13,61 +11,13 @@ import 'react-phone-input-2/lib/style.css';
 
 import StepIndicator from './StepIndicator.js';
 import RegistrationIcon from '../icons/RegistrationIcon.svg';
+import CustomSelect from '../components/CustomSelect.js';
+import CustomInput from '../components/CustomInput.js';
+import { AUSTRALIAN_STATES } from '../Constants.js';
 
-// Australian states
-const AUSTRALIAN_STATES = [
-    { value: '', label: __('Select a state', 'topsms') },
-    { value: 'ACT', label: __('Australian Capital Territory', 'topsms') },
-    { value: 'NSW', label: __('New South Wales', 'topsms') },
-    { value: 'NT', label: __('Northern Territory', 'topsms') },
-    { value: 'QLD', label: __('Queensland', 'topsms') },
-    { value: 'SA', label: __('South Australia', 'topsms') },
-    { value: 'TAS', label: __('Tasmania', 'topsms') },
-    { value: 'VIC', label: __('Victoria', 'topsms') },
-    { value: 'WA', label: __('Western Australia', 'topsms') }
-];
-
-// Memoize the CustomInput to prevent unnecessary re-renders
-const CustomInput = memo(({ label, description, value, onChange, error, ...props }) => (
-    <div className="mb-4">
-        <div className="topsms-label">
-            {label}
-            {description && (
-                <span className="text-xs text-gray-500 ml-2">{description}</span>
-            )}
-        </div>
-        <div className="topsms-input">
-            <TextControl
-                label=""
-                value={value}
-                onChange={onChange}
-                {...props}
-            />
-        </div>
-        {error && (
-            <div className="text-red-500 text-sm mt-1">{error}</div>
-        )}
-    </div>
-));
-
-// Custom Select component
-const CustomSelect = memo(({ label, value, options, onChange, error, ...props }) => (
-    <div className="mb-4">
-        <div className="topsms-label">{label}</div>
-        <div className="topsms-input">
-            <SelectControl
-                label=""
-                value={value}
-                options={options}
-                onChange={onChange}
-                {...props}
-            />
-        </div>
-        {error && (
-            <div className="text-red-500 text-sm mt-1">{error}</div>
-        )}
-    </div>
-));
+// Memoize components
+const CustomInput_ = memo(CustomInput);
+const CustomSelect_ = memo(CustomSelect);
 
 const Registration = ({ onComplete }) => {
     const [formData, setFormData] = useState({
@@ -256,7 +206,7 @@ const Registration = ({ onComplete }) => {
 
 
     // Validate on submit
-    const handleSubmit = useCallback(async (e) => {
+    const handleSubmit = async (e) => {
         e?.preventDefault();
         
         // Validate the form and send otp 
@@ -270,8 +220,8 @@ const Registration = ({ onComplete }) => {
                 console.error('Failed to proceed:', err);
             }
         }
-    }, [onComplete, formData, validateForm]);
-
+    };
+    
     const handleFirstNameChange = useCallback((value) => handleChange('firstName', value), [handleChange]);
     const handleLastNameChange = useCallback((value) => handleChange('lastName', value), [handleChange]);
     const handleCompanyNameChange = useCallback((value) => handleChange('companyName', value), [handleChange]);
@@ -312,7 +262,7 @@ const Registration = ({ onComplete }) => {
                         <hr className="border-gray-200 mb-4" />
                         
                         <div className="grid grid-cols-2 gap-4">
-                            <CustomInput
+                            <CustomInput_
                                 key="firstName-field"
                                 label={__('First Name', 'topsms')}
                                 placeholder={__('Your first name', 'topsms')}
@@ -322,7 +272,7 @@ const Registration = ({ onComplete }) => {
                                 required
                             />
                             
-                            <CustomInput
+                            <CustomInput_
                                 key="lastName-field"
                                 label={__('Last Name', 'topsms')}
                                 placeholder={__('Your last name', 'topsms')}
@@ -334,7 +284,7 @@ const Registration = ({ onComplete }) => {
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4">
-                            <CustomInput
+                            <CustomInput_
                                 key="companyName-field"
                                 label={__('Company Name', 'topsms')}
                                 placeholder={__('Your company name', 'topsms')}
@@ -365,7 +315,7 @@ const Registration = ({ onComplete }) => {
                             </div>
                         </div>
                         
-                        <CustomInput
+                        <CustomInput_
                             key="email-field"
                             label={__('Email', 'topsms')}
                             placeholder={__('your.email@example.com', 'topsms')}
@@ -376,7 +326,7 @@ const Registration = ({ onComplete }) => {
                             required
                         />
 
-                        <CustomInput
+                        <CustomInput_
                             key="senderName-field"
                             label={__('Sender Name', 'topsms')}
                             description={__('Max 11 characters', 'topsms')}
@@ -396,7 +346,7 @@ const Registration = ({ onComplete }) => {
                         </h3>
                         <hr className="border-gray-200 mb-4" />
                         
-                        <CustomInput
+                        <CustomInput_
                             key="streetAddress-field"
                             label={__('Street Address', 'topsms')}
                             placeholder={__('Enter your street address', 'topsms')}
@@ -406,7 +356,7 @@ const Registration = ({ onComplete }) => {
                             required
                         />
                         
-                        <CustomInput
+                        <CustomInput_
                             key="abnAcn-field"
                             label={__('ABN / ACN', 'topsms')}
                             placeholder={__('Enter your ABN or ACN', 'topsms')}
@@ -418,7 +368,7 @@ const Registration = ({ onComplete }) => {
                         />
                         
                         <div className="grid grid-cols-2 gap-4 mb-4">
-                            <CustomInput
+                            <CustomInput_
                                 key="city-field"
                                 label={__('City', 'topsms')}
                                 placeholder={__('Your city', 'topsms')}
@@ -428,7 +378,7 @@ const Registration = ({ onComplete }) => {
                                 required
                             />
                             
-                            <CustomSelect
+                            <CustomSelect_
                                 key="state-field"
                                 label={__('State / Province', 'topsms')}
                                 value={formData.state}
@@ -439,7 +389,7 @@ const Registration = ({ onComplete }) => {
                             />
                         </div>
                         
-                        <CustomInput
+                        <CustomInput_
                             key="postcode-field"
                             label={__('Postcode', 'topsms')}
                             placeholder={__('Your postcode', 'topsms')}

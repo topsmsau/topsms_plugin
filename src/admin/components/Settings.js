@@ -11,10 +11,7 @@ import Layout from './components/Layout';
 import TopupBalanceButton from './settings/TopupBalanceButton';
 import BalanceCard from './settings/BalanceCard';
 import ReviewCard from './settings/ReviewCard';
-
-import BannerIcon1 from './icons/AutomationBannerIcon1.svg';
-import BannerIcon2 from './icons/AutomationBannerIcon2.svg';
-import BannerIcon3 from './icons/AutomationBannerIcon3.svg';
+import { TOPUPOPTIONS, REVIEWCARDS } from './Constants';
 
 const Settings = () => {
     const [selectedAmount, setSelectedAmount] = useState(null);
@@ -22,72 +19,6 @@ const Settings = () => {
     const [showSnackbar, setShowSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarStatus, setSnackbarStatus] = useState('success'); // 'success', 'error', 'info'
-
-    // List of top-up options
-    const topUpOptions = [
-        { 
-            amount: 45, 
-            sms: 500,
-            discount: null,
-            link: 'https://buy.stripe.com/6oE5kZc3c3lI2Aw3cc' 
-        },
-        { 
-            amount: 225, 
-            sms: 2500,
-            discount: null,
-            link: 'https://buy.stripe.com/28ofZD3wG4pMb72eUV' 
-        },
-        { 
-            amount: 400, 
-            sms: 5000,
-            discount: '11%',
-            link: 'https://buy.stripe.com/28oeVz0ku8G2a2Y9AC' 
-        },
-        { 
-            amount: 700, 
-            sms: 10000,
-            discount: '22%',
-            link: 'https://buy.stripe.com/14k7t71oy3lIejeeUX' 
-        },
-        { 
-            amount: 1500, 
-            sms: 50000,
-            discount: '33%',
-            link: 'https://buy.stripe.com/7sI9Bfc3c8G21wsdQU' 
-        },
-        { 
-            amount: 3000, 
-            sms: 100000,
-            discount: '44%',
-            link: 'https://buy.stripe.com/dRm14m88g4SUdu91tbbQY06' 
-        },
-    ];
-
-    // Review cards data
-    const reviewCards = [
-        {
-            icon: BannerIcon1,
-            title: 'Enjoying TopSMS?',
-            message: "Don't forget to leave us a review — your feedback helps us grow!", 
-            buttonText: 'Leave a review',
-            link: 'https://wordpress.org/plugins/topsms/#reviews'
-        },
-        {
-            icon: BannerIcon2,
-            title: 'Got ideas for new features?',
-            message: "Help shape the future of TopSMS by voting or suggesting new features.", 
-            buttonText: 'Request a feature',
-            link: 'https://topsms.canny.io/'
-        },
-        {
-            icon: BannerIcon3,
-            title: 'Need something tailored to your business?',
-            message: "We offer custom development services to make TopSMS work exactly how you need it.", 
-            buttonText: 'Customisation services',
-            link: 'https://eux.com.au/contact-us/'
-
-        }
-    ];
     
     // Handle click event on top-up items
     const handleTopUpClick = (amount, link) => {
@@ -197,7 +128,7 @@ const Settings = () => {
 
                             {/* Top Up Options */}
                             <Flex justify="space-between">
-                                {topUpOptions.map(({ amount, sms, discount, link }) => (
+                                {TOPUPOPTIONS.map(({ amount, sms, discount, link }) => (
                                     <TopupBalanceButton
                                         key={amount}
                                         isSelected={selectedAmount === amount}
@@ -224,7 +155,7 @@ const Settings = () => {
                     message="Don't forget to leave us a review — your feedback helps us grow!"
                     buttonText='Leave a review'
                     /> */}
-                {reviewCards.map((card, index) => (
+                {REVIEWCARDS.map((card, index) => (
                     <ReviewCard
                         key={index}
                         icon={card.icon}

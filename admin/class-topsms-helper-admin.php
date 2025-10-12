@@ -1,0 +1,411 @@
+<?php
+/**
+ * The admin-specific functionality of the plugin.
+ *
+ * @link       https://eux.com.au
+ * @since      1.0.0
+ *
+ * @package    Topsms
+ * @subpackage Topsms/admin
+ */
+
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * The admin-specific functionality of the plugin.
+ *
+ * Defines the plugin name, version, and two examples hooks for how to
+ * enqueue the admin-specific stylesheet and JavaScript.
+ *
+ * @package    Topsms
+ * @subpackage Topsms/admin
+ * @author     EUX <samee@eux.com.au>
+ */
+class Topsms_Helper_Admin {
+	const LOW_BALANCE_THRESHOLD = 50;
+	const SMS_LOWEST_BUFFER     = 2;
+
+	/**
+	 * The ID of this plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @var      string    $plugin_name    The ID of this plugin.
+	 */
+	private $plugin_name;
+
+	/**
+	 * The version of this plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @var      string    $version    The current version of this plugin.
+	 */
+	private $version;
+
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @since    1.0.0
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
+	 */
+	public function __construct( $plugin_name, $version ) {
+
+		$this->plugin_name = $plugin_name;
+		$this->version     = $version;
+	}
+
+	/**
+	 * Sends SMS alert notifications to customer when low SMS balance.
+	 *
+	 * @since    1.0.1
+	 * @param    int $balance    Current account balance.
+	 */
+	public function topsms_low_balance_alert( $balance ) {
+		// Get low balance alert option.
+		$low_balance_option = get_option( 'topsms_settings_low_balance_alert', 'no' );
+		if ( 'no' === $low_balance_option || ! $this->check_user_balance() ) {
+			return;
+		} else {
+			// Check if the transient exists.
+			// If transient doesn't exist (has expired or was never set), set it to true.
+			$send_sms_transient = get_transient( 'topsms_send_sms' );
+			if ( false === $send_sms_transient ) {
+				set_transient( 'topsms_send_sms', true );
+			}
+
+			// If low balance and of transient of send_sms is true, get user phone number and send sms (call Topsms api).
+			if ( $balance < self::LOW_BALANCE_THRESHOLD ) {
+				if ( get_transient( 'topsms_send_sms' ) ) {
+					$registration_data = get_option( 'topsms_registration_data', array() );
+					if ( ! empty( $registration_data ) ) {
+						$access_token = get_option( 'topsms_access_token' );
+						$user_phone   = isset( $registration_data['phone_number'] ) ? $registration_data['phone_number'] : '';
+						$user_company = isset( $registration_data['company'] ) ? $registration_data['company'] : '';
+						$sender       = $this->topsms_fetch_sender_name();
+						$message      = 'Alert: Your SMS balance is running low (under 50) on ' . $user_company . '. Please top up soon to avoid interruption to order notifications.';
+
+						// Send SMS.
+						$url  = 'https://api.topsms.com.au/functions/v1/sms';
+						$body = array(
+							'phone_number' => $user_phone,
+							'from'         => $sender,
+							'message'      => $message,
+							'link'         => '',
+						);
+
+						$response = wp_remote_post(
+							$url,
+							array(
+								'headers' => array(
+									'Authorization' => 'Bearer ' . $access_token,
+									'Content-Type'  => 'application/json',
+								),
+								'body'    => wp_json_encode( $body ),
+								'timeout' => 50,
+							)
+						);
+
+						$body = wp_remote_retrieve_body( $response );
+						$data = json_decode( $body, true );
+
+						// Determine API status.
+						if ( is_wp_error( $response ) ) {
+							$api_status = 'Failed';
+						} elseif ( isset( $data['messageStatuses'][0]['statusText'] ) ) {
+								$api_status = $data['messageStatuses'][0]['statusText'];
+						} else {
+							$api_status = 'Pending';
+						}
+
+						// Set transient to false for 24 hours.
+						set_transient( 'topsms_send_sms', false, DAY_IN_SECONDS );
+					}
+				}
+			} else {
+				delete_transient( 'topsms_send_sms' );
+			}
+		}
+	}
+
+	/**
+	 * Fetch the registered sender name from the remote Topsms API.
+	 *
+	 * @since    1.0.1
+	 * @return   $sender Sender name of the SMS.
+	 */
+	public function topsms_fetch_sender_name() {
+		$access_token = get_option( 'topsms_access_token' );
+		$sender       = '';
+
+		// Get sender name from the remote api.
+		$response = wp_remote_get(
+			'https://api.topsms.com.au/functions/v1/user',
+			array(
+				'headers' => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $access_token,
+				),
+				'timeout' => 50,
+			)
+		);
+
+		// Check for connection errors.
+		if ( is_wp_error( $response ) ) {
+			return $sender;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		// Check the status field in the response data.
+		if ( isset( $data['status'] ) && 'success' === $data['status'] ) {
+			$sender = isset( $data['data']['sender'] ) ? $data['data']['sender'] : '';
+		}
+
+		// Update the option if sender name exists.
+		if ( ! empty( $sender ) ) {
+			update_option( 'topsms_sender', $sender );
+		}
+
+		return $sender;
+	}
+
+	/**
+	 * Check user SMS balance to ensure there's enough buffer before sending SMS.
+	 *
+	 * @since    1.0.8
+	 * @return   boolean    True if enough balance, false otherwise.
+	 */
+	public function check_user_balance() {
+		$access_token = get_option( 'topsms_access_token' );
+
+		// Make api request to Topsms.
+		$response = wp_remote_get(
+			'https://api.topsms.com.au/functions/v1/user',
+			array(
+				'headers' => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $access_token,
+				),
+				'timeout' => 50,
+			)
+		);
+
+		// Check for connection errors.
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		// Check the balance data in the response data. If there's enough buffer to send sms, return true.
+		if ( isset( $data['data']['balance'] ) && $data['data']['balance'] >= self::SMS_LOWEST_BUFFER ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public function topsms_build_contacts_query_( $filters = array(), $select_clause = null, $orderby = 'display_name', $order = 'ASC', $include_pagination = false, $per_page = 25, $page_number = 1 ) {
+		global $wpdb;
+
+		// Get subscribed status from the user meta (fallback to order meta if not set)
+        $status = "(
+            COALESCE(
+                (SELECT um.meta_value 
+                FROM {$wpdb->usermeta} um 
+                WHERE um.user_id = cl.user_id 
+                AND um.meta_key = 'topsms_customer_consent' 
+                LIMIT 1),
+                ";
+        
+        // Check if wc_orders_meta table exists for fallback
+        $orders_meta_table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}wc_orders_meta'" );
+        if ( $orders_meta_table_exists ) {
+            $status .= "(SELECT om.meta_value
+                        FROM {$wpdb->prefix}wc_orders_meta om
+                        INNER JOIN {$wpdb->prefix}wc_order_stats os ON om.order_id = os.order_id AND om.meta_key = 'topsms_customer_consent'
+                        WHERE os.customer_id = cl.customer_id
+                        ORDER BY os.date_created DESC
+                        LIMIT 1)";
+        } else {
+            // Fallback to WP postmeta table
+            $status .= "(SELECT pm.meta_value
+                        FROM {$wpdb->prefix}wc_order_stats os
+                        INNER JOIN {$wpdb->postmeta} pm ON os.order_id = pm.post_id AND pm.meta_key = 'topsms_customer_consent'
+                        WHERE os.customer_id = cl.customer_id
+                        ORDER BY os.date_created DESC
+                        LIMIT 1)";
+        }
+        
+        $status .= ")
+        )";
+
+		// Get billing phone.
+		// Check if wc_order_addresses table exists.
+		$order_addresses_table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}wc_order_addresses'" );
+		if ( $order_addresses_table_exists ) {
+			$phone_number = "(
+                SELECT oa.phone
+                FROM {$wpdb->prefix}wc_order_addresses oa
+                INNER JOIN {$wpdb->prefix}wc_order_stats os ON oa.order_id = os.order_id
+                WHERE os.customer_id = cl.customer_id
+                AND oa.address_type = 'billing'
+                AND oa.phone != ''
+                AND oa.phone IS NOT NULL
+                ORDER BY os.date_created DESC
+                LIMIT 1
+            )";
+		} else {
+			// Fallback to WP postmeta table.
+			$phone_number = "(
+                SELECT pm.meta_value
+                FROM {$wpdb->prefix}wc_order_stats os
+                INNER JOIN {$wpdb->postmeta} pm ON os.order_id = pm.post_id AND pm.meta_key = '_billing_phone'
+                WHERE os.customer_id = cl.customer_id
+                AND pm.meta_value != ''
+                AND pm.meta_value IS NOT NULL
+                ORDER BY os.date_created DESC
+                LIMIT 1
+            )";
+		}
+
+		// Base query: Get first name, last name, city, state, postcode from WC customer lookup table.
+		if ( $select_clause === null ) {
+			$sql  = "
+                SELECT cl.customer_id, cl.username, cl.email, cl.first_name, cl.last_name, 
+                CONCAT(cl.first_name, ' ', cl.last_name) as display_name, 
+                cl.city, cl.state, cl.postcode
+            ";
+			$sql .= ", {$status} as status";
+			$sql .= ", {$phone_number} as phone";
+
+			// Get orders_count and total_spent.
+			$sql .= ', COALESCE(os.order_count, 0) as order_count, COALESCE(os.total_spent, 0) as total_spent';
+		} else {
+			$sql = "SELECT {$select_clause}";
+		}
+
+		$sql .= " FROM {$wpdb->prefix}wc_customer_lookup cl";
+		$sql .= " LEFT JOIN (
+            SELECT customer_id, 
+                COUNT(order_id) as order_count,
+                SUM(net_total) as total_spent
+            FROM {$wpdb->prefix}wc_order_stats
+            WHERE status IN ('wc-completed', 'wc-processing', 'wc-on-hold')
+            GROUP BY customer_id
+        ) os ON cl.customer_id = os.customer_id";
+
+		$where = array( 'cl.user_id IS NOT NULL' );
+
+		// Add search query.
+		if ( ! empty( $filters['search'] ) ) {
+			$search  = esc_sql( $wpdb->esc_like( $filters['search'] ) );
+			$where[] = "(cl.username LIKE '%{$search}%' OR cl.email LIKE '%{$search}%' OR cl.first_name LIKE '%{$search}%' OR cl.last_name LIKE '%{$search}%' OR {$phone_number} LIKE '%{$search}%')";
+		}
+
+		// Add state filter.
+		if ( ! empty( $filters['state'] ) ) {
+			$state   = esc_sql( $filters['state'] );
+			$where[] = "cl.state = '{$state}'";
+		}
+
+		// Add city filter.
+		if ( ! empty( $filters['city'] ) ) {
+			$city    = esc_sql( $filters['city'] );
+			$where[] = "cl.city LIKE '%{$city}%'";
+		}
+
+		// Add postcode filter.
+		if ( ! empty( $filters['postcode'] ) ) {
+			$postcode = esc_sql( $filters['postcode'] );
+			$where[]  = "cl.postcode LIKE '%{$postcode}%'";
+		}
+
+		// Add orders filter.
+		if ( ! empty( $filters['orders_condition'] ) && isset( $filters['orders_value'] ) ) {
+			$condition = $filters['orders_condition'];
+			$value     = intval( $filters['orders_value'] );
+
+			switch ( $condition ) {
+				case 'less_than':
+					$where[] = "COALESCE(os.order_count, 0) < {$value}";
+					break;
+				case 'more_than':
+					$where[] = "COALESCE(os.order_count, 0) > {$value}";
+					break;
+				case 'between':
+					if ( isset( $filters['orders_value2'] ) ) {
+						$value2  = intval( $filters['orders_value2'] );
+						$where[] = "COALESCE(os.order_count, 0) BETWEEN {$value} AND {$value2}";
+					}
+					break;
+			}
+		}
+
+		// Add total spent filter.
+		if ( ! empty( $filters['spent_condition'] ) && isset( $filters['spent_value'] ) ) {
+			$condition = $filters['spent_condition'];
+			$value     = floatval( $filters['spent_value'] );
+
+			switch ( $condition ) {
+				case 'less_than':
+					$where[] = "COALESCE(os.total_spent, 0) < {$value}";
+					break;
+				case 'more_than':
+					$where[] = "COALESCE(os.total_spent, 0) > {$value}";
+					break;
+				case 'between':
+					if ( isset( $filters['spent_value2'] ) ) {
+						$value2  = floatval( $filters['spent_value2'] );
+						$where[] = "COALESCE(os.total_spent, 0) BETWEEN {$value} AND {$value2}";
+					}
+					break;
+			}
+		}
+
+		// Add status filter.
+		if ( ! empty( $filters['status'] ) ) {
+			$status_filter = esc_sql( $filters['status'] );
+			$where[]       = "{$status} = '{$status_filter}'";
+		}
+
+		$sql .= ' WHERE ' . implode( ' AND ', $where );
+
+		// Add sorting.
+		if ( ! empty( $orderby ) ) {
+			$allowed_orderby = array( 'email', 'name', 'city', 'state', 'postcode', 'phone', 'orders', 'total_spent', 'status' );
+			if ( in_array( $orderby, $allowed_orderby ) ) {
+                if ( $orderby === 'name' ) {
+                    $sql .= " ORDER BY CONCAT(cl.first_name, ' ', cl.last_name) {$order}";
+                } elseif ( $orderby === 'phone' ) {
+                    $sql .= " ORDER BY phone {$order}";
+                } elseif ( $orderby === 'orders' ) {
+                    $sql .= " ORDER BY order_count {$order}";
+                } elseif ( $orderby === 'total_spent' ) {
+                    $sql .= " ORDER BY total_spent {$order}";
+                } elseif ( $orderby === 'status' ) {
+                    $sql .= " ORDER BY status {$order}";
+                } else {
+                    $sql .= " ORDER BY cl.{$orderby} {$order}";
+                }
+            } else {
+                $sql .= ' ORDER BY CONCAT(cl.first_name, " ", cl.last_name) ASC';
+            }
+		}
+
+		// Add pagination.
+		if ( $include_pagination ) {
+			$sql .= " LIMIT {$per_page}";
+			$sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+		}
+
+		return $sql;
+	}
+}

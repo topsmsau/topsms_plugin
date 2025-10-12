@@ -1,6 +1,10 @@
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, Flex, Icon } from '@wordpress/components';
-
+import { 
+    Card, 
+    CardBody, 
+    Flex, 
+    Icon 
+} from '@wordpress/components';
 import { plus } from '@wordpress/icons';
 
 // Topup button

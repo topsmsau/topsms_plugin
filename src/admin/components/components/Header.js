@@ -1,5 +1,12 @@
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, Flex, FlexItem, Icon, Notice } from '@wordpress/components';
+import { 
+    Card, 
+    CardBody, 
+    Flex, 
+    FlexItem, 
+    Icon, 
+    Notice 
+} from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 
 import TopsmsIcon from '../icons/TopsmsLogo.svg';

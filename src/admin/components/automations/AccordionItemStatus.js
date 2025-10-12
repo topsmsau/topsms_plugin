@@ -5,7 +5,15 @@ import { ToggleControl } from '@wordpress/components';
 import VerticalStrokeIcon from '../icons/VerticalStrokeIcon';
 import SettingsIcon from '../icons/SettingsIcon';
 
-const AccordionItemStatus = ({ title, description, statusKey, statusColor, children, onSuccessMessage, onErrorMessage }) => {
+const AccordionItemStatus = ({ 
+    title, 
+    description, 
+    statusKey, 
+    statusColor, 
+    children, 
+    onSuccessMessage, 
+    onErrorMessage 
+}) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isEnabled, setIsEnabled] = useState(true); 
@@ -102,9 +110,7 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             console.error('Error fetching status settings:', error);
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__(`Failed to load ${title} status settings. Please refresh and try again.`, 'topsms'));
-            }
+            onErrorMessage(__(`Failed to load ${title} status settings. Please refresh and try again.`, 'topsms'));
         } finally {
             setIsLoading(false);
         }
@@ -165,9 +171,7 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
             setIsEnabled(!isEnabled);
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__(`Failed to ${isEnabled ? 'disable' : 'enable'} ${title} status. Please try again.`, 'topsms'));
-            }
+            onErrorMessage(__(`Failed to ${isEnabled ? 'disable' : 'enable'} ${title} status. Please try again.`, 'topsms'));
         }
     };
 
@@ -193,8 +197,8 @@ const AccordionItemStatus = ({ title, description, statusKey, statusColor, child
                         )}
                         <VerticalStrokeIcon />
                         <div
-                            className={`open-settings ${isOpen ? 'open' : ''} ${!isEnabled ? 'opacity-50 pointer-events-none' : ''}`} 
-                            onClick={() => isEnabled && setIsOpen(!isOpen)}
+                            className={`open-settings ${isOpen ? 'open' : ''}`} 
+                            onClick={() => setIsOpen(!isOpen)}
                             onMouseEnter={() => setIsCogHovered(true)}
                             onMouseLeave={() => setIsCogHovered(false)}
                             style={{

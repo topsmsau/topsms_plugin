@@ -6,7 +6,14 @@ import {
     Icon
 } from '@wordpress/components';
 
-const ReviewCard = ({icon, title, message, buttonText, link, className = ''}) => {
+const ReviewCard = ({
+    icon, 
+    title, 
+    message, 
+    buttonText, 
+    link, 
+    className = ''
+}) => {
     return (
         <Card className={`text-center ${className}`}>
             <CardBody className="p-4 flex flex-col items-center">

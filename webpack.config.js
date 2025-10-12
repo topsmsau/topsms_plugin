@@ -48,6 +48,10 @@ module.exports = {
                 issuer: /\.(css|scss)$/,
                 type: 'asset/resource',
             },
+            {
+                test: /\.png$/,
+                type: 'asset/resource',
+            },
         ]
     },
     plugins: [

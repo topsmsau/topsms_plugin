@@ -8,39 +8,39 @@
 /******************************************** Custom css ***********************************************/
 /* Custom label above inputs */
 .topsms-label {
-  display: block;
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #333;
-  font-weight: 600;
+    display: block;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
 }
 
 /* Hide wp default labels */
 .components-base-control__label {
-  display: none !important;
+    display: none !important;
 }
 
 /* Common input styling */
 .topsms-input .components-text-control__input  {
-  border: 1px solid #d1d5db !important;
-  border-radius: 0.375rem !important;
-  padding: 0.5rem ;
-  width: 100% !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  min-height: 46px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 0.375rem !important;
+    padding: 0.5rem ;
+    width: 100% !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    min-height: 46px !important;
 }
 .topsms-input .components-select-control__input {
     border: 1px solid #d1d5db !important;
-  border-radius: 0.375rem !important;
-  padding: 0.5rem !important;
-  width: 100% !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  min-height: 46px !important;
+    border-radius: 0.375rem !important;
+    padding: 0.5rem !important;
+    width: 100% !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    min-height: 46px !important;
 }
 .topsms-input .components-text-control__input:focus, .topsms-input .components-select-control__input:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 1px #3b82f6 !important;
-  outline: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 1px #3b82f6 !important;
+    outline: none !important;
 }
 .topsms-input .components-select-control .components-input-control__backdrop {
     border: 1px solid #d1d5db !important;
@@ -60,32 +60,32 @@
 
 /* Button styling */
 .topsms-button {
-  background-color: #2563eb !important;
-  color: white !important;
-  border: none !important;
-  padding: 0.75rem 1rem !important;
-  border-radius: 1.5rem !important;
-  font-weight: 500 !important;
-  transition: background-color 0.2s !important;
-  justify-content: center !important;
+    background-color: #2563eb !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 1.5rem !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s !important;
+    justify-content: center !important;
 }
 .topsms-button:hover:not(:disabled) {
-  background-color: #1d4ed8 !important;
+    background-color: #1d4ed8 !important;
 }
 .topsms-button:disabled {
-  background-color: #93c5fd !important;
-  cursor: not-allowed !important;
+    background-color: #93c5fd !important;
+    cursor: not-allowed !important;
 }
 
 /* Phone input field */
 .topsms-phone-input {
-  line-height: 2 !important;
-  height: auto !important;
-  padding: 8px 0px 8px 60px !important;
-  width: 100% !important;
+    line-height: 2 !important;
+    height: auto !important;
+    padding: 8px 0px 8px 60px !important;
+    width: 100% !important;
 }
 .topsms-phone-input .selected-flag .flag {
-  left: 30% !important;
+    left: 30% !important;
 }
 
 /* Header, main content and footer */
@@ -129,6 +129,24 @@
     pointer-events: none;
 }
 
+/* Bulk sms */
+.iphone-message-popup {
+    background-color: rgba(255,255,255,0.8);
+}
+.bulksms-schedule-campaign .bulksms-schedule-campaign-toggle .topsms-label {
+    margin-bottom: 0;
+}
+.bulksms-test-message-button {
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 5px !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s !important;
+    justify-content: center !important;
+    height: auto !important;
+    width: auto !important;
+    color: white !important;
+}
 
 
 /* Snackbar styles */
@@ -148,21 +166,21 @@
 
 /* Small screens */
 @media (max-width: 1023px) {
-  /* Fix automations settings message preview section */
-  .automation-layout {
-    display: flex;
-    flex-direction: column;
-  }
-  /* Make preview appear after template section */
-  .automation-layout > div:nth-child(2) {
-    order: 3;
-  }
-  /* Keep action buttons below template but above preview */
-  .automation-actions {
-    order: 2;
-    margin-top: 1rem;
-    margin-bottom: 2rem;
-  }
+    /* Fix automations settings message preview section */
+    .automation-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    /* Make preview appear after template section */
+    .automation-layout > div:nth-child(2) {
+        order: 3;
+    }
+    /* Keep action buttons below template but above preview */
+    .automation-actions {
+        order: 2;
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+    }
 }
 
 /**************************************** End of Custom css ********************************************/

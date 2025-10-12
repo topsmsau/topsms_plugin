@@ -25,8 +25,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @author     EUX <samee@eux.com.au>
  */
 class Topsms_Admin {
-	const LOW_BALANCE_THRESHOLD = 50;
-	const SMS_LOWEST_BUFFER     = 2;
 
 	/**
 	 * The ID of this plugin.
@@ -78,7 +76,7 @@ class Topsms_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
-		wp_enqueue_style( 'topsms-admin-style-custom', plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
 		wp_enqueue_style( 'topsms-admin-style', plugin_dir_url( __FILE__ ) . 'css/topsms-admin-app.css', array(), time(), 'all' );
 		wp_enqueue_style( 'wp-components' );
 	}
@@ -101,6 +99,7 @@ class Topsms_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
+		// React-based script enqueue.
 		wp_enqueue_script(
 			'topsms-admin-app',
 			plugin_dir_url( __FILE__ ) . 'js/topsms-admin-app.js',
@@ -116,17 +115,26 @@ class Topsms_Admin {
 			time(),
 			true
 		);
-
-		// Provide REST API settings for nonce to JavaScript.
 		wp_localize_script(
 			'wp-api',
-			'topsmsNonce',
+			'wpApiSettings',
 			array(
 				'root'  => esc_url_raw( rest_url() ),
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 		wp_enqueue_script( 'wp-api' );
+
+		// Other custom JS scripts.
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-admin.js', array( 'jquery' ), time(), false );
+		wp_localize_script(
+			$this->plugin_name,
+			'topsmsAdmin',
+			array(
+				'nonce'    => wp_create_nonce( 'topsmsAdmin' ),
+				'adminUrl' => admin_url( 'admin.php?page=topsms-contacts-list' ),
+			)
+		);
 	}
 
 	/**
@@ -135,8 +143,15 @@ class Topsms_Admin {
 	 * @since    1.0.0
 	 */
 	private function load_dependencies() {
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-topsms-helper-admin.php';
+		$this->helper = new Topsms_Helper_Admin( $this->plugin_name, $this->version );
+
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-topsms-rest-api-admin.php';
-		$this->rest_api = new Topsms_Rest_Api_Admin( $this->plugin_name, $this->version );
+		$this->rest_api = new Topsms_Rest_Api_Admin( $this->plugin_name, $this->version, $this->helper );
+
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-topsms-contacts-list-admin.php';
+
+        require_once plugin_dir_path( __DIR__ ) . 'admin/class-topsms-campaigns-admin.php';
 	}
 
 	/**
@@ -329,6 +344,95 @@ class Topsms_Admin {
 				),
 			)
 		);
+
+		// Sending a single sms.
+		register_rest_route(
+			'topsms/v2',
+			'/send-sms',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this->rest_api, 'topsms_send_test_sms' ),
+				'permission_callback' => function () {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+		// Fetching available segments/saved filters from the contacts list.
+		register_rest_route(
+			'topsms/v2',
+			'/bulksms/lists',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this->rest_api, 'topsms_get_saved_filters' ),
+				'permission_callback' => function () {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+		// Fetching contacts based on selected list/segment.
+		register_rest_route(
+			'topsms/v2',
+			'/bulksms/lists/(?P<filter_id>[a-zA-Z0-9_]+)',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this->rest_api, 'topsms_get_list' ),
+				'permission_callback' => function () {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+		// Clearing transient based on the transient id.
+		register_rest_route(
+			'topsms/v2',
+			'/bulksms/clear-transient',
+			array(
+				'methods'             => array( 'POST', 'DELETE' ),
+				'callback'            => array( $this->rest_api, 'topsms_clear_list_transient' ),
+				'permission_callback' => function () {
+					return '__return_true'; // sendBeacon is used on the frontend, so allow public access 
+				},
+			)
+		);
+
+        // Schedule campaign / send campaign instantly.
+		register_rest_route(
+			'topsms/v2',
+			'/bulksms/schedule-campaign',
+			array(
+				'methods'             => array( 'POST' ),
+				'callback'            => array( $this->rest_api, 'topsms_schedule_campaign' ),
+				'permission_callback' => function () {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+        // Save campaign as draft.
+		register_rest_route(
+			'topsms/v2',
+			'/bulksms/save-campaign',
+			array(
+				'methods'             => array( 'POST' ),
+				'callback'            => array( $this->rest_api, 'topsms_save_campaign_as_draft' ),
+				'permission_callback' => function () {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+        // Webhook endpoint to get campaign status from Supabase.
+		register_rest_route(
+			'topsms/v2',
+			'/bulksms/campaign-status',
+			array(
+				'methods'             => array( 'POST' ),
+				'callback'            => array( $this->rest_api, 'topsms_scheduled_campaign_status' ),
+				'permission_callback' => '__return_true'
+			)
+		);
 	}
 
 	/**
@@ -374,6 +478,34 @@ class Topsms_Admin {
 			'topsms-settings',
 			array( $this, 'topsms_display_settings_page' )
 		);
+
+		add_submenu_page(
+			'topsms',
+			__( 'Bulk SMS', 'topsms' ),
+			__( 'Bulk SMS', 'topsms' ),
+			'manage_options',
+			'topsms-bulksms',
+			array( $this, 'topsms_display_bulk_sms_page' )
+		);
+
+		add_submenu_page(
+			'topsms',
+			__( 'Contacts', 'topsms' ),
+			__( 'Contacts', 'topsms' ),
+			'manage_options',
+			'topsms-contacts-list',
+			array( $this, 'topsms_display_contacts_list_page' )
+		);
+
+        add_submenu_page(
+			'topsms',
+			__( 'Campaigns', 'topsms' ),
+			__( 'Campaigns', 'topsms' ),
+			'manage_options',
+			'topsms-campaigns',
+			array( $this, 'topsms_display_campaigns_page' )
+		);
+
 
 		add_submenu_page(
 			'topsms',
@@ -645,9 +777,13 @@ class Topsms_Admin {
 		// Remove 'wc-' prefix if present in status.
 		$status_to = str_replace( 'wc-', '', $status_to );
 
-		// Get configuration from options table.
-		$access_token     = get_option( 'topsms_access_token' );
-		$sender           = $this->topsms_fetch_sender_name();
+		// Get access token from options.
+		$access_token = get_option( 'topsms_access_token' );
+		if ( ! $access_token ) {
+			return;  // Access token found.
+		}
+
+		$sender           = $this->helper->topsms_fetch_sender_name();
 		$is_enabled       = get_option( 'topsms_order_' . $status_to . '_enabled' );
 		$message_template = get_option( 'topsms_order_' . $status_to . '_message' );
 
@@ -668,7 +804,7 @@ class Topsms_Admin {
 		}
 
 		// Check if user has enough sms balance.
-		if ( ! $this->check_user_balance() ) {
+		if ( ! $this->helper->check_user_balance() ) {
 			return;
 		}
 
@@ -708,7 +844,7 @@ class Topsms_Admin {
 		if ( is_wp_error( $response ) ) {
 			$api_status = 'Failed';
 		} elseif ( isset( $data['messageStatuses'][0]['statusText'] ) ) {
-				$api_status = $data['messageStatuses'][0]['statusText'];
+			$api_status = $data['messageStatuses'][0]['statusText'];
 		} else {
 			$api_status = 'Pending';
 		}
@@ -733,162 +869,510 @@ class Topsms_Admin {
 			)
 		);
 
+		// Check balance after sending the sms.
 		$balance = isset( $data['remainingBalance'] ) ? $data['remainingBalance'] : '';
 		if ( $balance ) {
-			$this->topsms_low_balance_alert( (int) $balance );
+			$this->helper->topsms_low_balance_alert( (int) $balance );
 		}
 	}
 
 	/**
-	 * Sends SMS alert notifications to customers when low SMS balance.
+	 * Render the bulk page.
 	 *
-	 * @since    1.0.1
-	 * @param    int $balance    Current account balance.
+	 * @since    2.0.0
 	 */
-	private function topsms_low_balance_alert( $balance ) {
-		// Get low balance alert option.
-		$low_balance_option = get_option( 'topsms_settings_low_balance_alert', 'no' );
-		if ( 'no' === $low_balance_option || ! $this->check_user_balance() ) {
+	public function topsms_display_bulk_sms_page() {
+		// Check if connected, if not, redirect to the setup page.
+		$is_connected = $this->topsms_check_connection();
+		if ( ! $is_connected ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=topsms-setup' ) );
+			exit;
+		}
+
+        // Get campaign ID from url params if exists.
+        $campaign_id = isset( $_GET['campaign_id'] ) ? intval( $_GET['campaign_id'] ) : 0;
+
+        // Get campaign data if id is provided, and the status is draft.
+        $campaign_data = null;
+        if ( $campaign_id > 0 ) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'topsms_campaigns';
+            $campaign = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$table_name} WHERE id = %d AND status = %s",
+                    $campaign_id,
+                    'draft'
+                )
+            );
+            
+            // If campaign doesn't exist/not a draft, redirect back to the campaigns page.
+            if ( ! $campaign ) {
+                wp_safe_redirect( admin_url( 'admin.php?page=topsms-campaigns' ) );
+                exit;
+            }
+
+            $data = json_decode( $campaign->data, true );
+            $campaign_data = array(
+                'id'                => $campaign->id,
+                'campaign_name'     => $campaign->job_name,
+                'action'            => $campaign->action,
+                'campaign_datetime' => $campaign->campaign_datetime,
+                'status'            => $campaign->status,
+                'list'              => isset( $data['list'] ) ? $data['list'] : '',
+                'sender'            => isset( $data['sender'] ) ? $data['sender'] : '',
+                'message'           => isset( $data['message'] ) ? $data['message'] : '',
+                'url'               => isset( $data['url'] ) ? $data['url'] : '',
+            );
+        }
+
+        // Pass data to JavaScript.
+        wp_localize_script(
+            'topsms-admin-app',
+            'topsmsNonce',
+            array(
+                'restUrl'      => esc_url_raw( rest_url() ),
+                'nonce'        => wp_create_nonce( 'wp_rest' ),
+                'pluginUrl'    => TOPSMS_MANAGER_PLUGIN_URL,
+                'campaignData' => $campaign_data, // Pass the campaign data if exist.
+            )
+        );
+
+		// Container for React app.
+		printf(
+			'<div class="wrap">
+                <div id="topsms-admin-bulksms" class="topsms-app"></div>
+            </div>'
+		);
+	}
+
+	/**
+	 * Render the contacts list page.
+	 *
+	 * @since    2.0.0
+	 */
+	public function topsms_display_contacts_list_page() {
+		// Check if connected, if not, redirect to the setup page.
+		$is_connected = $this->topsms_check_connection();
+		if ( ! $is_connected ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=topsms-setup' ) );
+			exit;
+		}
+
+		// Handle filter deletion.
+		if ( isset( $_GET['action'] ) && $_GET['action'] === 'delete_filter' && isset( $_GET['filter_id'] ) ) {
+			$filter_id = sanitize_text_field( $_GET['filter_id'] );
+
+			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'delete_filter_' . $filter_id ) ) {
+				$saved_filters = get_option( 'topsms_contacts_list_saved_filters', array() );
+				unset( $saved_filters[ $filter_id ] );
+				update_option( 'topsms_contacts_list_saved_filters', $saved_filters );
+
+				// Clear cache when filters change
+				wp_cache_delete( 'topsms_contacts_list_cities' );
+				wp_cache_delete( 'topsms_contacts_list_states' );
+
+                // Remove the previous filter args  and add message for displaying notice.
+                $redirect_url = remove_query_arg( array( 'action', 'filter_id', '_wpnonce' ) );
+                if ( $result ) {
+                    $redirect_url = add_query_arg( 'message', 'filter_deleted', $redirect_url );
+                } else {
+                    $redirect_url = add_query_arg( 'message', 'delete_filter_failed', $redirect_url );
+                }
+
+				wp_safe_redirect( $redirect_url );
+				exit;
+			}
+		}
+
+		// Initialise the contacts list table.
+		$table = new Topsms_Contacts_List_Admin( $this->helper );
+		$table->prepare_items();
+
+		?>
+		<div class="wrap">
+			<h1 class="wp-heading-inline">Contacts List</h1>
+			<hr class="wp-header-end">
+
+            <?php
+            // Display success/error messages from the action.
+            if ( isset( $_GET['message'] ) ) {
+                if ( $_GET['message'] === 'filter_deleted' ) {
+                    echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Filter deleted successfully.', 'topsms' ) . '</p></div>';
+                } elseif ( $_GET['message'] === 'delete_filter_failed' ) {
+                    echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Failed to delete filter. Please try again later.', 'topsms' ) . '</p></div>';
+                }
+            }
+            ?>
+			
+			<form method="get" id="topsms-contacts-filter">
+				<input type="hidden" name="page" value="topsms-contacts-list">
+				<?php
+				$table->views();
+				$table->search_box( 'Search Contacts', 'contact' );
+				$table->display();
+				?>
+			</form>
+		</div>
+		<?php
+	}
+
+	/**
+	 * AJAX handler to save contacts list filter.
+	 *
+	 * @since    2.0.0
+	 */
+	public function topsms_save_contacts_list_filter() {
+		// Check nonce.
+		check_ajax_referer( 'topsmsAdmin', 'nonce' );
+
+		// Only allow users with admin cap.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Permission denied' );
+		}
+
+		// Get all filters value.
+		$filter_name             = sanitize_text_field( $_POST['filter_name'] );
+		$filter_state            = sanitize_text_field( $_POST['filter_state'] );
+		$filter_city             = sanitize_text_field( $_POST['filter_city'] );
+		$filter_postcode         = sanitize_text_field( $_POST['filter_postcode'] );
+		$filter_search           = sanitize_text_field( $_POST['filter_search'] );
+		$filter_orders_condition = sanitize_text_field( $_POST['filter_orders_condition'] );
+		$filter_orders_value     = sanitize_text_field( $_POST['filter_orders_value'] );
+		$filter_orders_value2    = sanitize_text_field( $_POST['filter_orders_value2'] );
+		$filter_spent_condition  = sanitize_text_field( $_POST['filter_spent_condition'] );
+		$filter_spent_value      = sanitize_text_field( $_POST['filter_spent_value'] );
+		$filter_spent_value2     = sanitize_text_field( $_POST['filter_spent_value2'] );
+		$filter_status           = sanitize_text_field( $_POST['filter_status'] );
+
+		// Save the filter to options.
+		$saved_filters = get_option( 'topsms_contacts_list_saved_filters', array() );
+
+		// Check for duplicate filter name.
+		foreach ( $saved_filters as $filter ) {
+			if ( strcasecmp( $filter['name'], $filter_name ) === 0 ) {
+				wp_send_json_error( 'A filter with this name already exists. Please choose a different name.' );
+				return;
+			}
+		}
+
+		$filter_id = 'filter_' . time();
+
+		$saved_filters[ $filter_id ] = array(
+			'name'             => $filter_name,
+			'state'            => $filter_state,
+			'city'             => $filter_city,
+			'postcode'         => $filter_postcode,
+			'search'           => $filter_search,
+			'orders_condition' => $filter_orders_condition,
+			'orders_value'     => $filter_orders_value,
+			'orders_value2'    => $filter_orders_value2,
+			'spent_condition'  => $filter_spent_condition,
+			'spent_value'      => $filter_spent_value,
+			'spent_value2'     => $filter_spent_value2,
+			'status'           => $filter_status,
+		);
+
+		update_option( 'topsms_contacts_list_saved_filters', $saved_filters );
+		wp_send_json_success();
+	}
+
+	public function topsms_delete_contacts_list_filter() {
+		// Check nonce.
+		check_ajax_referer( 'topsmsAdmin', 'nonce' );
+
+		// Only allow users with admin cap.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Permission denied' );
+		}
+
+		// Get the filter id.
+		$filter_id = sanitize_text_field( $_POST['filter_id'] );
+		if ( empty( $filter_id ) ) {
+			wp_send_json_error( 'Filter ID is missing' );
 			return;
-		} else {
-			// Check if the transient exists.
-			// If transient doesn't exist (has expired or was never set), set it to true.
-			$send_sms_transient = get_transient( 'topsms_send_sms' );
-			if ( false === $send_sms_transient ) {
-				set_transient( 'topsms_send_sms', true );
-			}
+		}
 
-			// If low balance and of transient of send_sms is true, get user phone number and send sms (call Topsms api).
-			if ( $balance < self::LOW_BALANCE_THRESHOLD ) {
-				if ( get_transient( 'topsms_send_sms' ) ) {
-					$registration_data = get_option( 'topsms_registration_data', array() );
-					if ( ! empty( $registration_data ) ) {
-						$access_token = get_option( 'topsms_access_token' );
-						$user_phone   = isset( $registration_data['phone_number'] ) ? $registration_data['phone_number'] : '';
-						$user_company = isset( $registration_data['company'] ) ? $registration_data['company'] : '';
-						$sender       = $this->topsms_fetch_sender_name();
-						$message      = 'Alert: Your SMS balance is running low (under 50) on ' . $user_company . '. Please top up soon to avoid interruption to order notifications.';
+		// Check if filter exists. If exists, delete the filter.
+		$saved_filters = get_option( 'topsms_contacts_list_saved_filters', array() );
+		if ( ! isset( $saved_filters[ $filter_id ] ) ) {
+			wp_send_json_error( 'Filter not found' );
+			return;
+		}
+		unset( $saved_filters[ $filter_id ] );
 
-						// Send SMS.
-						$url  = 'https://api.topsms.com.au/functions/v1/sms';
-						$body = array(
-							'phone_number' => $user_phone,
-							'from'         => $sender,
-							'message'      => $message,
-							'link'         => '',
-						);
+		update_option( 'topsms_contacts_list_saved_filters', $saved_filters );
+		wp_send_json_success();
+	}
 
-						$response = wp_remote_post(
-							$url,
-							array(
-								'headers' => array(
-									'Authorization' => 'Bearer ' . $access_token,
-									'Content-Type'  => 'application/json',
-								),
-								'body'    => wp_json_encode( $body ),
-								'timeout' => 50,
-							)
-						);
+    /**
+     * Render the campaigns page.
+     *
+     * @since    2.0.0
+     */
+    public function topsms_display_campaigns_page() {
+        // Check if connected, if not, redirect to the setup page.
+        $is_connected = $this->topsms_check_connection();
+        if ( ! $is_connected ) {
+            wp_safe_redirect( admin_url( 'admin.php?page=topsms-setup' ) );
+            exit;
+        }
 
-						$body = wp_remote_retrieve_body( $response );
-						$data = json_decode( $body, true );
+        // Handle cancel campaign.
+		if ( isset( $_GET['action'] ) && $_GET['action'] === 'cancel_campaign' && isset( $_GET['campaign_id'] ) ) {
+			$campaign_id = intval( $_GET['campaign_id'] );
 
-						// Determine API status.
-						if ( is_wp_error( $response ) ) {
-							$api_status = 'Failed';
-						} elseif ( isset( $data['messageStatuses'][0]['statusText'] ) ) {
-								$api_status = $data['messageStatuses'][0]['statusText'];
-						} else {
-							$api_status = 'Pending';
-						}
+			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'cancel_campaign_' . $campaign_id  ) ) {
+				// Cancel campaign by calling the API.
+                $result = $this->topsms_cancel_campaign( $campaign_id );
 
-						// Set transient to false for 24 hours.
-						set_transient( 'topsms_send_sms', false, DAY_IN_SECONDS );
-					}
-				}
-			} else {
-				delete_transient( 'topsms_send_sms' );
+                // Remove the previous filter args  and add message for displaying notice.
+                $redirect_url = remove_query_arg( array( 'action', 'campaign_id', '_wpnonce' ) );
+                if ( $result ) {
+                    $redirect_url = add_query_arg( 'message', 'campaign_cancelled', $redirect_url );
+                } else {
+                    $redirect_url = add_query_arg( 'message', 'cancel_campaign_failed', $redirect_url );
+                }
+
+				wp_safe_redirect( $redirect_url );
+				exit;
 			}
 		}
-	}
 
-	/**
-	 * Fetch the registered sender name from the remote Topsms API.
-	 *
-	 * @since    1.0.1
-	 * @return   $sender Sender name of the SMS.
-	 */
-	private function topsms_fetch_sender_name() {
+        // Initialise the campaigns table.
+        $table = new Topsms_Campaigns_Admin();
+        $table->prepare_items();
+
+        ?>
+        <div class="wrap">
+            <h1 class="wp-heading-inline">Campaigns</h1>
+            <hr class="wp-header-end">
+
+            <?php
+            // Display success/error messages from the action.
+            if ( isset( $_GET['message'] ) ) {
+                if ( $_GET['message'] === 'campaign_cancelled' ) {
+                    echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Campaign cancelled successfully.', 'topsms' ) . '</p></div>';
+                } elseif ( $_GET['message'] === 'cancel_campaign_failed' ) {
+                    echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Failed to cancel campaign. Please try again later.', 'topsms' ) . '</p></div>';
+                }
+            }
+            ?>
+            
+            <form method="get" id="topsms-campaigns-filter">
+                <input type="hidden" name="page" value="topsms-campaigns">
+                <?php
+                $table->views();
+                $table->search_box( 'Search Campaigns', 'campaign' );
+                $table->display();
+                ?>
+            </form>
+        </div>
+        <?php
+    }
+
+    public function topsms_handle_unsubscribe() {
+        // Check if phone  exists in url params.
+        if (!isset($_GET['phone']) || empty($_GET['phone'])) {
+            return;
+        }
+        // Get phone from url params.
+        $phone = sanitize_text_field($_GET['phone']);
+        $user_id = null;
+        
+        // Check if user is logged in.
+        if (is_user_logged_in()) {
+            $user_id = get_current_user_id();
+            
+            // Verify phone matches user's billing phone.
+            $billing_phone = get_user_meta($user_id, 'billing_phone', true);
+            $normalised_billing = preg_replace('/[^0-9]/', '', $billing_phone);
+            $normalised_input = preg_replace('/[^0-9]/', '', $phone);
+            if ($normalised_billing !== $normalised_input) {
+                return;
+            }
+        } else {
+            // User not logged in, find user by phone.
+            global $wpdb;
+            $normalised_phone = preg_replace('/[^0-9]/', '', $phone);
+            
+            $user_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT user_id FROM {$wpdb->usermeta} 
+                WHERE meta_key = 'billing_phone' 
+                AND REPLACE(REPLACE(REPLACE(meta_value, ' ', ''), '-', ''), '+', '') LIKE %s 
+                LIMIT 1",
+                '%' . $wpdb->esc_like($normalised_phone)
+            ));
+            
+            if (!$user_id) {
+                return; // No user found
+            }
+            
+            $user_id = intval($user_id);
+        }
+        
+        // Update user meta to unsubscribe.
+        update_user_meta($user_id, 'topsms_customer_consent', 'no');
+        
+        // Get and update the meta in the last order.
+        if (function_exists('wc_get_orders')) {
+            $orders = wc_get_orders(array(
+                'customer_id' => $user_id,
+                'limit' => 1,
+                'orderby' => 'date',
+                'order' => 'DESC',
+                'return' => 'objects'
+            ));
+            if (!empty($orders)) {
+                $order = $orders[0];
+                $order->update_meta_data('topsms_customer_consent', 'no');
+                $order->save();
+            }
+        }
+
+        wc_add_notice('You have been successfully unsubscribed from SMS notifications.', 'success');
+    }
+
+    /**
+     * Cancel a scheduled campaign via TopSms API.
+     *
+     * @param int $campaign_id The campaign ID.
+     * @return bool True on success, false on failure.
+     */
+    private function topsms_cancel_campaign( $campaign_id ) {
+        if ( ! $campaign_id ) {
+            error_log("No campaign_id provided");
+            return false;
+        }
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'topsms_campaigns';
+        
+        // Get campaign by campaign id.
+        $campaign = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$table_name} WHERE id = %d",
+                $campaign_id
+            )
+        );
+        
+        if ( ! $campaign ) {
+            error_log( 'Campaign not found: ' . $campaign_id );
+            return false;
+        }
+
+        // Only allow for scheduled campaigns (status is scheduled).
+        if ( $campaign->status !== 'scheduled' ) {
+            error_log( 'Cannot cancel campaign with status: ' . $campaign->status );
+            return false;
+        }
+
+        // Check the current time is within 30 minutes of scheduled time.
+        if ( ! empty( $campaign->campaign_datetime ) ) {
+            // Check the time difference.
+            $scheduled_time = strtotime( $campaign->campaign_datetime );
+            $current_time = current_time( 'timestamp' );
+            $time_diff = $scheduled_time - $current_time;
+            
+            // Don't allow if within 30 minutes/negative time difference.
+            if ( $time_diff <= 0 ) {
+                error_log( 'Cancel not allowed: Campaign is scheduled to start in less than 30 minutes' );
+                return false;
+            }
+            if ( $time_diff <= 1800 ) {
+                error_log( 'Cancel not allowed: Campaign is running' );
+                return false;
+            }
+        }
+        
+        // Get access token for API request.
 		$access_token = get_option( 'topsms_access_token' );
-		$sender       = '';
-
-		// Get sender name from the remote api.
-		$response = wp_remote_get(
-			'https://api.topsms.com.au/functions/v1/user',
-			array(
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $access_token,
-				),
-				'timeout' => 50,
-			)
-		);
-
-		// Check for connection errors.
-		if ( is_wp_error( $response ) ) {
-			return $sender;
-		}
-
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
-
-		// Check the status field in the response data.
-		if ( isset( $data['status'] ) && 'success' === $data['status'] ) {
-			$sender = isset( $data['data']['sender'] ) ? $data['data']['sender'] : '';
-		}
-
-		// Update the option if sender name exists.
-		if ( ! empty( $sender ) ) {
-			update_option( 'topsms_sender', $sender );
-		}
-
-		return $sender;
-	}
-
-	/**
-	 * Check user SMS balance to ensure there's enough buffer before sending SMS.
-	 *
-	 * @since    1.0.8
-	 * @return   boolean    True if enough balance, false otherwise.
-	 */
-	private function check_user_balance() {
-		$access_token = get_option( 'topsms_access_token' );
-
-		// Make api request to Topsms.
-		$response = wp_remote_get(
-			'https://api.topsms.com.au/functions/v1/user',
-			array(
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $access_token,
-				),
-				'timeout' => 50,
-			)
-		);
-
-		// Check for connection errors.
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
-
-		// Check the balance data in the response data. If there's enough buffer to send sms, return true.
-		if ( isset( $data['data']['balance'] ) && $data['data']['balance'] >= self::SMS_LOWEST_BUFFER ) {
-			return true;
-		}
-
-		return false;
-	}
+        if ( ! $access_token ) {
+            error_log( 'Access token not found' );
+            return false;
+        }
+        
+        // Current datetime in UTC.
+        $scheduled_datetime_utc = gmdate( 'Y-m-d\TH:i:s\Z' );
+        
+        // Webhook url for campaign status.
+        $website_url = get_home_url();
+        $webhook_url = $website_url . '/wp-json/topsms/v2/bulksms/campaign-status';
+        
+        // Cancel campaign.
+        $url  = 'https://api.topsms.com.au/functions/v1/schedule';
+        $body = array(
+            'action'            => 'cancel',
+            'scheduledDateTime' => $scheduled_datetime_utc,
+            'jobName'           => $campaign->job_name,
+            'token'             => $access_token,
+            'smsPayload'        => array(
+                'cost' => $campaign->cost,
+            ),
+            'webhook_url'       => $webhook_url,
+            'webhook_token'     => $campaign->webhook_token,
+        );
+        
+        error_log( 'Cancelling campaign: ' . print_r( $body, true ) );
+        
+        $response = wp_remote_post(
+            $url,
+            array(
+                'headers' => array(
+                    'Authorization' => 'Bearer ' . $access_token,
+                    'Content-Type'  => 'application/json',
+                ),
+                'body'    => wp_json_encode( $body ),
+                'timeout' => 50,
+            )
+        );
+        
+        $body = wp_remote_retrieve_body( $response );
+        $data          = json_decode( $body, true );
+        error_log("data" . print_r($data, true));
+        
+        // Determine response.
+        if ( is_wp_error( $response ) ) {
+            error_log( 'Cancel campaign error: ' . $response->get_error_message() );
+            return false;
+        }
+        
+        if ( isset( $data['success'] ) && $data['success'] ) {
+            // Update campaign to table.
+            $result = $wpdb->update(
+                $table_name,
+                array(
+                    'status'            => 'cancelled',
+                    'campaign_datetime' => $scheduled_datetime_utc,
+                ),
+                array( 'id' => $campaign_id ),
+                array( '%s', '%s' ),
+                array( '%d' )
+            );
+            
+            // Clear cache for table status counts.
+            wp_cache_delete( 'topsms_campaigns_status_counts' );
+            
+            return $result !== false;
+        } else {
+            $error_message = '';
+            if ( isset( $data['error'] ) ) {
+                $error_message = $data['error'];
+            } elseif ( isset( $data['message'] ) ) {
+                $error_message = $data['message'];
+            }
+            
+            error_log( 'Cancel campaign failed: ' . $error_message );
+            
+            // Update details with error to table.
+            $wpdb->update(
+                $table_name,
+                array( 'details' => $error_message ),
+                array( 'id' => $campaign_id ),
+                array( '%s' ),
+                array( '%d' )
+            );
+            
+            return false;
+        }
+    }
 }

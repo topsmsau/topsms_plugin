@@ -1,16 +1,11 @@
 import { __ } from '@wordpress/i18n';
 import { __experimentalText as Text } from '@wordpress/components';
 
+import { DEFAULTREGISTRATIONSTEPS } from '../Constants'; 
+
 const StepIndicator = ({ currentStep, steps = [] }) => {
-    // Default steps if none provided
-    const defaultSteps = [
-        { name: __('Register', 'topsms') },
-        { name: __('Confirm Phone Number', 'topsms') },
-        { name: __('Welcome to TopSMS', 'topsms') }
-    ];
-    
     // Use provided steps or defaults
-    const stepsToRender = steps.length > 0 ? steps : defaultSteps;
+    const stepsToRender = steps.length > 0 ? steps : DEFAULTREGISTRATIONSTEPS;
     
     // Parse currentStep to ensure it's a number for comparison
     const activeStep = parseInt(currentStep, 10);

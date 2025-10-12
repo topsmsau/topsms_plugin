@@ -9,13 +9,13 @@ import { useState, useEffect } from '@wordpress/element';
 import { chevronRight } from '@wordpress/icons';
 
 import TemplateTag from './SmsTemplateTag';
+import { MAX_CHARS_PER_SMS, CONCAT_FIXED_CHARS } from '../Constants';
 
 const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSuccessMessage, onErrorMessage }) => {
-    const MAX_CHARS_PER_SMS = 160;
 
     const [smsMessage, setSmsMessage] = useState(defaultTemplate);
     const [characterCount, setCharacterCount] = useState(smsMessage.length);
-    const [smsCount, setSmsCount] = useState(Math.ceil(smsMessage.length / MAX_CHARS_PER_SMS));
+    const [smsCount, setSmsCount] = useState(0);
     // const [activeTab, setActiveTab] = useState('shipping');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
@@ -31,9 +31,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
     useEffect(() => {
         if (saveSuccess) {
             // Send the success message to the parent component
-            if (onSuccessMessage) {
-                onSuccessMessage(__(`${status} template saved successfully`, 'topsms'));
-            }
+            onSuccessMessage(__(`${status} template saved successfully`, 'topsms'));
             
             // Reset local success state after notifying parent
             setTimeout(() => {
@@ -44,8 +42,23 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
 
     // Update sms count when character count changes
     useEffect(() => {
-        setSmsCount(Math.ceil(characterCount / MAX_CHARS_PER_SMS));
+        let count;
+        if (characterCount <= MAX_CHARS_PER_SMS) {
+            count = characterCount > 0 ? 1 : 0;
+        } else {
+            count = Math.ceil(characterCount / (MAX_CHARS_PER_SMS - CONCAT_FIXED_CHARS));
+        }
+        setSmsCount(count);
     }, [characterCount]);
+
+    // Calculate the maximum allowed characters based on current SMS count
+    const getMaxCharactersForCurrentSms = () => {
+        if (smsCount <= 1) {
+            return MAX_CHARS_PER_SMS; 
+        }
+        return smsCount * (MAX_CHARS_PER_SMS - CONCAT_FIXED_CHARS); 
+    };
+    const maxCharsAllowed = getMaxCharactersForCurrentSms();
 
     // Handle message/template change
     const handleMessageChange = (value) => {
@@ -57,6 +70,12 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
 
     // Insert sms template tag to the template
     const insertTag = (tag) => {
+        // Check if tag already exists in the message
+        if (smsMessage.includes(tag)) {
+            onErrorMessage(__(`Tag ${tag} already exists in the message`, 'topsms'));
+            return;
+        }
+
         setSmsMessage(smsMessage + tag);
         setCharacterCount(smsMessage.length + tag.length);
         setSaveSuccess(false);
@@ -130,9 +149,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             console.error('Error fetching status settings:', error);
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__(`Failed to load ${status} template. Please refresh and try again.`, 'topsms'));
-            }
+            onErrorMessage(__(`Failed to load ${status} template. Please refresh and try again.`, 'topsms'));
         } 
     };
 
@@ -188,9 +205,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             console.error('Error saving status template:', error);
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__(`Failed to save ${status} template. Please try again.`, 'topsms'));
-            }
+            onErrorMessage(__(`Failed to save ${status} template. Please try again.`, 'topsms'));
         } finally {
             setIsSaving(false);
         }
@@ -234,9 +249,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
             console.error('Error fetching sender name:', error);
             
             // Notify parent of error
-            if (onErrorMessage) {
-                onErrorMessage(__('Failed to load sender name. Please refresh and try again.', 'topsms'));
-            }
+            onErrorMessage(__('Failed to load sender name. Please refresh and try again.', 'topsms'));
         } 
     }
 
@@ -327,7 +340,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
                                             </div>
                                             
                                             <div className="automation-character-count text-sm text-gray-500">
-                                                {characterCount}/{MAX_CHARS_PER_SMS} characters : {smsCount} {__('SMS', 'topsms')}
+                                                {characterCount}/{maxCharsAllowed} characters : {smsCount} {__('SMS', 'topsms')}
                                             </div>
                                         </div>
                                     </div>

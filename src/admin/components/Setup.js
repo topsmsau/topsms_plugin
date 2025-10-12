@@ -43,7 +43,7 @@ const Setup = () => {
             )}
             
             {currentStep === 'welcome' && (
-                <Welcome onComplete={handleStepComplete} userData={userData} />
+                <Welcome />
             )}
         </div>
     );

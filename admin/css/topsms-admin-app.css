@@ -461,17 +461,20 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     max-width: 1536px;
   }
 }
-.topsms-app .pointer-events-none {
-  pointer-events: none;
-}
 .topsms-app .absolute {
   position: absolute;
 }
 .topsms-app .relative {
   position: relative;
 }
+.topsms-app .bottom-\[1rem\] {
+  bottom: 1rem;
+}
 .topsms-app .right-0 {
   right: 0px;
+}
+.topsms-app .right-\[1rem\] {
+  right: 1rem;
 }
 .topsms-app .top-0 {
   top: 0px;
@@ -489,6 +492,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   margin-left: -1rem;
   margin-right: -1rem;
 }
+.topsms-app .mx-0 {
+  margin-left: 0px;
+  margin-right: 0px;
+}
 .topsms-app .mx-1 {
   margin-left: 0.25rem;
   margin-right: 0.25rem;
@@ -501,9 +508,20 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
+.topsms-app .my-2 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.topsms-app .my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
 .topsms-app .my-8 {
   margin-top: 2rem;
   margin-bottom: 2rem;
+}
+.topsms-app .mb-0 {
+  margin-bottom: 0px;
 }
 .topsms-app .mb-1 {
   margin-bottom: 0.25rem;
@@ -522,6 +540,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .mb-8 {
   margin-bottom: 2rem;
+}
+.topsms-app .mb-\[44px\] {
+  margin-bottom: 44px;
 }
 .topsms-app .ml-1 {
   margin-left: 0.25rem;
@@ -547,8 +568,14 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .mt-2 {
   margin-top: 0.5rem;
 }
+.topsms-app .mt-3 {
+  margin-top: 0.75rem;
+}
 .topsms-app .mt-4 {
   margin-top: 1rem;
+}
+.topsms-app .mt-6 {
+  margin-top: 1.5rem;
 }
 .topsms-app .mt-8 {
   margin-top: 2rem;
@@ -595,8 +622,24 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .h-8 {
   height: 2rem;
 }
+.topsms-app .h-\[350px\] {
+  height: 350px;
+}
+.topsms-app .h-\[46px\] {
+  height: 46px;
+}
+.topsms-app .h-\[496px\] {
+  height: 496px;
+}
+.topsms-app .h-fit {
+  height: -moz-fit-content;
+  height: fit-content;
+}
 .topsms-app .h-px {
   height: 1px;
+}
+.topsms-app .max-h-\[450px\] {
+  max-height: 450px;
 }
 .topsms-app .w-12 {
   width: 3rem;
@@ -609,6 +652,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .w-3 {
   width: 0.75rem;
+}
+.topsms-app .w-32 {
+  width: 8rem;
 }
 .topsms-app .w-4 {
   width: 1rem;
@@ -625,6 +671,12 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .w-\[15\%\] {
   width: 15%;
 }
+.topsms-app .w-\[290px\] {
+  width: 290px;
+}
+.topsms-app .w-\[345px\] {
+  width: 345px;
+}
 .topsms-app .w-\[3px\] {
   width: 3px;
 }
@@ -633,6 +685,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .max-w-4xl {
   max-width: 56rem;
+}
+.topsms-app .max-w-\[300px\] {
+  max-width: 300px;
 }
 .topsms-app .flex-1 {
   flex: 1 1 0%;
@@ -678,6 +733,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .justify-start {
   justify-content: flex-start;
 }
+.topsms-app .justify-end {
+  justify-content: flex-end;
+}
 .topsms-app .justify-center {
   justify-content: center;
 }
@@ -705,6 +763,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .gap-\[2rem\] {
   gap: 2rem;
 }
+.topsms-app .gap-\[4px\] {
+  gap: 4px;
+}
 .topsms-app .space-x-1 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
   margin-right: calc(0.25rem * var(--tw-space-x-reverse));
@@ -718,6 +779,12 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .self-stretch {
   align-self: stretch;
 }
+.topsms-app .overflow-y-auto {
+  overflow-y: auto;
+}
+.topsms-app .overflow-y-hidden {
+  overflow-y: hidden;
+}
 .topsms-app .whitespace-nowrap {
   white-space: nowrap;
 }
@@ -729,6 +796,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .rounded {
   border-radius: 0.25rem;
+}
+.topsms-app .rounded-\[20px\] {
+  border-radius: 20px;
 }
 .topsms-app .rounded-full {
   border-radius: 9999px;
@@ -742,11 +812,21 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .rounded-xl {
   border-radius: 0.75rem;
 }
+.topsms-app .rounded-t-lg {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
 .topsms-app .border {
   border-width: 1px;
 }
 .topsms-app .border-0 {
   border-width: 0px;
+}
+.topsms-app .border-b {
+  border-bottom-width: 1px;
+}
+.topsms-app .border-b-0 {
+  border-bottom-width: 0px;
 }
 .topsms-app .border-t {
   border-top-width: 1px;
@@ -825,6 +905,18 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-bg-opacity: 1;
   background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1));
 }
+.topsms-app .bg-iphone {
+  background-image: url(../js/c798e1593d7de52b4f14.png);
+}
+.topsms-app .bg-messageMock {
+  background-image: url(../js/0ea21dcf7778317222f5.svg);
+}
+.topsms-app .bg-cover {
+  background-size: cover;
+}
+.topsms-app .bg-no-repeat {
+  background-repeat: no-repeat;
+}
 .topsms-app .p-0 {
   padding: 0px;
 }
@@ -846,6 +938,14 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .p-\[0\.75rem\] {
   padding: 0.75rem;
 }
+.topsms-app .px-0 {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+.topsms-app .px-1 {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
 .topsms-app .px-2 {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -862,6 +962,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
+.topsms-app .px-8 {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
 .topsms-app .py-1 {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
@@ -869,6 +973,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .py-1\.5 {
   padding-top: 0.375rem;
   padding-bottom: 0.375rem;
+}
+.topsms-app .py-16 {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
 }
 .topsms-app .py-2 {
   padding-top: 0.5rem;
@@ -882,8 +990,15 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
+.topsms-app .py-\[6px\] {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
 .topsms-app .pb-0 {
   padding-bottom: 0px;
+}
+.topsms-app .pb-12 {
+  padding-bottom: 3rem;
 }
 .topsms-app .pb-2 {
   padding-bottom: 0.5rem;
@@ -891,11 +1006,20 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .pr-4 {
   padding-right: 1rem;
 }
+.topsms-app .pt-2 {
+  padding-top: 0.5rem;
+}
+.topsms-app .pt-3 {
+  padding-top: 0.75rem;
+}
 .topsms-app .pt-4 {
   padding-top: 1rem;
 }
 .topsms-app .pt-6 {
   padding-top: 1.5rem;
+}
+.topsms-app .pt-8 {
+  padding-top: 2rem;
 }
 .topsms-app .text-center {
   text-align: center;
@@ -933,6 +1057,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-text-opacity: 1;
   color: rgb(217 119 6 / var(--tw-text-opacity, 1));
 }
+.topsms-app .text-black {
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
+}
 .topsms-app .text-blue-400 {
   --tw-text-opacity: 1;
   color: rgb(96 165 250 / var(--tw-text-opacity, 1));
@@ -965,6 +1093,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-text-opacity: 1;
   color: rgb(31 41 55 / var(--tw-text-opacity, 1));
 }
+.topsms-app .text-gray-900 {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity, 1));
+}
 .topsms-app .text-red-500 {
   --tw-text-opacity: 1;
   color: rgb(239 68 68 / var(--tw-text-opacity, 1));
@@ -972,9 +1104,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-.topsms-app .opacity-50 {
-  opacity: 0.5;
 }
 .topsms-app .opacity-60 {
   opacity: 0.6;
@@ -993,10 +1122,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-blur: blur(8px);
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
+.topsms-app .filter {
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
 .topsms-app .transition {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -1014,39 +1144,39 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 /******************************************** Custom css ***********************************************/
 /* Custom label above inputs */
 .topsms-app .topsms-label {
-  display: block;
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #333;
-  font-weight: 600;
+    display: block;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
 }
 
 /* Hide wp default labels */
 .topsms-app .components-base-control__label {
-  display: none !important;
+    display: none !important;
 }
 
 /* Common input styling */
 .topsms-app .topsms-input .components-text-control__input  {
-  border: 1px solid #d1d5db !important;
-  border-radius: 0.375rem !important;
-  padding: 0.5rem ;
-  width: 100% !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  min-height: 46px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 0.375rem !important;
+    padding: 0.5rem ;
+    width: 100% !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    min-height: 46px !important;
 }
 .topsms-app .topsms-input .components-select-control__input {
     border: 1px solid #d1d5db !important;
-  border-radius: 0.375rem !important;
-  padding: 0.5rem !important;
-  width: 100% !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  min-height: 46px !important;
+    border-radius: 0.375rem !important;
+    padding: 0.5rem !important;
+    width: 100% !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    min-height: 46px !important;
 }
 .topsms-app .topsms-input .components-text-control__input:focus, .topsms-app .topsms-input .components-select-control__input:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 1px #3b82f6 !important;
-  outline: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 1px #3b82f6 !important;
+    outline: none !important;
 }
 .topsms-app .topsms-input .components-select-control .components-input-control__backdrop {
     border: 1px solid #d1d5db !important;
@@ -1066,32 +1196,32 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
 /* Button styling */
 .topsms-app .topsms-button {
-  background-color: #2563eb !important;
-  color: white !important;
-  border: none !important;
-  padding: 0.75rem 1rem !important;
-  border-radius: 1.5rem !important;
-  font-weight: 500 !important;
-  transition: background-color 0.2s !important;
-  justify-content: center !important;
+    background-color: #2563eb !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 1.5rem !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s !important;
+    justify-content: center !important;
 }
 .topsms-app .topsms-button:hover:not(:disabled) {
-  background-color: #1d4ed8 !important;
+    background-color: #1d4ed8 !important;
 }
 .topsms-app .topsms-button:disabled {
-  background-color: #93c5fd !important;
-  cursor: not-allowed !important;
+    background-color: #93c5fd !important;
+    cursor: not-allowed !important;
 }
 
 /* Phone input field */
 .topsms-app .topsms-phone-input {
-  line-height: 2 !important;
-  height: auto !important;
-  padding: 8px 0px 8px 60px !important;
-  width: 100% !important;
+    line-height: 2 !important;
+    height: auto !important;
+    padding: 8px 0px 8px 60px !important;
+    width: 100% !important;
 }
 .topsms-app .topsms-phone-input .selected-flag .flag {
-  left: 30% !important;
+    left: 30% !important;
 }
 
 /* Header, main content and footer */
@@ -1135,6 +1265,24 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     pointer-events: none;
 }
 
+/* Bulk sms */
+.topsms-app .iphone-message-popup {
+    background-color: rgba(255,255,255,0.8);
+}
+.topsms-app .bulksms-schedule-campaign .bulksms-schedule-campaign-toggle .topsms-label {
+    margin-bottom: 0;
+}
+.topsms-app .bulksms-test-message-button {
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 5px !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s !important;
+    justify-content: center !important;
+    height: auto !important;
+    width: auto !important;
+    color: white !important;
+}
 
 
 /* Snackbar styles */
@@ -1154,24 +1302,29 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
 /* Small screens */
 @media (max-width: 1023px) {
-  /* Fix automations settings message preview section */
-  .topsms-app .automation-layout {
-    display: flex;
-    flex-direction: column;
-  }
-  /* Make preview appear after template section */
-  .topsms-app .automation-layout > div:nth-child(2) {
-    order: 3;
-  }
-  /* Keep action buttons below template but above preview */
-  .topsms-app .automation-actions {
-    order: 2;
-    margin-top: 1rem;
-    margin-bottom: 2rem;
-  }
+    /* Fix automations settings message preview section */
+    .topsms-app .automation-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    /* Make preview appear after template section */
+    .topsms-app .automation-layout > div:nth-child(2) {
+        order: 3;
+    }
+    /* Keep action buttons below template but above preview */
+    .topsms-app .automation-actions {
+        order: 2;
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+    }
 }
 
 /**************************************** End of Custom css ********************************************/
+
+.topsms-app .hover\:bg-blue-600:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
+}
 
 .topsms-app .hover\:bg-gray-100:hover {
   --tw-bg-opacity: 1;
@@ -1181,6 +1334,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .hover\:bg-gray-50:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+}
+
+.topsms-app .hover\:text-blue-700:hover {
+  --tw-text-opacity: 1;
+  color: rgb(29 78 216 / var(--tw-text-opacity, 1));
 }
 
 .topsms-app .hover\:text-blue-800:hover {

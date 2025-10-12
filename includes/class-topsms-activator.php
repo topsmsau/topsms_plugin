@@ -95,7 +95,7 @@ class Topsms_Activator {
 		// Get WordPress database prefix.
 		$table_name = $wpdb->prefix . 'topsms_logs';
 
-		// SQL to create the table.
+		// SQL to create the logs table.
 		$sql = "CREATE TABLE IF NOT EXISTS $table_name (
             id INT AUTO_INCREMENT PRIMARY KEY,
             order_id INT NOT NULL,
@@ -105,11 +105,32 @@ class Topsms_Activator {
             status VARCHAR(30) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
+        // SQL to create the campaigns table.
+        $campaigns_table = $wpdb->prefix . 'topsms_campaigns';
+        $campaigns_sql = "CREATE TABLE IF NOT EXISTS $campaigns_table (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            job_name varchar(255) DEFAULT NULL,
+            campaign_uid varchar(255) DEFAULT NULL,
+            data longtext DEFAULT NULL,
+            action varchar(20) NOT NULL DEFAULT 'instant',
+            status varchar(20) NOT NULL DEFAULT 'draft',
+            campaign_datetime datetime NOT NULL,
+            cost int(10) UNSIGNED DEFAULT NULL,
+            details text DEFAULT NULL,
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY job_name (job_name),
+            KEY status (status),
+            KEY campaign_datetime (campaign_datetime)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
 		// Check if we need to run dbDelta().
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
 		// Execute the query using dbDelta for proper table creation.
 		dbDelta( $sql );
+        dbDelta( $campaigns_sql );
 	}
 
 	/**
