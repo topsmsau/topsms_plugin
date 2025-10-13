@@ -59,6 +59,16 @@ delete_option( 'topsms_refresh_token' );
 delete_option( 'topsms_registration_data' );
 delete_option( 'topsms_sender' );
 
+// Delete bulk sms options.
+delete_option( 'topsms_contacts_list_saved_filters' );
+
+// Clear cache and delete transients.
+wp_cache_delete( 'topsms_contacts_list_cities' );
+wp_cache_delete( 'topsms_contacts_list_states' );
+delete_transient( 'topsms_activation_redirect' );
+delete_transient( 'topsms_contacts_lists' );
+
+
 // Delete logs table.
 global $wpdb;
 $table_name = $wpdb->prefix . 'topsms_logs';

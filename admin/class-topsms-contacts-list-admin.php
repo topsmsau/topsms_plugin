@@ -139,8 +139,8 @@ class Topsms_Contacts_List_Admin extends WP_List_Table {
                 ORDER BY state ASC
             "
 			);
-			// Cache for 1 hr.
-			wp_cache_set( $cache_key, $states, '', 3600 );
+			// Cache for 5 mins.
+			wp_cache_set( $cache_key, $states, '', 5 * MINUTE_IN_SECONDS );
 		}
 
 		return $states;
@@ -161,8 +161,8 @@ class Topsms_Contacts_List_Admin extends WP_List_Table {
                 FROM {$wpdb->prefix}wc_customer_lookup
             "
 			);
-			// Cache for 1 hr.
-			wp_cache_set( $cache_key, $count, '', 3600 );
+			// Cache for 5 mins.
+			wp_cache_set( $cache_key, $count, '', 5 * MINUTE_IN_SECONDS );
 		}
 
 		return $count;
