@@ -15,7 +15,7 @@
  * Plugin Name:             TopSMS
  * Plugin URI:              https://topsms.com.au
  * Description:             Enhance your WooCommerce store with automated SMS notifications based on order status changes. Built exclusively for Australian businesses.
- * Version:                 2.0.0
+ * Version:                 2.0.1
  * Requires at least:       5.0
  * Requires PHP:            7.4
  * Tested up to:            6.8
@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'TOPSMS_VERSION', '2.0.0' );
+define( 'TOPSMS_VERSION', '2.0.1' );
 define( 'TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Define path to the included plugin.
 define( 'TOPSMS_ANALYTICS_PATH', plugin_dir_path( __FILE__ ) . 'topsms-analytics/' );

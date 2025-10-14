@@ -223,17 +223,17 @@ export const MESSAGE_TEMPLATES = [
     {
         value: 'template1',
         label: __('Promotional Campaign', 'topsms'),
-        message: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit"
+        message: "Hi [first_name], our new {product_category} range just landed!\nEnjoy {discount}% off until {end_date}.\nShop now [url]\n\nShop Name\n\n[unsubscribe]"
     },
     {
         value: 'template2',
         label: __('Last Minute Offer', 'topsms'),
-        message: "Lorem ipsum dolor sit amet, Aenean commodo ligula eget dolor"
+        message: "Flash Sale! [first_name], get {discount}% off {product_name}  - only {hours_left} hours left.\nDon’t miss it [url]\n\nShop Name\n\n[unsubscribe]"
     },
     {
         value: 'template3',
         label: __('Special Event', 'topsms'),
-        message: "Lorem ipsum dolor sit amet, Cum sociis natoque penatibus et magnis dis parturient montes"
+        message: "Hey [first_name], join us for our {event_name}!\n{event_date} at {location}.\n\nRSVP now: [url]\n\nShop Name\n\n[unsubscribe]"
     }
 ];
 

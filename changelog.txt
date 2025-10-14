@@ -74,3 +74,8 @@
 
 ### Fixed
 - Fixed the Topup amount in the Settings page.
+
+## [2.0.1] - 2025-14-10
+
+### Fixed
+- Added templates content for Bulk SMS.
