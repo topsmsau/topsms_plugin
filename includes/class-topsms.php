@@ -152,11 +152,12 @@ class Topsms {
 		// Send notifications on order status changed.
 		$this->loader->add_action( 'woocommerce_order_status_changed', $plugin_admin, 'topsms_order_status_changed', 10, 4 );
 
-        // Ajax handler for contacts list.
-        $this->loader->add_action( 'wp_ajax_topsms_save_contacts_list_filter', $plugin_admin,  'topsms_save_contacts_list_filter' );
-        $this->loader->add_action( 'wp_ajax_topsms_delete_contacts_list_filter', $plugin_admin, 'topsms_delete_contacts_list_filter' );
+		// Ajax handler for contacts list.
+		$this->loader->add_action( 'wp_ajax_topsms_save_contacts_list_filter', $plugin_admin, 'topsms_save_contacts_list_filter' );
+		$this->loader->add_action( 'wp_ajax_topsms_delete_contacts_list_filter', $plugin_admin, 'topsms_delete_contacts_list_filter' );
 
-        $this->loader->add_action('init', $plugin_admin, 'topsms_handle_unsubscribe');
+		// Handle sms unsubscribe.
+		$this->loader->add_action( 'init', $plugin_admin, 'topsms_handle_unsubscribe' );
 	}
 
 	/**

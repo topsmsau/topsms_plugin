@@ -76,7 +76,7 @@ class Topsms_Public {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-public.css', array(), time(), 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-public.css', array(), $version, 'all' );
 	}
 
 	/**
@@ -98,7 +98,7 @@ class Topsms_Public {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-public.js', array( 'jquery' ), time(), false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-public.js', array( 'jquery' ), $version, false );
 	}
 
 	/**

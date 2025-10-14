@@ -15,6 +15,9 @@ import { TOPUPOPTIONS, REVIEWCARDS } from './Constants';
 
 const Settings = () => {
     const [selectedAmount, setSelectedAmount] = useState(null);
+    const [sender, setSender] = useState('');
+    const [email, setEmail] = useState('');
+    const [userLoading, setUserLoading] = useState(true);
 
     const [showSnackbar, setShowSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -24,7 +27,15 @@ const Settings = () => {
     const handleTopUpClick = (amount, link) => {
         // Update selected amount
         setSelectedAmount(amount);
-        window.open(link, '_blank');
+
+        // Append email as query parameter if available
+        let finalLink = link;
+        if (email) {
+            const separator = link.includes('?') ? '&' : '?';
+            finalLink = `${link}${separator}locked_prefilled_email=${encodeURIComponent(email)}`;
+        }
+        
+        window.open(finalLink, '_blank');
     };
 
     // Handle dismissing the snackbar
@@ -76,6 +87,54 @@ const Settings = () => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
+    // Fetch user data
+    const fetchUserData  = async () => {
+        try {
+            // Get the nonce from WordPress
+            const nonce = window.topsmsNonce?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                setUserLoading(false);
+                return;
+            }
+
+            // Fetch user data from backend
+            const response = await fetch('/wp-json/topsms/v1/user', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce
+                }
+            });
+
+            const data = await response.json();
+            // console.log("data", data);
+
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
+
+            // Update the sender amd email states
+            const sender_ = data.data.data.sender;
+            setSender(sender_ || '');
+
+            const email_ = data.data.data.email;
+            setEmail(email_ || '');
+        } catch (error) {
+            console.error('Error fetching sender name:', error);
+            
+            // Notify error
+            handleErrorMessage(__('Failed to load user data. Please refresh and try again.', 'topsms'));
+        } finally {
+            setUserLoading(false);
+        }
+    }
+
+    // Fetch user data (sender and email) on component mount
+    useEffect(() => {
+        fetchUserData();
+    }, []);
+
     return (
         <Layout>
             {/* Snackbar for messages - positioned at bottom left via CSS */}
@@ -102,6 +161,8 @@ const Settings = () => {
             <div className='page-details'>
                 {/* Pass both success and error message handlers to BalanceCard */}
                 <BalanceCard 
+                    sender={sender}
+                    senderLoading={userLoading}
                     onSuccessMessage={handleSuccessMessage} 
                     onErrorMessage={handleErrorMessage}
                 />

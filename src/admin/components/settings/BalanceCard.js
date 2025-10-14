@@ -8,7 +8,7 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
-const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
+const BalanceCard = ({ sender, senderLoading, onSuccessMessage, onErrorMessage }) => {
     const [settings, setSettings] = useState({
         lowBalanceAlert: {
             key: 'low_balance_alert',
@@ -33,8 +33,6 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
     const [surchargeLoading, setSurchargeLoading] = useState(true);
     const [surchargeError, setSurchargeError] = useState('');
     const [surchargeSuccess, setSurchargeSuccess] = useState(false);
-    const [sender, setSender] = useState('');
-    const [senderLoading, setSenderLoading] = useState(true);
     
     // Notify parent component when a setting is saved successfully
     useEffect(() => {
@@ -104,7 +102,6 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
                 fetchSetting('customer_consent', 'customerConsent'),
                 fetchSetting('sms_surcharge', 'smsSurcharge'),
                 fetchSurchargeAmount(),
-                fetchSender()
             ]);
         } catch (error) {
             console.error('Error fetching settings:', error);
@@ -219,45 +216,6 @@ const BalanceCard = ({ onSuccessMessage, onErrorMessage }) => {
             setSurchargeLoading(false);
         }
     };
-
-    // Fetch sender name
-    const fetchSender = async () => {
-        try {
-            // Get the nonce from WordPress
-            const nonce = window.topsmsNonce?.nonce;
-            if (!nonce) {
-                console.error('WordPress REST API nonce not available');
-                setSenderLoading(false);
-                return;
-            }
-
-            // Fetch sender name from backend
-            const response = await fetch('/wp-json/topsms/v1/user', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': nonce
-                }
-            });
-
-            const data = await response.json();
-
-            if (!data.success) {
-                throw new Error(data.data.message || 'Unknown error');
-            }
-
-            // Update the sender state
-            const sender_ = data.data.data.sender;
-            setSender(sender_ || '');
-        } catch (error) {
-            console.error('Error fetching sender name:', error);
-            
-            // Notify parent of error
-            onErrorMessage(__('Failed to load sender name. Please refresh and try again.', 'topsms'));
-        } finally {
-            setSenderLoading(false);
-        }
-    }
     
     // Handle toggle change
     const handleToggleChange = (stateKey) => {

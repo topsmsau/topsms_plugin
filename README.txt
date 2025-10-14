@@ -4,7 +4,7 @@ Source Code: https://github.com/topsmsau/topsms_plugin
 Tags: woocommerce, sms, notifications, order, analytics
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.0.8
+Stable tag: 2.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -38,6 +38,18 @@ The complete source code for this plugin is available on our [Github repository]
 * Automatic low-credit alerts and recharge reminders.
 * Special discount offers for bulk credit purchases.
 
+**4. Bulk SMS Campaigns
+* Send or schedule bulk SMS campaigns to your selected contact lists or saved segments.
+* Create and manage campaigns directly from the Campaigns page.
+* Save campaigns as drafts to edit or send later.
+* View all sent, scheduled, cancelled, and draft campaigns with filtering by status.
+* Cancel scheduled campaigns anytime through the campaign management table.
+
+**5. Contacts and Segmentation
+* View all WooCommerce customers in the Contacts page.
+* Filter contacts by state, city, postcode, total number of orders, total amount spent, and SMS subscription status.
+* Save filters as segments that can be reused for future SMS campaigns.
+
 ### Benefits for Store Owners
 * Reduce customer support inquiries with proactive order updates.
 * Increase customer satisfaction through timely communication.
@@ -50,6 +62,9 @@ The complete source code for this plugin is available on our [Github repository]
 * ACMA-compliant sender IDs and privacy protocols.
 * GDPR-compliant with explicit consent management.
 * Lightweight design with minimal impact on site performance.
+* Built using modern React and REST API architecture for smooth user experience.
+* Asynchronous processing for sending and managing large campaigns.
+* Contacts database synchronization with WooCommerce customer records.
 
 
 ### Regulatory Compliance
@@ -93,41 +108,6 @@ This plugin connects to the TopSMS API (provided by EUX Digital Agency) to send 
 5. Configure order status triggers under TopSMS → Automations.
 6. Purchase initial SMS credits under TopSMS → Settings.
 
-== Development ==
-
-**Note:** The plugin is ready to use out-of-the-box after standard installation. The following steps are only required if you want to extend functionality or build custom components from the source code.
-
-**Step 1: Install Dependencies**
-
-```bash
-cd topsms
-npm install
-```
-
-**Step 2: Build Assets**
-
-```bash
-npm run build
-```
-
-**Step 3: Install Dependencies for TopSMS Analytics**
-```bash
-cd topsms/topsms-analytics
-npm install
-```
-
-**Step 4: Build Assets for TopSMS Analytics**
-
-```bash
-npm run build
-```
-
-**Development Commands:**
-- `npm run dev` - Start development mode with file watching.
-- `npm run build` - Build production-ready assets.
-
-The plugin is ready to use after installation. For more development information, visit our [GitHub repository](https://github.com/topsmsau/topsms_plugin).
-
 == Frequently Asked Questions ==
 
 = Is TopSMS available outside of Australia? =
@@ -165,10 +145,3 @@ Not yet. At present, custom order status support is not available but may be con
 
 = How do I monitor my SMS credit balance? =
 Your current credit balance is always visible in the TopSMS dashboard. You can also set up automatic alerts when your credits fall below a specified threshold.
-
-== Screenshots ==
-
-1. TopSMS dashboard with credit balance and recent SMS history
-2. Automations editor with message template and status triggers
-3. Settings screen for configuring Stripe and SMS options
-4. Analytics dashboard showing delivery rates and usage

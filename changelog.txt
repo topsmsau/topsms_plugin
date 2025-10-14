@@ -61,3 +61,16 @@
 
 ### Changed
 - Highlighted the important note in the admin settings page, under the Top Up Your Balance section. 
+
+## [2.0.0] - 2025-14-10
+
+### Added
+- Added Bulk SMS functionality. Users can now send or schedule bulk SMS campaigns to the contacts in their selected lists.
+- Added the Contacts page where users can view all WooCommerce customers and filter them by state, city, postcode, total number of orders, total amount spent, and SMS subscription status. Filters can also be saved as segments for future campaigns.
+- Added the Campaigns page where users can view all sent, scheduled, cancelled, and draft campaigns, with filtering by status. Scheduled campaigns can also be cancelled via the table actions column.
+
+### Changed
+- Changed the logic to allow users to configure order status automation details even when SMS notifications for order statuses are disabled.
+
+### Fixed
+- Fixed the Topup amount in the Settings page.

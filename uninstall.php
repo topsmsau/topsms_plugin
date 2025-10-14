@@ -66,15 +66,23 @@ delete_option( 'topsms_contacts_list_saved_filters' );
 wp_cache_delete( 'topsms_contacts_list_cities' );
 wp_cache_delete( 'topsms_contacts_list_states' );
 delete_transient( 'topsms_activation_redirect' );
+delete_transient( 'topsms_send_sms' );
 delete_transient( 'topsms_contacts_lists' );
 
 
-// Delete logs table.
+// Delete tables.
 global $wpdb;
 $table_name = $wpdb->prefix . 'topsms_logs';
 $wpdb->query(
 	$wpdb->prepare(
 		'DROP TABLE IF EXISTS %1s',
 		$table_name
+	)
+);
+$table_name2 = $wpdb->prefix . 'topsms_campaigns';
+$wpdb->query(
+	$wpdb->prepare(
+		'DROP TABLE IF EXISTS %1s',
+		$table_name2
 	)
 );

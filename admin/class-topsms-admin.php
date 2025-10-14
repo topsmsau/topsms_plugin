@@ -76,8 +76,8 @@ class Topsms_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
-		wp_enqueue_style( 'topsms-admin-style', plugin_dir_url( __FILE__ ) . 'css/topsms-admin-app.css', array(), time(), 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), $version, 'all' );
+		wp_enqueue_style( 'topsms-admin-style', plugin_dir_url( __FILE__ ) . 'css/topsms-admin-app.css', array(), $version, 'all' );
 		wp_enqueue_style( 'wp-components' );
 	}
 
@@ -112,7 +112,7 @@ class Topsms_Admin {
 				'wp-blocks',
 				'wp-block-editor',
 			),
-			time(),
+			$version,
 			true
 		);
 		wp_localize_script(
@@ -126,7 +126,7 @@ class Topsms_Admin {
 		wp_enqueue_script( 'wp-api' );
 
 		// Other custom JS scripts.
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-admin.js', array( 'jquery' ), time(), false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-admin.js', array( 'jquery' ), $version, false );
 		wp_localize_script(
 			$this->plugin_name,
 			'topsmsAdmin',
@@ -907,7 +907,8 @@ class Topsms_Admin {
 				$table_name = $wpdb->prefix . 'topsms_campaigns';
 				$campaign   = $wpdb->get_row(
 					$wpdb->prepare(
-						"SELECT * FROM {$table_name} WHERE id = %d AND status = %s",
+						'SELECT * FROM %1s WHERE id = %d AND status = %s',
+						$table_name,
 						$campaign_id,
 						'draft'
 					)
@@ -1082,6 +1083,11 @@ class Topsms_Admin {
 		wp_send_json_success();
 	}
 
+	/**
+	 * AJAX handler to delete contacts list filter.
+	 *
+	 * @since    2.0.0
+	 */
 	public function topsms_delete_contacts_list_filter() {
 		// Check nonce.
 		check_ajax_referer( 'topsmsAdmin', 'nonce' );
@@ -1177,6 +1183,11 @@ class Topsms_Admin {
 		<?php
 	}
 
+	/**
+	 * Unsubscribe the user with the specified phone number.
+	 *
+	 * @since    2.0.0
+	 */
 	public function topsms_handle_unsubscribe() {
 		// Check if phone  exists in url params.
 		if ( ! isset( $_GET['phone'] ) || empty( $_GET['phone'] ) ) {
@@ -1257,24 +1268,25 @@ class Topsms_Admin {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'topsms_campaigns';
 
-        // Get cache data if exists.
-        $cache_key = 'topsms_campaign_' . $campaign_id;
-        $campaign  = wp_cache_get( $cache_key, 'topsms_campaigns' );
+		// Get cache data if exists.
+		$cache_key = 'topsms_campaign_' . $campaign_id;
+		$campaign  = wp_cache_get( $cache_key, 'topsms_campaigns' );
 
-        // Do an sql query if not cached.
+		// Do an sql query if not cached.
 		if ( false === $campaign ) {
-            $campaign = $wpdb->get_row(
-                $wpdb->prepare(
-                    "SELECT * FROM {$table_name} WHERE id = %d",
-                    $campaign_id
-                )
-            );
+			$campaign = $wpdb->get_row(
+				$wpdb->prepare(
+					'SELECT * FROM %1s WHERE id = %d',
+					$table_name,
+					$campaign_id
+				)
+			);
 
-            // Cache for 1 hr.
-            if ( $campaign ) {
-                wp_cache_set( $cache_key, $campaign, 'topsms_campaigns', HOUR_IN_SECONDS );
-            }
-        }
+			// Cache for 1 hr.
+			if ( $campaign ) {
+				wp_cache_set( $cache_key, $campaign, 'topsms_campaigns', HOUR_IN_SECONDS );
+			}
+		}
 		if ( ! $campaign ) {
 			return false;
 		}
@@ -1363,8 +1375,8 @@ class Topsms_Admin {
 			// Clear cache for table status counts.
 			wp_cache_delete( 'topsms_campaigns_status_counts' );
 
-            // Clear cache for the campaign.
-            wp_cache_delete( $cache_key, 'topsms_campaigns' );
+			// Clear cache for the campaign.
+			wp_cache_delete( $cache_key, 'topsms_campaigns' );
 
 			return false !== $result;
 		} else {

@@ -87,8 +87,12 @@ class Topsms_Activator {
 		add_option( 'topsms_settings_sms_surcharge_amount', '' );
 		add_option( 'topsms_sender', '' );
 
+		// Transients.
 		set_transient( 'topsms_activation_redirect', true, 30 );
 		set_transient( 'topsms_send_sms', true );
+
+		// Options for bulksms.
+		add_option( 'topsms_contacts_list_saved_filters', array() );
 
 		global $wpdb;
 
@@ -105,18 +109,19 @@ class Topsms_Activator {
             status VARCHAR(30) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
-        // SQL to create the campaigns table.
-        $campaigns_table = $wpdb->prefix . 'topsms_campaigns';
-        $campaigns_sql = "CREATE TABLE IF NOT EXISTS $campaigns_table (
+		// SQL to create the campaigns table.
+		$campaigns_table = $wpdb->prefix . 'topsms_campaigns';
+		$campaigns_sql   = "CREATE TABLE IF NOT EXISTS $campaigns_table (
             id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             job_name varchar(255) DEFAULT NULL,
             campaign_uid varchar(255) DEFAULT NULL,
             data longtext DEFAULT NULL,
             action varchar(20) NOT NULL DEFAULT 'instant',
             status varchar(20) NOT NULL DEFAULT 'draft',
-            campaign_datetime datetime NOT NULL,
+            campaign_datetime datetime DEFAULT NULL,
             cost int(10) UNSIGNED DEFAULT NULL,
             details text DEFAULT NULL,
+            webhook_token varchar(255) DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -130,7 +135,7 @@ class Topsms_Activator {
 
 		// Execute the query using dbDelta for proper table creation.
 		dbDelta( $sql );
-        dbDelta( $campaigns_sql );
+		dbDelta( $campaigns_sql );
 	}
 
 	/**

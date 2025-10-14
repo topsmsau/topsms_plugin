@@ -3,7 +3,7 @@
  * The admin-specific functionality of the plugin.
  *
  * @link       https://eux.com.au
- * @since      1.0.0
+ * @since      2.0.0
  *
  * @package    Topsms
  * @subpackage Topsms/admin
@@ -31,7 +31,7 @@ class Topsms_Helper_Admin {
 	/**
 	 * The ID of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    2.0.0
 	 * @access   private
 	 * @var      string    $plugin_name    The ID of this plugin.
 	 */
@@ -40,7 +40,7 @@ class Topsms_Helper_Admin {
 	/**
 	 * The version of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    2.0.0
 	 * @access   private
 	 * @var      string    $version    The current version of this plugin.
 	 */
@@ -49,7 +49,7 @@ class Topsms_Helper_Admin {
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
+	 * @since    2.0.0
 	 * @param      string $plugin_name       The name of this plugin.
 	 * @param      string $version    The version of this plugin.
 	 */
@@ -212,11 +212,25 @@ class Topsms_Helper_Admin {
 		return false;
 	}
 
+	/**
+	 * Build a SQL query for retrieving contacts with various filters and options.
+	 *
+	 * @since 2.0.0
+	 * @param array  $filters          Array of filter conditions. Default to empty array.
+	 * @param string $select_clause    Custom SELECT clause. Default to null (selects all customer fields).
+	 * @param string $orderby          The column to order by. Default to 'display_name'.
+	 * @param string $order            The sort order (ASC/DESC). Default to 'ASC'.
+	 * @param bool   $include_pagination Whether to include LIMIT and OFFSET. Optional and default to false.
+	 * @param int    $per_page         The number of items per page. Default to 25.
+	 * @param int    $page_number      The current page number. Default to 1.
+	 *
+	 * @return string The constructed SQL query string.
+	 */
 	public function topsms_build_contacts_query_( $filters = array(), $select_clause = null, $orderby = 'display_name', $order = 'ASC', $include_pagination = false, $per_page = 25, $page_number = 1 ) {
 		global $wpdb;
 
-		// Get subscribed status from the user meta (fallback to order meta if not set)
-        $status = "(
+		// Get subscribed status from the user meta (fallback to order meta if not set).
+		$status = "(
             COALESCE(
                 (SELECT um.meta_value 
                 FROM {$wpdb->usermeta} um 
@@ -224,28 +238,28 @@ class Topsms_Helper_Admin {
                 AND um.meta_key = 'topsms_customer_consent' 
                 LIMIT 1),
                 ";
-        
-        // Check if wc_orders_meta table exists for fallback
-        $orders_meta_table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}wc_orders_meta'" );
-        if ( $orders_meta_table_exists ) {
-            $status .= "(SELECT om.meta_value
+
+		// Check if wc_orders_meta table exists for fallback.
+		$orders_meta_table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}wc_orders_meta'" );
+		if ( $orders_meta_table_exists ) {
+			$status .= "(SELECT om.meta_value
                         FROM {$wpdb->prefix}wc_orders_meta om
                         INNER JOIN {$wpdb->prefix}wc_order_stats os ON om.order_id = os.order_id AND om.meta_key = 'topsms_customer_consent'
                         WHERE os.customer_id = cl.customer_id
                         ORDER BY os.date_created DESC
                         LIMIT 1)";
-        } else {
-            // Fallback to WP postmeta table
-            $status .= "(SELECT pm.meta_value
+		} else {
+			// Fallback to WP postmeta table.
+			$status .= "(SELECT pm.meta_value
                         FROM {$wpdb->prefix}wc_order_stats os
                         INNER JOIN {$wpdb->postmeta} pm ON os.order_id = pm.post_id AND pm.meta_key = 'topsms_customer_consent'
                         WHERE os.customer_id = cl.customer_id
                         ORDER BY os.date_created DESC
                         LIMIT 1)";
-        }
-        
-        $status .= ")
-        )";
+		}
+
+		$status .= ')
+        )';
 
 		// Get billing phone.
 		// Check if wc_order_addresses table exists.
@@ -277,7 +291,7 @@ class Topsms_Helper_Admin {
 		}
 
 		// Base query: Get first name, last name, city, state, postcode from WC customer lookup table.
-		if ( $select_clause === null ) {
+		if ( null === $select_clause ) {
 			$sql  = "
                 SELECT cl.customer_id, cl.username, cl.email, cl.first_name, cl.last_name, 
                 CONCAT(cl.first_name, ' ', cl.last_name) as display_name, 
@@ -302,7 +316,7 @@ class Topsms_Helper_Admin {
             GROUP BY customer_id
         ) os ON cl.customer_id = os.customer_id";
 
-		$where = array( 'cl.user_id IS NOT NULL' );
+		$where = array();
 
 		// Add search query.
 		if ( ! empty( $filters['search'] ) ) {
@@ -376,28 +390,30 @@ class Topsms_Helper_Admin {
 			$where[]       = "{$status} = '{$status_filter}'";
 		}
 
-		$sql .= ' WHERE ' . implode( ' AND ', $where );
+		if ( ! empty( $where ) ) {
+			$sql .= ' WHERE ' . implode( ' AND ', $where );
+		}
 
 		// Add sorting.
 		if ( ! empty( $orderby ) ) {
 			$allowed_orderby = array( 'email', 'name', 'city', 'state', 'postcode', 'phone', 'orders', 'total_spent', 'status' );
 			if ( in_array( $orderby, $allowed_orderby ) ) {
-                if ( $orderby === 'name' ) {
-                    $sql .= " ORDER BY CONCAT(cl.first_name, ' ', cl.last_name) {$order}";
-                } elseif ( $orderby === 'phone' ) {
-                    $sql .= " ORDER BY phone {$order}";
-                } elseif ( $orderby === 'orders' ) {
-                    $sql .= " ORDER BY order_count {$order}";
-                } elseif ( $orderby === 'total_spent' ) {
-                    $sql .= " ORDER BY total_spent {$order}";
-                } elseif ( $orderby === 'status' ) {
-                    $sql .= " ORDER BY status {$order}";
-                } else {
-                    $sql .= " ORDER BY cl.{$orderby} {$order}";
-                }
-            } else {
-                $sql .= ' ORDER BY CONCAT(cl.first_name, " ", cl.last_name) ASC';
-            }
+				if ( 'name' === $orderby ) {
+					$sql .= " ORDER BY CONCAT(cl.first_name, ' ', cl.last_name) {$order}";
+				} elseif ( 'phone' === $orderby ) {
+					$sql .= " ORDER BY phone {$order}";
+				} elseif ( 'orders' === $orderby ) {
+					$sql .= " ORDER BY order_count {$order}";
+				} elseif ( 'total_spent' === $orderby ) {
+					$sql .= " ORDER BY total_spent {$order}";
+				} elseif ( 'status' === $orderby ) {
+					$sql .= " ORDER BY status {$order}";
+				} else {
+					$sql .= " ORDER BY cl.{$orderby} {$order}";
+				}
+			} else {
+				$sql .= ' ORDER BY CONCAT(cl.first_name, " ", cl.last_name) ASC';
+			}
 		}
 
 		// Add pagination.

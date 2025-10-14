@@ -116,13 +116,13 @@ export const TOPUPOPTIONS = [
         amount: 3000, 
         sms: 50000,
         discount: '33%',
-        link: 'https://buy.stripe.com/7sI9Bfc3c8G21wsdQU' 
+        link: 'https://buy.stripe.com/9B69ASgEM5WYdu9b3LbQY09' 
     },
     { 
         amount: 5000, 
         sms: 100000,
         discount: '44%',
-        link: 'https://buy.stripe.com/dRm14m88g4SUdu91tbbQY06' 
+        link: 'https://buy.stripe.com/cNieVcewEgBCeyd0p7bQY08' 
     },
 ];
 
