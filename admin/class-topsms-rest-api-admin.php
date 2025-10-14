@@ -1694,12 +1694,36 @@ class Topsms_Rest_Api_Admin {
 		// Transient doesn't exist, do an sql query to get the contacts list and save to transient.
 		global $wpdb;
 
+		$lists   = array();
+		$filters = array();
+
+		// Add "All Contacts" as the first list (only subscribed users).
+		$all_contacts_filter = array( 'status' => 'yes' );
+
+		// Get the contacts by filter.
+		$sql          = $this->helper->topsms_build_contacts_query_( $all_contacts_filter, null, false );
+		$all_contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
+		$all_count    = count( $all_contacts );
+
+		// For transient data.
+		$lists['all_contacts'] = array(
+			'filter_id'   => 'all_contacts',
+			'filter_name' => 'All Contacts',
+			'count'       => $all_count,
+			'contacts'    => $all_contacts,
+		);
+
+		// For return data.
+		$filters['all_contacts'] = array(
+			'id'    => 'all_contacts',
+			'name'  => 'All Contacts',
+			'count' => $all_count,
+		);
+
 		// Get saved filters from options.
 		$saved_filters = get_option( 'topsms_contacts_list_saved_filters', array() );
 
-		// Extract contacts data.
-		$lists   = array();
-		$filters = array();
+		// Extract contacts data by filters.
 		foreach ( $saved_filters as $filter_id => $filter ) {
 			// Skip filters if status filter is unsubscribed (don't send to unsubscribed contacts).
 			if ( isset( $filter['status'] ) && 'no' === $filter['status'] ) {

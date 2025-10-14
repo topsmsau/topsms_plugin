@@ -2,8 +2,8 @@
 /**
  * The admin-specific functionality of the plugin.
  *
- * @link       https://eux.com.au
- * @since      2.0.0
+ * @link  https://eux.com.au
+ * @since 2.0.0
  *
  * @package    Topsms
  * @subpackage Topsms/admin
@@ -25,33 +25,34 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @author     EUX <samee@eux.com.au>
  */
 class Topsms_Helper_Admin {
+
 	const LOW_BALANCE_THRESHOLD = 50;
 	const SMS_LOWEST_BUFFER     = 2;
 
 	/**
 	 * The ID of this plugin.
 	 *
-	 * @since    2.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
+	 * @since  2.0.0
+	 * @access private
+	 * @var    string    $plugin_name    The ID of this plugin.
 	 */
 	private $plugin_name;
 
 	/**
 	 * The version of this plugin.
 	 *
-	 * @since    2.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @since  2.0.0
+	 * @access private
+	 * @var    string    $version    The current version of this plugin.
 	 */
 	private $version;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    2.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @since 2.0.0
+	 * @param string $plugin_name The name of this plugin.
+	 * @param string $version     The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
 
@@ -62,8 +63,8 @@ class Topsms_Helper_Admin {
 	/**
 	 * Sends SMS alert notifications to customer when low SMS balance.
 	 *
-	 * @since    1.0.1
-	 * @param    int $balance    Current account balance.
+	 * @since 1.0.1
+	 * @param int $balance Current account balance.
 	 */
 	public function topsms_low_balance_alert( $balance ) {
 		// Get low balance alert option.
@@ -110,14 +111,14 @@ class Topsms_Helper_Admin {
 							)
 						);
 
-						$body = wp_remote_retrieve_body( $response );
-						$data = json_decode( $body, true );
+							$body = wp_remote_retrieve_body( $response );
+							$data = json_decode( $body, true );
 
-						// Determine API status.
+							// Determine API status.
 						if ( is_wp_error( $response ) ) {
-							$api_status = 'Failed';
+								$api_status = 'Failed';
 						} elseif ( isset( $data['messageStatuses'][0]['statusText'] ) ) {
-								$api_status = $data['messageStatuses'][0]['statusText'];
+							$api_status = $data['messageStatuses'][0]['statusText'];
 						} else {
 							$api_status = 'Pending';
 						}
@@ -135,8 +136,8 @@ class Topsms_Helper_Admin {
 	/**
 	 * Fetch the registered sender name from the remote Topsms API.
 	 *
-	 * @since    1.0.1
-	 * @return   $sender Sender name of the SMS.
+	 * @since  1.0.1
+	 * @return $sender Sender name of the SMS.
 	 */
 	public function topsms_fetch_sender_name() {
 		$access_token = get_option( 'topsms_access_token' );
@@ -178,8 +179,8 @@ class Topsms_Helper_Admin {
 	/**
 	 * Check user SMS balance to ensure there's enough buffer before sending SMS.
 	 *
-	 * @since    1.0.8
-	 * @return   boolean    True if enough balance, false otherwise.
+	 * @since  1.0.8
+	 * @return boolean    True if enough balance, false otherwise.
 	 */
 	public function check_user_balance() {
 		$access_token = get_option( 'topsms_access_token' );
@@ -216,13 +217,13 @@ class Topsms_Helper_Admin {
 	 * Build a SQL query for retrieving contacts with various filters and options.
 	 *
 	 * @since 2.0.0
-	 * @param array  $filters          Array of filter conditions. Default to empty array.
-	 * @param string $select_clause    Custom SELECT clause. Default to null (selects all customer fields).
-	 * @param string $orderby          The column to order by. Default to 'display_name'.
-	 * @param string $order            The sort order (ASC/DESC). Default to 'ASC'.
+	 * @param array  $filters            Array of filter conditions. Default to empty array.
+	 * @param string $select_clause      Custom SELECT clause. Default to null (selects all customer fields).
+	 * @param string $orderby            The column to order by. Default to 'display_name'.
+	 * @param string $order              The sort order (ASC/DESC). Default to 'ASC'.
 	 * @param bool   $include_pagination Whether to include LIMIT and OFFSET. Optional and default to false.
-	 * @param int    $per_page         The number of items per page. Default to 25.
-	 * @param int    $page_number      The current page number. Default to 1.
+	 * @param int    $per_page           The number of items per page. Default to 25.
+	 * @param int    $page_number        The current page number. Default to 1.
 	 *
 	 * @return string The constructed SQL query string.
 	 */
@@ -242,12 +243,20 @@ class Topsms_Helper_Admin {
 		// Check if wc_orders_meta table exists for fallback.
 		$orders_meta_table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}wc_orders_meta'" );
 		if ( $orders_meta_table_exists ) {
-			$status .= "(SELECT om.meta_value
-                        FROM {$wpdb->prefix}wc_orders_meta om
-                        INNER JOIN {$wpdb->prefix}wc_order_stats os ON om.order_id = os.order_id AND om.meta_key = 'topsms_customer_consent'
-                        WHERE os.customer_id = cl.customer_id
-                        ORDER BY os.date_created DESC
-                        LIMIT 1)";
+			$status .= "COALESCE(
+                            (SELECT om.meta_value
+                            FROM {$wpdb->prefix}wc_orders_meta om
+                            INNER JOIN {$wpdb->prefix}wc_order_stats os ON om.order_id = os.order_id AND om.meta_key = 'topsms_customer_consent'
+                            WHERE os.customer_id = cl.customer_id
+                            ORDER BY os.date_created DESC
+                            LIMIT 1),
+                            (SELECT pm.meta_value
+                            FROM {$wpdb->prefix}wc_order_stats os
+                            INNER JOIN {$wpdb->postmeta} pm ON os.order_id = pm.post_id AND pm.meta_key = 'topsms_customer_consent'
+                            WHERE os.customer_id = cl.customer_id
+                            ORDER BY os.date_created DESC
+                            LIMIT 1)
+                        )";
 		} else {
 			// Fallback to WP postmeta table.
 			$status .= "(SELECT pm.meta_value
@@ -261,12 +270,56 @@ class Topsms_Helper_Admin {
 		$status .= ')
         )';
 
+		// Get state from the user meta (fallback to customer lookup table if not set).
+		$state = "COALESCE(
+            cl.state,
+            (SELECT um.meta_value
+            FROM {$wpdb->usermeta} um
+            WHERE um.user_id = cl.user_id
+            AND um.meta_key = 'billing_state'
+            AND um.meta_value != ''
+            AND um.meta_value IS NOT NULL
+            LIMIT 1)
+        )";
+
+		// Get city from the user meta (fallback to customer lookup table if not set).
+		$city = "COALESCE(
+            cl.city,
+            (SELECT um.meta_value
+            FROM {$wpdb->usermeta} um
+            WHERE um.user_id = cl.user_id
+            AND um.meta_key = 'billing_city'
+            AND um.meta_value != ''
+            AND um.meta_value IS NOT NULL
+            LIMIT 1)
+        )";
+
+		// Get postcode from the user meta (fallback to customer lookup table if not set).
+		$postcode = "COALESCE(
+            cl.postcode,
+            (SELECT um.meta_value
+            FROM {$wpdb->usermeta} um
+            WHERE um.user_id = cl.user_id
+            AND um.meta_key = 'billing_postcode'
+            AND um.meta_value != ''
+            AND um.meta_value IS NOT NULL
+            LIMIT 1)
+        )";
+
 		// Get billing phone.
 		// Check if wc_order_addresses table exists.
+		// Check usermeta first, then order_addresses then fallback to postmeta.
 		$order_addresses_table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}wc_order_addresses'" );
 		if ( $order_addresses_table_exists ) {
-			$phone_number = "(
-                SELECT oa.phone
+			$phone_number = "COALESCE(
+                (SELECT um.meta_value
+                FROM {$wpdb->usermeta} um
+                WHERE um.user_id = cl.user_id
+                AND um.meta_key = 'billing_phone'
+                AND um.meta_value != ''
+                AND um.meta_value IS NOT NULL
+                LIMIT 1),
+                (SELECT oa.phone
                 FROM {$wpdb->prefix}wc_order_addresses oa
                 INNER JOIN {$wpdb->prefix}wc_order_stats os ON oa.order_id = os.order_id
                 WHERE os.customer_id = cl.customer_id
@@ -274,31 +327,48 @@ class Topsms_Helper_Admin {
                 AND oa.phone != ''
                 AND oa.phone IS NOT NULL
                 ORDER BY os.date_created DESC
-                LIMIT 1
-            )";
-		} else {
-			// Fallback to WP postmeta table.
-			$phone_number = "(
-                SELECT pm.meta_value
+                LIMIT 1),
+                (SELECT pm.meta_value
                 FROM {$wpdb->prefix}wc_order_stats os
                 INNER JOIN {$wpdb->postmeta} pm ON os.order_id = pm.post_id AND pm.meta_key = '_billing_phone'
                 WHERE os.customer_id = cl.customer_id
                 AND pm.meta_value != ''
                 AND pm.meta_value IS NOT NULL
                 ORDER BY os.date_created DESC
-                LIMIT 1
+                LIMIT 1)
+            )";
+		} else {
+			// Fallback to WP postmeta table.
+			$phone_number = "COALESCE(
+                (SELECT um.meta_value
+                FROM {$wpdb->usermeta} um
+                WHERE um.user_id = cl.user_id
+                AND um.meta_key = 'billing_phone'
+                AND um.meta_value != ''
+                AND um.meta_value IS NOT NULL
+                LIMIT 1),
+                (SELECT pm.meta_value
+                FROM {$wpdb->prefix}wc_order_stats os
+                INNER JOIN {$wpdb->postmeta} pm ON os.order_id = pm.post_id AND pm.meta_key = '_billing_phone'
+                WHERE os.customer_id = cl.customer_id
+                AND pm.meta_value != ''
+                AND pm.meta_value IS NOT NULL
+                ORDER BY os.date_created DESC
+                LIMIT 1)
             )";
 		}
 
 		// Base query: Get first name, last name, city, state, postcode from WC customer lookup table.
 		if ( null === $select_clause ) {
 			$sql  = "
-                SELECT cl.customer_id, cl.username, cl.email, cl.first_name, cl.last_name, 
-                CONCAT(cl.first_name, ' ', cl.last_name) as display_name, 
-                cl.city, cl.state, cl.postcode
+                SELECT cl.customer_id, cl.user_id, cl.username, cl.email, cl.first_name, cl.last_name, 
+                CONCAT(cl.first_name, ' ', cl.last_name) as display_name
             ";
-			$sql .= ", {$status} as status";
+			$sql .= ", {$state} as state";
+			$sql .= ", {$city} as city";
+			$sql .= ", {$postcode} as postcode";
 			$sql .= ", {$phone_number} as phone";
+			$sql .= ", {$status} as status";
 
 			// Get orders_count and total_spent.
 			$sql .= ', COALESCE(os.order_count, 0) as order_count, COALESCE(os.total_spent, 0) as total_spent';
@@ -321,25 +391,25 @@ class Topsms_Helper_Admin {
 		// Add search query.
 		if ( ! empty( $filters['search'] ) ) {
 			$search  = esc_sql( $wpdb->esc_like( $filters['search'] ) );
-			$where[] = "(cl.username LIKE '%{$search}%' OR cl.email LIKE '%{$search}%' OR cl.first_name LIKE '%{$search}%' OR cl.last_name LIKE '%{$search}%' OR {$phone_number} LIKE '%{$search}%')";
+			$where[] = "(LOWER(cl.username) LIKE '%{$search}%' OR LOWER(cl.email) LIKE '%{$search}%' OR LOWER(cl.first_name) LIKE '%{$search}%' OR LOWER(cl.last_name) LIKE '%{$search}%' OR LOWER(CONCAT(cl.first_name, ' ', cl.last_name)) LIKE '%{$search}%' OR LOWER({$phone_number}) LIKE '%{$search}%')";
 		}
 
 		// Add state filter.
 		if ( ! empty( $filters['state'] ) ) {
-			$state   = esc_sql( $filters['state'] );
-			$where[] = "cl.state = '{$state}'";
+			$state_filter = esc_sql( $filters['state'] );
+			$where[]      = "{$state} = '{$state_filter}'";
 		}
 
 		// Add city filter.
 		if ( ! empty( $filters['city'] ) ) {
-			$city    = esc_sql( $filters['city'] );
-			$where[] = "cl.city LIKE '%{$city}%'";
+			$city_filter = esc_sql( $filters['city'] );
+			$where[]     = "{$city} LIKE '%{$city_filter}%'";
 		}
 
 		// Add postcode filter.
 		if ( ! empty( $filters['postcode'] ) ) {
-			$postcode = esc_sql( $filters['postcode'] );
-			$where[]  = "cl.postcode LIKE '%{$postcode}%'";
+			$postcode_filter = esc_sql( $filters['postcode'] );
+			$where[]         = "{$postcode} LIKE '%{$postcode_filter}%'";
 		}
 
 		// Add orders filter.
@@ -402,6 +472,12 @@ class Topsms_Helper_Admin {
 					$sql .= " ORDER BY CONCAT(cl.first_name, ' ', cl.last_name) {$order}";
 				} elseif ( 'phone' === $orderby ) {
 					$sql .= " ORDER BY phone {$order}";
+				} elseif ( 'city' === $orderby ) {
+					$sql .= " ORDER BY city {$order}";
+				} elseif ( 'state' === $orderby ) {
+					$sql .= " ORDER BY state {$order}";
+				} elseif ( 'postcode' === $orderby ) {
+					$sql .= " ORDER BY postcode {$order}";
 				} elseif ( 'orders' === $orderby ) {
 					$sql .= " ORDER BY order_count {$order}";
 				} elseif ( 'total_spent' === $orderby ) {
