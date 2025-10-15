@@ -15,7 +15,7 @@
  * Plugin Name:             TopSMS
  * Plugin URI:              https://topsms.com.au
  * Description:             Enhance your WooCommerce store with automated SMS notifications based on order status changes. Built exclusively for Australian businesses.
- * Version:                 2.0.1
+ * Version:                 2.0.4
  * Requires at least:       5.0
  * Requires PHP:            7.4
  * Tested up to:            6.8
@@ -37,7 +37,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'TOPSMS_VERSION', '2.0.1' );
+define( 'TOPSMS_VERSION', '2.0.4' );
+define( 'TOPSMS_DB_VERSION', '2.0.1' );
 define( 'TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Define path to the included plugin.
 define( 'TOPSMS_ANALYTICS_PATH', plugin_dir_path( __FILE__ ) . 'topsms-analytics/' );
@@ -149,68 +150,18 @@ function topsms_run() {
 }
 topsms_run();
 
+
+
 /**
- * Run updates after the plugin is updated.
+ * Check database version for plugin update.
+ * If database version isn't updated, run activation function to create new tables.
  *
- * @since    2.0.2
- * @param object $upgrader_object The upgrader object.
- * @param array  $options Array of options.
+ * @since    2.0.3
  */
-function on_plugin_update( $upgrader_object, $options ) {
-    // Check if this is a plugin update.
-    if ( 'update' !== $options['action'] || 'plugin' !== $options['type'] ) {
-        return;
-    }
-
-    // Check if the plugin was updated.
-    if ( isset( $options['plugins'] ) ) {
-        foreach ( $options['plugins'] as $plugin ) {
-            if ( $plugin === plugin_basename( __FILE__ ) ) {
-                // Options for bulksms.
-                add_option( 'topsms_contacts_list_saved_filters', array() );
-
-                global $wpdb;
-                $charset_collate = $wpdb->get_charset_collate();
-
-                // Logs table.
-                $table_name = $wpdb->prefix . 'topsms_logs';
-                $sql        = "CREATE TABLE $table_name (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    order_id INT NOT NULL,
-                    order_status VARCHAR(50) NOT NULL,
-                    phone VARCHAR(20) NOT NULL,
-                    creation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    status VARCHAR(30) NOT NULL
-                ) $charset_collate;";
-
-                // Campaigns table.
-                $campaigns_table = $wpdb->prefix . 'topsms_campaigns';
-                $campaigns_sql   = "CREATE TABLE $campaigns_table (
-                    id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-                    job_name varchar(255) DEFAULT NULL,
-                    campaign_uid varchar(255) DEFAULT NULL,
-                    data longtext DEFAULT NULL,
-                    action varchar(20) NOT NULL DEFAULT 'instant',
-                    status varchar(20) NOT NULL DEFAULT 'draft',
-                    campaign_datetime datetime DEFAULT NULL,
-                    cost int(10) UNSIGNED DEFAULT NULL,
-                    details text DEFAULT NULL,
-                    webhook_token varchar(255) DEFAULT NULL,
-                    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    PRIMARY KEY (id),
-                    KEY job_name (job_name),
-                    KEY status (status),
-                    KEY campaign_datetime (campaign_datetime)
-                ) $charset_collate;";
-
-                require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-                dbDelta( $sql );
-                dbDelta( $campaigns_sql );
-                
-                break;
-            }
-        }
-    }
+function topsms_check_plugin_update() {
+	if ( get_option( 'topsms_db_version' ) !== TOPSMS_DB_VERSION ) {
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-topsms-activator.php';
+		Topsms_Activator::update();
+	}
 }
-add_action( 'upgrader_process_complete', 'on_plugin_update' , 10, 2 );
+add_action( 'plugins_loaded', 'topsms_check_plugin_update' );

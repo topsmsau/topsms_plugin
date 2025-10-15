@@ -158,6 +158,9 @@ class Topsms {
 
 		// Handle sms unsubscribe.
 		$this->loader->add_action( 'init', $plugin_admin, 'topsms_handle_unsubscribe' );
+
+		// To hide admin notices from other plugins.
+		$this->loader->add_action( 'admin_head', $plugin_admin, 'topsms_hide_other_notices', 1 );
 	}
 
 	/**

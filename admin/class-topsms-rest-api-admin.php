@@ -1697,20 +1697,26 @@ class Topsms_Rest_Api_Admin {
 		$lists   = array();
 		$filters = array();
 
-		// Add "All Contacts" as the first list (only subscribed users).
-		$all_contacts_filter = array( 'status' => 'yes' );
+		// Add "All Contacts" as the first list (only subscribed users - if not set, default to subscribed).
+		$all_contacts_filter = array();
 
 		// Get the contacts by filter.
 		$sql          = $this->helper->topsms_build_contacts_query_( $all_contacts_filter, null, false );
 		$all_contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
-		$all_count    = count( $all_contacts );
+        
+		// Filter contacts: include those with status yes/empty (default to subscribed).
+        $all_contacts = array_filter( $all_contacts, function( $contact ) {
+            return empty( $contact['status'] ) || 'yes' === $contact['status'];
+        });
+
+	    $all_count = count( $all_contacts );
 
 		// For transient data.
 		$lists['all_contacts'] = array(
 			'filter_id'   => 'all_contacts',
 			'filter_name' => 'All Contacts',
 			'count'       => $all_count,
-			'contacts'    => $all_contacts,
+			'contacts'    => array_values( $all_contacts ),
 		);
 
 		// For return data.
@@ -1744,14 +1750,14 @@ class Topsms_Rest_Api_Admin {
 				continue;
 			}
 
-			// If no status is set for filters, set to subscribed only.
-			if ( empty( $filter['status'] ) ) {
-				$filter['status'] = 'yes';
-			}
-
 			// Get the contacts by filter.
 			$sql      = $this->helper->topsms_build_contacts_query_( $filter, null, false );
 			$contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
+            
+            // Filter contacts: include those with status yes/empty (default to subscribed).
+            $contacts = array_filter( $contacts, function( $contact ) {
+                return empty( $contact['status'] ) || 'yes' === $contact['status'];
+            });
 			$count    = count( $contacts );
 
 			// For transient data.
@@ -1759,7 +1765,7 @@ class Topsms_Rest_Api_Admin {
 				'filter_id'   => $filter_id,
 				'filter_name' => $filter['name'],
 				'count'       => $count,
-				'contacts'    => $contacts,
+				'contacts'    => array_values( $contacts ),
 			);
 
 			// For return data.

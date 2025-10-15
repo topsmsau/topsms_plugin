@@ -16,7 +16,7 @@
 - Added documentation on the use of a 3rd Party / external service (Supabase services).
 
 ### Fixed
-- Replace direct echo output with WordPress's `wp_add_inline_style()` and `wp_add_inline_script()` functions for inline styles and scripts.
+- Replaced direct echo output with WordPress's `wp_add_inline_style()` and `wp_add_inline_script()` functions for inline styles and scripts.
 - Prefixed all functions, classes, constants, namespaces, and option names with unique identifiers.
 
 ## [1.0.3] - 2025-05-29
@@ -26,7 +26,7 @@
 - Added full source code, including **uncompiled React source code**.
 
 ### Fixed
-- Move the CSS rules for hiding the WordPress admin sidebar and header from inline styles to the `topsms-admin.css` file for the setup page.
+- Moved the CSS rules for hiding the WordPress admin sidebar and header from inline styles to the `topsms-admin.css` file for the setup page.
 
 ## [1.0.4] - 2025-06-02
 
@@ -79,3 +79,21 @@
 
 ### Fixed
 - Added templates content for Bulk SMS.
+
+## [2.0.2] - 2025-15-10
+
+### Fixed
+- Added a fallback to get customer's billing phone from the `postmeta` table if no results returned by the `wc_order_addresses` table.
+- Added a fallback to get customer's billing city, state and postcode from the `usermeta` table if no results returned by the `wc_customer_lookup` table.
+- Fixed `topsms_campaigns` table creation on plugin update.
+
+## [2.0.3] - 2025-15-10
+
+### Fixed
+- Fixed `topsms_campaigns` table creation on plugin update.
+- Changed default subscription status to 'Unsubscribed'.
+
+## [2.0.4] - 2025-15-10
+
+### Fixed
+- Fixed `topsms_campaigns` table creation on plugin update.

@@ -144,7 +144,7 @@ class Topsms_Contacts_List_Admin extends WP_List_Table {
 		foreach ( $customers as $customer ) {
 			$contacts[] = array(
 				'id'          => $customer->customer_id,
-                'user_id'     => $customer->user_id,
+				'user_id'     => $customer->user_id,
 				'name'        => $customer->display_name ? trim( $customer->display_name ) : '',
 				'email'       => $customer->email,
 				'city'        => $customer->city ? $customer->city : '',
@@ -332,7 +332,7 @@ class Topsms_Contacts_List_Admin extends WP_List_Table {
 				return '<mark class="order-status status-failed"><span>Unsubscribed</span></mark>';
 			}
 		} else {
-			return '<mark class="order-status status-failed"><span>Unsubscribed</span></mark>';
+			return '<mark class="order-status status-processing"><span>Subscribed</span></mark>';
 		}
 	}
 

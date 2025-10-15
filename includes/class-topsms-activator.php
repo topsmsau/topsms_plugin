@@ -37,6 +37,20 @@ class Topsms_Activator {
 		self::topsms_notifications_endpoint();
 		flush_rewrite_rules();
 
+		// Activation ransients.
+		set_transient( 'topsms_activation_redirect', true, 30 );
+		set_transient( 'topsms_send_sms', true );
+
+		// Setup options and database.
+		self::topsms_setup();
+	}
+
+	/**
+	 * Setup function from both activation and update.
+	 *
+	 * @since    2.0.4
+	 */
+	private static function topsms_setup() {
 		// Default messages for each status.
 		$processing_msg = 'Hello [first_name], your order #[order_id] has been shipped and is on its way! Expected delivery within 3-5 business days. If you have any questions, feel free to contact us.';
 		$completed_msg  = 'Hello [first_name], your order #[order_id] has been successfully delivered. We hope you enjoy your purchase! Thank you for shopping with us.';
@@ -87,10 +101,6 @@ class Topsms_Activator {
 		add_option( 'topsms_settings_sms_surcharge_amount', '' );
 		add_option( 'topsms_sender', '' );
 
-		// Transients.
-		set_transient( 'topsms_activation_redirect', true, 30 );
-		set_transient( 'topsms_send_sms', true );
-
 		// Options for bulksms.
 		add_option( 'topsms_contacts_list_saved_filters', array() );
 
@@ -136,14 +146,27 @@ class Topsms_Activator {
 		// Execute the query using dbDelta for proper table creation.
 		dbDelta( $sql );
 		dbDelta( $campaigns_sql );
+
+		// Add db version to options.
+		update_option( 'topsms_db_version', TOPSMS_DB_VERSION );
 	}
 
 	/**
-	 * Register endpoint for the new tab
+	 * Register endpoint for the new tab.
 	 *
 	 * @since    1.0.0
 	 */
 	public static function topsms_notifications_endpoint() {
 		add_rewrite_endpoint( 'sms-notifications', EP_ROOT | EP_PAGES );
+	}
+
+	/**
+	 * Plugin update function.
+	 *
+	 * @since    2.0.4
+	 */
+	public static function update() {
+		// Setup options and database.
+		self::topsms_setup();
 	}
 }

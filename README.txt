@@ -4,7 +4,7 @@ Source Code: https://github.com/topsmsau/topsms_plugin
 Tags: woocommerce, sms, notifications, order, analytics
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 2.0.1
+Stable tag: 2.0.4
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -38,14 +38,14 @@ The complete source code for this plugin is available on our [Github repository]
 * Automatic low-credit alerts and recharge reminders.
 * Special discount offers for bulk credit purchases.
 
-**4. Bulk SMS Campaigns
+**4. Bulk SMS Campaigns**
 * Send or schedule bulk SMS campaigns to your selected contact lists or saved segments.
 * Create and manage campaigns directly from the Campaigns page.
 * Save campaigns as drafts to edit or send later.
 * View all sent, scheduled, cancelled, and draft campaigns with filtering by status.
 * Cancel scheduled campaigns anytime through the campaign management table.
 
-**5. Contacts and Segmentation
+**5. Contacts and Segmentation**
 * View all WooCommerce customers in the Contacts page.
 * Filter contacts by state, city, postcode, total number of orders, total amount spent, and SMS subscription status.
 * Save filters as segments that can be reused for future SMS campaigns.

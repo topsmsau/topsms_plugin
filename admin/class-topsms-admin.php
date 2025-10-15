@@ -1399,4 +1399,23 @@ class Topsms_Admin {
 			return false;
 		}
 	}
+
+    /**
+     * Hide other plugins' admin notices on TopSMS pages.
+     *
+     * @since 2.0.2
+     */
+    public function topsms_hide_other_notices() {
+        // Get current screen and check if on a topsms page.
+        $screen = get_current_screen();
+        if ( ! $screen ) {
+            return;
+        }
+
+        // Remove other notices if on topsms pages.
+        if ( strpos( $screen->id, 'toplevel_page_topsms' ) !== false || strpos( $screen->base, 'topsms' ) !== false ) {
+            remove_all_actions( 'admin_notices' );
+            remove_all_actions( 'all_admin_notices' );
+        }
+    }
 }

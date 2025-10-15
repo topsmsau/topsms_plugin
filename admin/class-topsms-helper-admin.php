@@ -270,7 +270,7 @@ class Topsms_Helper_Admin {
 		$status .= ')
         )';
 
-		// Get state from the user meta (fallback to customer lookup table if not set).
+		// Get state from the customer lookup table (fallback to usermeta if not set).
 		$state = "COALESCE(
             cl.state,
             (SELECT um.meta_value
@@ -282,7 +282,7 @@ class Topsms_Helper_Admin {
             LIMIT 1)
         )";
 
-		// Get city from the user meta (fallback to customer lookup table if not set).
+		// Get city from the customer lookup table (fallback to usermeta if not set).
 		$city = "COALESCE(
             cl.city,
             (SELECT um.meta_value
@@ -294,7 +294,7 @@ class Topsms_Helper_Admin {
             LIMIT 1)
         )";
 
-		// Get postcode from the user meta (fallback to customer lookup table if not set).
+		// Get postcode from the customer lookup table (fallback to usermeta if not set).
 		$postcode = "COALESCE(
             cl.postcode,
             (SELECT um.meta_value
@@ -457,7 +457,13 @@ class Topsms_Helper_Admin {
 		// Add status filter.
 		if ( ! empty( $filters['status'] ) ) {
 			$status_filter = esc_sql( $filters['status'] );
-			$where[]       = "{$status} = '{$status_filter}'";
+			if ( 'yes' === $status_filter ) {
+                // Include both yes/empty (default to subscribed).
+                $where[] = "({$status} = 'yes' OR {$status} IS NULL OR {$status} = '')";
+            } else {
+                // Only unsubscribed.
+                $where[] = "{$status} = '{$status_filter}'";
+            }
 		}
 
 		if ( ! empty( $where ) ) {
