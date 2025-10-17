@@ -59,26 +59,20 @@ const BulkSmsForm = ({
     const maxCharsAllowed = getMaxCharactersForCurrentSms();
 
     // Generate tag replacements for characters count
-    const getTagReplacements = (url) => {
+    const getTagReplacements = () => {
         return Object.values(SMS_TAGS).reduce((acc, { tag, replacement }) => {
-            if (tag === '[url]') {
-                // For url, count the length of the given
-                // If no input url, then empty string
-                acc[tag] = url !== undefined ? url : (formData.url || '');
-            } else {
-                // Other tags: use the default replacements; use tag count if empty
-                acc[tag] = replacement || tag;
-            }
+            // If replacement is empty, use the tag itself for counting
+            acc[tag] = replacement || tag;
             return acc;
         }, {});
     };
 
     // Calculate actual character count with tag replacements
-    const calculateActualCharacterCount = (message, url) => {
+    const calculateActualCharacterCount = (message) => {
         let message_ = message;
         
-        let tagReplacements = getTagReplacements(url);
-        // Replace all tags with their average values
+        let tagReplacements = getTagReplacements();
+        // Replace all tags with their fixed replacement values
         Object.keys(tagReplacements).forEach(tag => {
             const replacement = tagReplacements[tag];
             message_ = message_.replace(new RegExp(tag.replace(/[[\]]/g, '\\$&'), 'g'), replacement);
@@ -219,13 +213,7 @@ const BulkSmsForm = ({
     // Handle url change
     const handleUrlChange = useCallback((value) => {
         setFormData(prev => ({ ...prev, url: value }));
-
-        // Recalculate character count if message contains [url] tag
-        if (formData.smsMessage.includes('[url]')) {
-            const actualCharCount = calculateActualCharacterCount(formData.smsMessage, value);
-            setCharacterCount(actualCharCount);
-        }
-    }, [setFormData, formData.smsMessage, setCharacterCount ]);
+    }, [setFormData]);
 
     // Fetch sender name
     const fetchSender = async () => {

@@ -1703,13 +1703,18 @@ class Topsms_Rest_Api_Admin {
 		// Get the contacts by filter.
 		$sql          = $this->helper->topsms_build_contacts_query_( $all_contacts_filter, null, false );
 		$all_contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
-        
-		// Filter contacts: include those with status yes/empty (default to subscribed).
-        $all_contacts = array_filter( $all_contacts, function( $contact ) {
-            return empty( $contact['status'] ) || 'yes' === $contact['status'];
-        });
 
-	    $all_count = count( $all_contacts );
+		// Filter contacts: include those with status yes/empty (default to subscribed) and have phone.
+		$all_contacts = array_filter(
+			$all_contacts,
+			function ( $contact ) {
+				$valid_status = empty( $contact['status'] ) || 'yes' === $contact['status'];
+				$valid_phone  = ! empty( $contact['phone'] ) && trim( $contact['phone'] ) !== '';
+				return $valid_status && $valid_phone;
+			}
+		);
+
+		$all_count = count( $all_contacts );
 
 		// For transient data.
 		$lists['all_contacts'] = array(
@@ -1753,11 +1758,16 @@ class Topsms_Rest_Api_Admin {
 			// Get the contacts by filter.
 			$sql      = $this->helper->topsms_build_contacts_query_( $filter, null, false );
 			$contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
-            
-            // Filter contacts: include those with status yes/empty (default to subscribed).
-            $contacts = array_filter( $contacts, function( $contact ) {
-                return empty( $contact['status'] ) || 'yes' === $contact['status'];
-            });
+
+			// Filter contacts: include those with status yes/empty (default to subscribed) and have phone.
+			$contacts = array_filter(
+				$contacts,
+				function ( $contact ) {
+					$valid_status = empty( $contact['status'] ) || 'yes' === $contact['status'];
+					$valid_phone  = ! empty( $contact['phone'] ) && trim( $contact['phone'] ) !== '';
+					return $valid_status && $valid_phone;
+				}
+			);
 			$count    = count( $contacts );
 
 			// For transient data.
@@ -2177,7 +2187,7 @@ class Topsms_Rest_Api_Admin {
 				'postcode'    => isset( $contact['postcode'] ) ? sanitize_text_field( $contact['postcode'] ) : '',
 				'orders'      => isset( $contact['order_count'] ) ? absint( $contact['order_count'] ) : 0,
 				'total_spent' => isset( $contact['total_spent'] ) ? number_format( $contact['total_spent'], 2 ) : 0,
-				'url'         => $url,
+				// 'url'         => $url,
 				'unsubscribe' => get_home_url() . '?phone=' . $phone,
 			);
 			$shortcodes[] = $shortcode;

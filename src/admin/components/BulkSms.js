@@ -428,11 +428,11 @@ const BulkSms = () => {
         }
     }
 
-    useEffect(() => {
-        if (campaignData && campaignData.message) {
-            setCharacterCount(campaignData.message.length);
-        }
-    }, [campaignData]);
+    // useEffect(() => {
+    //     if (campaignData && campaignData.message) {
+    //         setCharacterCount(campaignData.message.length);
+    //     }
+    // }, [campaignData]);
 
     return (
         <Layout>
@@ -452,7 +452,7 @@ const BulkSms = () => {
                         {__('Bulk SMS', 'topsms')}
                     </h2>
                     <p className="text-gray-600">
-                        {__('Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod', 'topsms')}
+                        {__('Please enter your camapaign details below', 'topsms')}
                     </p>
                 </div>
             </div>

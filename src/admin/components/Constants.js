@@ -202,9 +202,9 @@ export const SMS_TAGS = {
     },
     url: {
         tag: '[url]',
-        replacement: 'topsms.au/abcd',
+        replacement: 'topsms.au/abcd/',
         label: 'URL', 
-        message: 'Your custom URL (length varies based on input)' 
+        message: 'Shorten URL (15 characters)' 
     },
     unsubscribe: {
         tag: '[unsubscribe]',

@@ -461,6 +461,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     max-width: 1536px;
   }
 }
+.topsms-app .fixed {
+  position: fixed;
+}
 .topsms-app .absolute {
   position: absolute;
 }

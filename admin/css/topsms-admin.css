@@ -105,3 +105,8 @@
 	z-index: 1000;
 	text-indent: 0;
 }
+
+.topsms_page_topsms-contacts-list .wp-list-table th#status,
+.topsms_page_topsms-campaigns .wp-list-table th#status  {
+    width: 200px;
+}

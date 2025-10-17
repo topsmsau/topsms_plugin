@@ -382,7 +382,6 @@ class Topsms_Helper_Admin {
                 COUNT(order_id) as order_count,
                 SUM(net_total) as total_spent
             FROM {$wpdb->prefix}wc_order_stats
-            WHERE status IN ('wc-completed', 'wc-processing', 'wc-on-hold')
             GROUP BY customer_id
         ) os ON cl.customer_id = os.customer_id";
 
@@ -458,12 +457,12 @@ class Topsms_Helper_Admin {
 		if ( ! empty( $filters['status'] ) ) {
 			$status_filter = esc_sql( $filters['status'] );
 			if ( 'yes' === $status_filter ) {
-                // Include both yes/empty (default to subscribed).
-                $where[] = "({$status} = 'yes' OR {$status} IS NULL OR {$status} = '')";
-            } else {
-                // Only unsubscribed.
-                $where[] = "{$status} = '{$status_filter}'";
-            }
+				// Include both yes/empty (default to subscribed).
+				$where[] = "({$status} = 'yes' OR {$status} IS NULL OR {$status} = '')";
+			} else {
+				// Only unsubscribed.
+				$where[] = "{$status} = '{$status_filter}'";
+			}
 		}
 
 		if ( ! empty( $where ) ) {

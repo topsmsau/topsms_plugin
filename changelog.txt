@@ -97,3 +97,26 @@
 
 ### Fixed
 - Fixed `topsms_campaigns` table creation on plugin update.
+
+## [2.0.5] - 2025-15-10
+
+### Fixed
+- Excluded contacts without phone number when showing contacts list counts on the Bulk SMS page.
+- Adjusted the status column of the contacts lists and campaigns tables.
+- Fixed URL length issue for draft campaigns.
+
+## [2.0.6] - 2025-15-10
+
+### Fixed
+- Fixed contacts list counts on the Bulk SMS page.
+
+## [2.0.7] - 2025-17-10
+
+### Fixed
+- Included all customers in the contacts list without considering the order statuses.
+- Removed unnecessary text on the Bulk SMS page.
+
+## [2.0.8] - 2025-17-10
+
+### Fixed
+- Fixed character count for the Bulk SMS `[url]` tag.

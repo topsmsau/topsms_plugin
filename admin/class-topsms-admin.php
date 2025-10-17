@@ -76,8 +76,8 @@ class Topsms_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), $version, 'all' );
-		wp_enqueue_style( 'topsms-admin-style', plugin_dir_url( __FILE__ ) . 'css/topsms-admin-app.css', array(), $version, 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-admin.css', array(), time(), 'all' );
+		wp_enqueue_style( 'topsms-admin-style', plugin_dir_url( __FILE__ ) . 'css/topsms-admin-app.css', array(), time(), 'all' );
 		wp_enqueue_style( 'wp-components' );
 	}
 
@@ -112,7 +112,7 @@ class Topsms_Admin {
 				'wp-blocks',
 				'wp-block-editor',
 			),
-			$version,
+			time(),
 			true
 		);
 		wp_localize_script(
@@ -126,7 +126,7 @@ class Topsms_Admin {
 		wp_enqueue_script( 'wp-api' );
 
 		// Other custom JS scripts.
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-admin.js', array( 'jquery' ), $version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-admin.js', array( 'jquery' ), time(), false );
 		wp_localize_script(
 			$this->plugin_name,
 			'topsmsAdmin',
@@ -1400,22 +1400,22 @@ class Topsms_Admin {
 		}
 	}
 
-    /**
-     * Hide other plugins' admin notices on TopSMS pages.
-     *
-     * @since 2.0.2
-     */
-    public function topsms_hide_other_notices() {
-        // Get current screen and check if on a topsms page.
-        $screen = get_current_screen();
-        if ( ! $screen ) {
-            return;
-        }
+	/**
+	 * Hide other plugins' admin notices on TopSMS pages.
+	 *
+	 * @since 2.0.2
+	 */
+	public function topsms_hide_other_notices() {
+		// Get current screen and check if on a topsms page.
+		$screen = get_current_screen();
+		if ( ! $screen ) {
+			return;
+		}
 
-        // Remove other notices if on topsms pages.
-        if ( strpos( $screen->id, 'toplevel_page_topsms' ) !== false || strpos( $screen->base, 'topsms' ) !== false ) {
-            remove_all_actions( 'admin_notices' );
-            remove_all_actions( 'all_admin_notices' );
-        }
-    }
+		// Remove other notices if on topsms pages.
+		if ( strpos( $screen->id, 'toplevel_page_topsms' ) !== false || strpos( $screen->base, 'topsms' ) !== false ) {
+			remove_all_actions( 'admin_notices' );
+			remove_all_actions( 'all_admin_notices' );
+		}
+	}
 }
