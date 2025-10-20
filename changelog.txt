@@ -120,3 +120,14 @@
 
 ### Fixed
 - Fixed character count for the Bulk SMS `[url]` tag.
+
+## [2.0.9] - 2025-20-10
+
+### Added
+- Added an unsubscribe button on the contacts list table to allow users with admin capability to unsubscribe a particular user.
+
+### Fixed
+- Removed contacts with duplicate phone number when sending campaigns.
+- Fixed negative total spent issue by only including those orders with status `wc-completed` and `wc-processing`.
+- Fixed the contacts list table filters CSS.
+- Fixed the `topsms_handle_unsubscribe` function to handle guest users and ensure it's compatible with HPOS.

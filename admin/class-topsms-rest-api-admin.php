@@ -1449,7 +1449,7 @@ class Topsms_Rest_Api_Admin {
 		$url      = isset( $payload['url'] ) ? esc_url_raw( $payload['url'] ) : '';
 
 		// Generate the unsub link.
-		$unsub_link = get_home_url() . '?phone=' . $phone;
+		$unsub_link = 'unsub.au/abcdef';
 
 		// Get cache data if exists.
 		$cache_key       = 'topsms_sample_customer';
@@ -1480,7 +1480,6 @@ class Topsms_Rest_Api_Admin {
 				'[postcode]'    => $sample_customer->postcode ? $sample_customer->postcode : '2000',
 				'[orders]'      => $sample_customer->order_count ? $sample_customer->order_count : 20,
 				'[total_spent]' => $sample_customer->total_spent ? number_format( $sample_customer->total_spent, 2 ) : '1500.00',
-				'[url]'         => $url,
 				'[unsubscribe]' => $unsub_link,
 			);
 		} else {
@@ -1494,7 +1493,6 @@ class Topsms_Rest_Api_Admin {
 				'[postcode]'    => '2000',
 				'[orders]'      => 20,
 				'[total_spent]' => 1500.00,
-				'[url]'         => $url,
 				'[unsubscribe]' => $unsub_link,
 			);
 		}
@@ -1704,17 +1702,10 @@ class Topsms_Rest_Api_Admin {
 		$sql          = $this->helper->topsms_build_contacts_query_( $all_contacts_filter, null, false );
 		$all_contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
 
-		// Filter contacts: include those with status yes/empty (default to subscribed) and have phone.
-		$all_contacts = array_filter(
-			$all_contacts,
-			function ( $contact ) {
-				$valid_status = empty( $contact['status'] ) || 'yes' === $contact['status'];
-				$valid_phone  = ! empty( $contact['phone'] ) && trim( $contact['phone'] ) !== '';
-				return $valid_status && $valid_phone;
-			}
-		);
-
-		$all_count = count( $all_contacts );
+		// Filter contacts: include those with status yes (default to unsubscribed) and have phone.
+		// Also make sure no duplicated phone.
+		$all_contacts = $this->filter_contacts( $all_contacts );
+		$all_count    = count( $all_contacts );
 
 		// For transient data.
 		$lists['all_contacts'] = array(
@@ -1759,15 +1750,9 @@ class Topsms_Rest_Api_Admin {
 			$sql      = $this->helper->topsms_build_contacts_query_( $filter, null, false );
 			$contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
 
-			// Filter contacts: include those with status yes/empty (default to subscribed) and have phone.
-			$contacts = array_filter(
-				$contacts,
-				function ( $contact ) {
-					$valid_status = empty( $contact['status'] ) || 'yes' === $contact['status'];
-					$valid_phone  = ! empty( $contact['phone'] ) && trim( $contact['phone'] ) !== '';
-					return $valid_status && $valid_phone;
-				}
-			);
+			// Filter contacts: include those with status yes (default to unsubscribed) and have phone.
+			// Also make sure no duplicated phone.
+			$contacts = $this->filter_contacts( $contacts );
 			$count    = count( $contacts );
 
 			// For transient data.
@@ -2616,5 +2601,55 @@ class Topsms_Rest_Api_Admin {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Filter contacts based on phone number and status.
+	 * Ensure no contacts with duplicate phone number,
+	 * and priotise contacts with status 'yes' over duplicates.
+	 *
+	 * @since 2.0.9
+	 * @param array $contacts Array of contact data.
+	 * @return array Filtered and deduplicated contacts.
+	 */
+	private function filter_contacts( $contacts ) {
+		$existed_phones    = array();
+		$filtered_contacts = array();
+
+		foreach ( $contacts as $contact ) {
+			// Skip contacts without valid phone.
+			if ( empty( $contact['phone'] ) || trim( $contact['phone'] ) === '' ) {
+				continue;
+			}
+
+			// Normalise phone number.
+			$normalised_phone = preg_replace( '/[^0-9]/', '', $contact['phone'] );
+			// Skip if normalised phone is empty.
+			if ( empty( $normalised_phone ) ) {
+				continue;
+			}
+
+			$contact_status = $contact['status'] ?? '';
+			// Check if phone exists before.
+			if ( isset( $existed_phones[ $normalised_phone ] ) ) {
+				// If phone exists, replace only if the current contact is subscribed and the previously stored one doesn't.
+				// Otherwise keep the existing one and skip this duplicate.
+				$stored_index  = $existed_phones[ $normalised_phone ];
+				$stored_status = $filtered_contacts[ $stored_index ]['status'] ? $filtered_contacts[ $stored_index ]['status'] : '';
+				if ( 'yes' === $contact_status && 'yes' !== $stored_status ) {
+					// Replace the contact.
+					$filtered_contacts[ $stored_index ] = $contact;
+				}
+				continue;
+			}
+
+			// Only add contacts with 'yes' status.
+			if ( 'yes' === $contact_status ) {
+				$index                               = count( $filtered_contacts );
+				$existed_phones[ $normalised_phone ] = $index;
+				$filtered_contacts[]                 = $contact;
+			}
+		}
+		return $filtered_contacts;
 	}
 }

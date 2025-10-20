@@ -12,12 +12,13 @@
 }
 
 .topsms_page_topsms-contacts-list .topsms-contacts-list-filter-input {
-	float: left;
-	margin-right: 6px;
+	float: left !important;
+	margin-right: 6px !important;
 	max-width: 12.5rem;
 }
 
-.order-status {
+.topsms_page_topsms-contacts-list .order-status, 
+.topsms_page_topsms-campaigns .order-status {
 	display: inline-flex;
 	line-height: 2.5em;
 	color: #454545;
@@ -29,32 +30,40 @@
 	white-space: nowrap;
 	max-width: 100%;
 }
-.order-status>span {
+.topsms_page_topsms-contacts-list .order-status>span, 
+.topsms_page_topsms-campaigns .order-status>span {
 	margin: 0 1em;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.order-status.status-processing {
+.topsms_page_topsms-contacts-list .order-status.status-processing, 
+.topsms_page_topsms-campaigns .order-status.status-processing {
 	background: #c6e1c6;
 	color: #2c4700;
 }
-.order-status.status-failed {
+.topsms_page_topsms-contacts-list .order-status.status-failed, 
+.topsms_page_topsms-campaigns .order-status.status-failed{
 	background: #eba3a3;
 	color: #570000;
 }
-.order-status.status-completed {
+.topsms_page_topsms-contacts-list .order-status.status-completed, 
+.topsms_page_topsms-campaigns .order-status.status-completed {
 	background: #c8d7e1;
 	color: #003d66;
 }
-.order-status.status-pending,
-.order-status.status-cancelled {
+.topsms_page_topsms-contacts-list .order-status.status-pending,
+.topsms_page_topsms-contacts-list .order-status.status-cancelled, 
+.topsms_page_topsms-campaigns .order-status.status-pending,
+.topsms_page_topsms-campaigns .order-status.status-cancelled {
 	background: #e5e5e5;
 	color: #454545;
 }
 
 /* Cancel action button for campaigns */
-.widefat .column-wc_actions a.cancel::after,
-.widefat .wc-action-button-cancel::after {
+.topsms_page_topsms-campaigns .widefat .column-wc_actions a.cancel::after,
+.topsms_page_topsms-campaigns .widefat .wc-action-button-cancel::after, 
+.topsms_page_topsms-contacts-list .widefat .column-wc_actions a.unsubscribe::after,
+.topsms_page_topsms-contacts-list .widefat .wc-action-button-unsubscribe::after {
 	content: "\f335" !important;
 	font-family: Dashicons;
 	speak: never;
@@ -69,7 +78,8 @@
 	height: 100%;
 	text-align: center;
 }
-.wc-action-button-cancel {
+.topsms_page_topsms-campaigns .wc-action-button-cancel,
+.topsms_page_topsms-contacts-list .wc-action-button-unsubscribe {
 	color: #dc3232 !important;
 	text-indent: -9999px;
 	position: relative;
@@ -78,18 +88,19 @@
 	width: 2em;
 	overflow: visible;
 }
-.wc-action-button-cancel:hover {
+.topsms_page_topsms-campaigns .wc-action-button-cancel:hover, 
+.topsms_page_topsms-contacts-list .wc-action-button-unsubscribe:hover {
 	color: #a00 !important;
 }
-.wc-action-button-cancel.cr-order-dimmed {
+.topsms_page_topsms-campaigns .wc-action-button-cancel.cr-order-dimmed {
 	cursor: help;
 	opacity: 0.6;
 	overflow: visible !important;
 }
-.wc-action-button-cancel.cr-order-dimmed:hover {
+.topsms_page_topsms-campaigns .wc-action-button-cancel.cr-order-dimmed:hover {
 	z-index: 10000;
 }
-.wc-action-button-cancel.cr-order-dimmed:hover::before {
+.topsms_page_topsms-campaigns .wc-action-button-cancel.cr-order-dimmed:hover::before {
 	content: attr(aria-label);
 	position: absolute;
 	top: 100%;

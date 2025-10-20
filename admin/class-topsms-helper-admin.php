@@ -377,11 +377,24 @@ class Topsms_Helper_Admin {
 		}
 
 		$sql .= " FROM {$wpdb->prefix}wc_customer_lookup cl";
+		// Select from those orders where the status is completed or processing.
+		// For each order, if the order has parent id, exclude itself and its parent.
 		$sql .= " LEFT JOIN (
             SELECT customer_id, 
                 COUNT(order_id) as order_count,
-                SUM(net_total) as total_spent
+                SUM(total_sales) as total_spent
             FROM {$wpdb->prefix}wc_order_stats
+            WHERE status IN ('wc-completed', 'wc-processing')
+            AND order_id NOT IN (
+                SELECT order_id 
+                FROM {$wpdb->prefix}wc_order_stats 
+                WHERE parent_id > 0
+            )
+            AND order_id NOT IN (
+                SELECT parent_id 
+                FROM {$wpdb->prefix}wc_order_stats 
+                WHERE parent_id > 0
+            )
             GROUP BY customer_id
         ) os ON cl.customer_id = os.customer_id";
 
@@ -457,11 +470,11 @@ class Topsms_Helper_Admin {
 		if ( ! empty( $filters['status'] ) ) {
 			$status_filter = esc_sql( $filters['status'] );
 			if ( 'yes' === $status_filter ) {
-				// Include both yes/empty (default to subscribed).
-				$where[] = "({$status} = 'yes' OR {$status} IS NULL OR {$status} = '')";
+				// Include those with status yes.
+				$where[] = "{$status} = 'yes'";
 			} else {
-				// Only unsubscribed.
-				$where[] = "{$status} = '{$status_filter}'";
+				// Default tp unsubscribe.
+				$where[] = "({$status} = 'no' OR {$status} IS NULL OR {$status} = '')";
 			}
 		}
 

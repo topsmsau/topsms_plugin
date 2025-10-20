@@ -991,6 +991,29 @@ class Topsms_Admin {
 			}
 		}
 
+		// Handle unsubscribe contact.
+		if ( isset( $_GET['action'] ) && 'unsubscribe_contact' === $_GET['action'] && isset( $_GET['contact_id'] ) && isset( $_GET['phone'] ) ) {
+			$contact_id = intval( $_GET['contact_id'] );
+			$phone      = sanitize_text_field( wp_unslash( $_GET['phone'] ) );
+
+			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'unsubscribe_contact_' . $contact_id ) ) {
+
+				// Unsubscribe contact by changing meta.
+				$result = $this->topsms_unsubscribe_contact( $phone );
+
+				// Remove the previous filter args and add message for displaying notice.
+				$redirect_url = remove_query_arg( array( 'action', 'contact_id', 'phone', '_wpnonce' ) );
+				if ( $result ) {
+					$redirect_url = add_query_arg( 'message', 'contact_unsubscribed', $redirect_url );
+				} else {
+					$redirect_url = add_query_arg( 'message', 'unsubscribe_contact_failed', $redirect_url );
+				}
+
+				wp_safe_redirect( $redirect_url );
+				exit;
+			}
+		}
+
 		// Initialise the contacts list table.
 		$table = new Topsms_Contacts_List_Admin( $this->helper );
 		$table->prepare_items();
@@ -1007,6 +1030,10 @@ class Topsms_Admin {
 					echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Filter deleted successfully.', 'topsms' ) . '</p></div>';
 				} elseif ( 'delete_filter_failed' === $_GET['message'] ) {
 					echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Failed to delete filter. Please try again later.', 'topsms' ) . '</p></div>';
+				} elseif ( 'contact_unsubscribed' === $_GET['message'] ) {
+					echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Contact unsubscribed successfully.', 'topsms' ) . '</p></div>';
+				} elseif ( 'unsubscribe_contact_failed' === $_GET['message'] ) {
+					echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Failed to unsubscribe contact. Please try again later.', 'topsms' ) . '</p></div>';
 				}
 			}
 			?>
@@ -1189,74 +1216,102 @@ class Topsms_Admin {
 	 * @since    2.0.0
 	 */
 	public function topsms_handle_unsubscribe() {
-		// Check if phone  exists in url params.
+		// Don't run in admin interface.
+		if ( is_admin() ) {
+			return;
+		}
+
+		// Check if phone exists in url params.
 		if ( ! isset( $_GET['phone'] ) || empty( $_GET['phone'] ) ) {
 			return;
 		}
-		// Get phone from url params.
-		$phone   = sanitize_text_field( wp_unslash( $_GET['phone'] ) );
-		$user_id = null;
 
-		// Check if user is logged in.
-		if ( is_user_logged_in() ) {
-			$user_id = get_current_user_id();
+		// Get and sanitise phone from url params.
+		$phone = sanitize_text_field( wp_unslash( $_GET['phone'] ) );
 
-			// Verify phone matches user's billing phone.
-			$billing_phone      = get_user_meta( $user_id, 'billing_phone', true );
-			$normalised_billing = preg_replace( '/[^0-9]/', '', $billing_phone );
-			$normalised_input   = preg_replace( '/[^0-9]/', '', $phone );
-			if ( $normalised_billing !== $normalised_input ) {
-				return;
-			}
-		} else {
-			// User not logged in, find user by phone.
-			global $wpdb;
-			$normalised_phone = preg_replace( '/[^0-9]/', '', $phone );
-
-			$user_id = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT user_id FROM {$wpdb->usermeta} 
-                WHERE meta_key = 'billing_phone' 
-                AND REPLACE(REPLACE(REPLACE(meta_value, ' ', ''), '-', ''), '+', '') LIKE %s 
-                LIMIT 1",
-					'%' . $wpdb->esc_like( $normalised_phone )
-				)
-			);
-
-			if ( ! $user_id ) {
-				return; // No user found.
-			}
-
-			$user_id = intval( $user_id );
+		// Handle phone format with hash.
+		if ( strpos( $phone, '#' ) !== false ) {
+			$phone_parts = explode( '#', $phone );
+			$phone       = $phone_parts[0];
 		}
 
-		// Update user meta to unsubscribe.
-		update_user_meta( $user_id, 'topsms_customer_consent', 'no' );
+		// Basic phone validation.
+		if ( ! preg_match( '/^[0-9+\-\s\(\)]+$/', $phone ) ) {
+			wc_add_notice( 'Invalid phone number format.', 'error' );
+			return;
+		}
 
-		// Get and update the meta in the last order.
-		if ( function_exists( 'wc_get_orders' ) ) {
-			$orders = wc_get_orders(
-				array(
-					'customer_id' => $user_id,
-					'limit'       => 1,
-					'orderby'     => 'date',
-					'order'       => 'DESC',
-					'return'      => 'objects',
+		global $wpdb;
+		$unsubscribed = false;
+
+		// Check in user meta for registered customers - try multiple possible meta keys.
+		$user_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"
+            SELECT user_id
+            FROM {$wpdb->usermeta}
+            WHERE meta_key IN ('billing_phone', '_billing_phone', 'phone')
+            AND meta_value = %s
+            LIMIT 1
+        ",
+				$phone
+			)
+		);
+
+		// If not found, try searching through users by their orders.
+		if ( ! $user_id ) {
+			$user_id = $this->get_user_id_by_order_phone( $phone );
+		}
+
+		if ( $user_id ) {
+			update_user_meta( $user_id, 'topsms_customer_consent', 'no' );
+			$unsubscribed = true;
+		}
+
+		// Check for guest orders - compatible with both HPOS and legacy.
+		if ( $this->is_hpos_enabled() ) {
+			// HPOS way - using WooCommerce CRUD.
+			$order_id = $this->get_latest_order_by_phone_hpos( $phone );
+		} else {
+			// Legacy way - using post meta.
+			$order_id = $wpdb->get_var(
+				$wpdb->prepare(
+					"
+                SELECT p.ID
+                FROM {$wpdb->posts} p
+                INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+                WHERE p.post_type = 'shop_order'
+                AND pm.meta_key = '_billing_phone'
+                AND pm.meta_value = %s
+                ORDER BY p.post_date DESC
+                LIMIT 1
+            ",
+					$phone
 				)
 			);
-			if ( ! empty( $orders ) ) {
-				$order = $orders[0];
+		}
+
+		if ( $order_id ) {
+			// Update order meta using WooCommerce methods (works for both HPOS and legacy).
+			$order = wc_get_order( $order_id );
+			if ( $order ) {
 				$order->update_meta_data( 'topsms_customer_consent', 'no' );
 				$order->save();
+				$unsubscribed = true;
 			}
 		}
 
-		wc_add_notice( 'You have been successfully unsubscribed from SMS notifications.', 'success' );
+		if ( $unsubscribed ) {
+			wc_add_notice( 'You have been successfully unsubscribed from SMS notifications.', 'success' );
+		} else {
+			wc_add_notice( 'Phone number not found in our records.', 'notice' );
+		}
 	}
 
 	/**
 	 * Cancel a scheduled campaign via TopSms API.
 	 *
+	 * @since    2.0.0
 	 * @param int $campaign_id The campaign ID.
 	 * @return bool True on success, false on failure.
 	 */
@@ -1417,5 +1472,162 @@ class Topsms_Admin {
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
 		}
+	}
+
+	/**
+	 * Get user ID by searching through orders with the phone number.
+	 *
+	 * @since    2.0.9
+	 * @param string $phone The phone number to be unsubscribed.
+	 * @return int|null The customer id associated by the given phone; Return null if not found.
+	 */
+	private function get_user_id_by_order_phone( $phone ) {
+		global $wpdb;
+
+		if ( $this->is_hpos_enabled() ) {
+			// HPOS way.
+			$orders = wc_get_orders(
+				array(
+					'billing_phone' => $phone,
+					'limit'         => 1,
+					'customer_id'   => array( 1, PHP_INT_MAX ), // Only get orders with registered users.
+					'return'        => 'objects',
+				)
+			);
+
+			if ( ! empty( $orders ) ) {
+				$order       = $orders[0];
+				$customer_id = $order->get_customer_id();
+				if ( $customer_id > 0 ) {
+					return $customer_id;
+				}
+			}
+		} else {
+			// Legacy way.
+			return $wpdb->get_var(
+				$wpdb->prepare(
+					"
+                SELECT pm2.meta_value
+                FROM {$wpdb->posts} p
+                INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+                INNER JOIN {$wpdb->postmeta} pm2 ON p.ID = pm2.post_id
+                WHERE p.post_type = 'shop_order'
+                AND pm.meta_key = '_billing_phone'
+                AND pm.meta_value = %s
+                AND pm2.meta_key = '_customer_user'
+                AND pm2.meta_value > 0
+                ORDER BY p.post_date DESC
+                LIMIT 1
+            ",
+					$phone
+				)
+			);
+		}
+		return null;
+	}
+
+	/**
+	 * Check if HPOS is enabled.
+	 *
+	 * @since    2.0.9
+	 * @return bool Return true if HPOS is enabled; Return false if otherwise.
+	 */
+	private function is_hpos_enabled() {
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
+			return \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+		}
+		return false;
+	}
+
+	/**
+	 * Get the latest order by phone using HPOS.
+	 *
+	 * @since    2.0.9
+	 * @param string $phone The phone number to be unsubscribed.
+	 * @return int|null The customer id associated by the given phone; Return null if not found.
+	 */
+	private function get_latest_order_by_phone_hpos( $phone ) {
+		$orders = wc_get_orders(
+			array(
+				'billing_phone' => $phone,
+				'limit'         => 1,
+				'orderby'       => 'date',
+				'order'         => 'DESC',
+				'return'        => 'ids',
+			)
+		);
+
+		return ! empty( $orders ) ? $orders[0] : null;
+	}
+
+	/**
+	 * Unsubscribe a contact by phone number.
+	 *
+	 * @since    2.0.9
+	 * @param string $phone The phone number to unsubscribe.
+	 * @return bool True on success, false on failure.
+	 */
+	private function topsms_unsubscribe_contact( $phone ) {
+		global $wpdb;
+		$unsubscribed = false;
+
+		// Check in user meta for registered customers - try multiple possible meta keys.
+		$user_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"
+            SELECT user_id
+            FROM {$wpdb->usermeta}
+            WHERE meta_key IN ('billing_phone', '_billing_phone', 'phone')
+            AND meta_value = %s
+            LIMIT 1
+        ",
+				$phone
+			)
+		);
+
+		// If not found, try searching through users by their orders.
+		if ( ! $user_id ) {
+			$user_id = $this->get_user_id_by_order_phone( $phone );
+		}
+
+		if ( $user_id ) {
+			update_user_meta( $user_id, 'topsms_customer_consent', 'no' );
+			$unsubscribed = true;
+		}
+
+		// Check for guest orders - compatible with both HPOS and legacy.
+		if ( $this->is_hpos_enabled() ) {
+			// HPOS way - using WooCommerce CRUD.
+			$order_id = $this->get_latest_order_by_phone_hpos( $phone );
+		} else {
+			// Legacy way - using post meta.
+			$order_id = $wpdb->get_var(
+				$wpdb->prepare(
+					"
+                SELECT p.ID
+                FROM {$wpdb->posts} p
+                INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+                WHERE p.post_type = 'shop_order'
+                AND pm.meta_key = '_billing_phone'
+                AND pm.meta_value = %s
+                ORDER BY p.post_date DESC
+                LIMIT 1
+            ",
+					$phone
+				)
+			);
+		}
+
+		if ( $order_id ) {
+			// Update order meta using WooCommerce methods (works for both HPOS and legacy).
+			$order = wc_get_order( $order_id );
+			if ( $order ) {
+				$order->update_meta_data( 'topsms_customer_consent', 'no' );
+				$order->save();
+				$unsubscribed = true;
+			}
+		}
+
+		return $unsubscribed;
 	}
 }

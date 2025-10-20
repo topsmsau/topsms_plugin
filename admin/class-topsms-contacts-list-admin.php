@@ -236,6 +236,7 @@ class Topsms_Contacts_List_Admin extends WP_List_Table {
 			'orders'      => 'Orders',
 			'total_spent' => 'Total Spent',
 			'status'      => 'Status',
+			'actions'     => 'Actions',
 		);
 	}
 
@@ -318,6 +319,36 @@ class Topsms_Contacts_List_Admin extends WP_List_Table {
 	}
 
 	/**
+	 * Render the actions column with unsubscribe button for contacts.
+	 *
+	 * @since 2.0.9
+	 * @param array $item The current item data.
+	 * @return string HTML for the actions column.
+	 */
+	public function column_actions( $item ) {
+		// Only show unsubscribe button for subscribed contacts.
+		if ( 'yes' === $item['status'] ) {
+			// Get the phone number for unsubscribe action.
+			$phone = ! empty( $item['phone'] ) ? $item['phone'] : '';
+
+			// Check if phone exists for unsubscribe.
+			if ( empty( $phone ) ) {
+				return;
+			}
+
+			$unsubscribe_url = wp_nonce_url(
+				admin_url( 'admin.php?page=topsms-contacts-list&action=unsubscribe_contact&contact_id=' . $item['id'] . '&phone=' . urlencode( $phone ) ),
+				'unsubscribe_contact_' . $item['id']
+			);
+
+			return sprintf(
+				'<a class="button wc-action-button wc-action-button-unsubscribe unsubscribe" href="%s" onclick="return confirm(\'Are you sure you want to unsubscribe this contact?\');" title="Unsubscribe" aria-label="Unsubscribe"></a>',
+				esc_url( $unsubscribe_url )
+			);
+		}
+	}
+
+	/**
 	 * Render the status column with styled badge.
 	 *
 	 * @since 2.0.0
@@ -332,7 +363,7 @@ class Topsms_Contacts_List_Admin extends WP_List_Table {
 				return '<mark class="order-status status-failed"><span>Unsubscribed</span></mark>';
 			}
 		} else {
-			return '<mark class="order-status status-processing"><span>Subscribed</span></mark>';
+			return '<mark class="order-status status-failed"><span>Unsubscribed</span></mark>';
 		}
 	}
 
