@@ -109,7 +109,6 @@ class Topsms_Contacts_List_Admin extends WP_List_Table {
 		}
 		if ( ! empty( $_REQUEST['filter_status'] ) ) {
 			$filters['status'] = sanitize_text_field( wp_unslash( $_REQUEST['filter_status'] ) );
-
 		}
 
 		// Get the query with pagination (true for pagination).

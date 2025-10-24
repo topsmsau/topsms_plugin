@@ -403,25 +403,25 @@ class Topsms_Helper_Admin {
 		// Add search query.
 		if ( ! empty( $filters['search'] ) ) {
 			$search  = esc_sql( $wpdb->esc_like( $filters['search'] ) );
-			$where[] = "(LOWER(cl.username) LIKE '%{$search}%' OR LOWER(cl.email) LIKE '%{$search}%' OR LOWER(cl.first_name) LIKE '%{$search}%' OR LOWER(cl.last_name) LIKE '%{$search}%' OR LOWER(CONCAT(cl.first_name, ' ', cl.last_name)) LIKE '%{$search}%' OR LOWER({$phone_number}) LIKE '%{$search}%')";
+			$where[] = "(LOWER(cl.username) COLLATE utf8mb4_unicode_520_ci LIKE '%{$search}%' OR LOWER(cl.email) COLLATE utf8mb4_unicode_520_ci LIKE '%{$search}%' OR LOWER(cl.first_name) COLLATE utf8mb4_unicode_520_ci LIKE '%{$search}%' OR LOWER(cl.last_name) COLLATE utf8mb4_unicode_520_ci LIKE '%{$search}%' OR LOWER(CONCAT(cl.first_name, ' ', cl.last_name)) COLLATE utf8mb4_unicode_520_ci LIKE '%{$search}%' OR LOWER({$phone_number}) COLLATE utf8mb4_unicode_520_ci LIKE '%{$search}%')";
 		}
 
 		// Add state filter.
 		if ( ! empty( $filters['state'] ) ) {
 			$state_filter = esc_sql( $filters['state'] );
-			$where[]      = "{$state} = '{$state_filter}'";
+			$where[]      = "{$state} COLLATE utf8mb4_unicode_520_ci = '{$state_filter}'";
 		}
 
 		// Add city filter.
 		if ( ! empty( $filters['city'] ) ) {
 			$city_filter = esc_sql( $filters['city'] );
-			$where[]     = "{$city} LIKE '%{$city_filter}%'";
+			$where[]     = "{$city} COLLATE utf8mb4_unicode_520_ci LIKE '%{$city_filter}%'";
 		}
 
 		// Add postcode filter.
 		if ( ! empty( $filters['postcode'] ) ) {
 			$postcode_filter = esc_sql( $filters['postcode'] );
-			$where[]         = "{$postcode} LIKE '%{$postcode_filter}%'";
+			$where[]         = "{$postcode} COLLATE utf8mb4_unicode_520_ci LIKE '%{$postcode_filter}%'";
 		}
 
 		// Add orders filter.
@@ -471,10 +471,10 @@ class Topsms_Helper_Admin {
 			$status_filter = esc_sql( $filters['status'] );
 			if ( 'yes' === $status_filter ) {
 				// Include those with status yes.
-				$where[] = "{$status} = 'yes'";
+				$where[] = "{$status} COLLATE utf8mb4_unicode_520_ci = 'yes'";
 			} else {
-				// Default tp unsubscribe.
-				$where[] = "({$status} = 'no' OR {$status} IS NULL OR {$status} = '')";
+				// Default to unsubscribe.
+				$where[] = "({$status} COLLATE utf8mb4_unicode_520_ci = 'no' OR {$status} IS NULL OR {$status} = '')";
 			}
 		}
 
@@ -487,26 +487,26 @@ class Topsms_Helper_Admin {
 			$allowed_orderby = array( 'email', 'name', 'city', 'state', 'postcode', 'phone', 'orders', 'total_spent', 'status' );
 			if ( in_array( $orderby, $allowed_orderby ) ) {
 				if ( 'name' === $orderby ) {
-					$sql .= " ORDER BY CONCAT(cl.first_name, ' ', cl.last_name) {$order}";
+					$sql .= " ORDER BY CONCAT(cl.first_name, ' ', cl.last_name) COLLATE utf8mb4_unicode_520_ci {$order}";
 				} elseif ( 'phone' === $orderby ) {
-					$sql .= " ORDER BY phone {$order}";
+					$sql .= " ORDER BY phone COLLATE utf8mb4_unicode_520_ci {$order}";
 				} elseif ( 'city' === $orderby ) {
-					$sql .= " ORDER BY city {$order}";
+					$sql .= " ORDER BY city COLLATE utf8mb4_unicode_520_ci {$order}";
 				} elseif ( 'state' === $orderby ) {
-					$sql .= " ORDER BY state {$order}";
+					$sql .= " ORDER BY state COLLATE utf8mb4_unicode_520_ci {$order}";
 				} elseif ( 'postcode' === $orderby ) {
-					$sql .= " ORDER BY postcode {$order}";
+					$sql .= " ORDER BY postcode COLLATE utf8mb4_unicode_520_ci {$order}";
 				} elseif ( 'orders' === $orderby ) {
 					$sql .= " ORDER BY order_count {$order}";
 				} elseif ( 'total_spent' === $orderby ) {
 					$sql .= " ORDER BY total_spent {$order}";
 				} elseif ( 'status' === $orderby ) {
-					$sql .= " ORDER BY status {$order}";
+					$sql .= " ORDER BY status COLLATE utf8mb4_unicode_520_ci {$order}";
 				} else {
 					$sql .= " ORDER BY cl.{$orderby} {$order}";
 				}
 			} else {
-				$sql .= ' ORDER BY CONCAT(cl.first_name, " ", cl.last_name) ASC';
+				$sql .= ' ORDER BY CONCAT(cl.first_name, " ", cl.last_name) COLLATE utf8mb4_unicode_520_ci ASC';
 			}
 		}
 

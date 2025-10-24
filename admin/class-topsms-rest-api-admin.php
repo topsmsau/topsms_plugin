@@ -1710,7 +1710,7 @@ class Topsms_Rest_Api_Admin {
 		// For transient data.
 		$lists['all_contacts'] = array(
 			'filter_id'   => 'all_contacts',
-			'filter_name' => 'All Contacts',
+			'filter_name' => 'All Subscribed Contacts',
 			'count'       => $all_count,
 			'contacts'    => array_values( $all_contacts ),
 		);
@@ -1718,7 +1718,7 @@ class Topsms_Rest_Api_Admin {
 		// For return data.
 		$filters['all_contacts'] = array(
 			'id'    => 'all_contacts',
-			'name'  => 'All Contacts',
+			'name'  => 'All Subscribed Contacts',
 			'count' => $all_count,
 		);
 

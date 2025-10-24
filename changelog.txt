@@ -131,3 +131,18 @@
 - Fixed negative total spent issue by only including those orders with status `wc-completed` and `wc-processing`.
 - Fixed the contacts list table filters CSS.
 - Fixed the `topsms_handle_unsubscribe` function to handle guest users and ensure it's compatible with HPOS.
+
+## [2.0.10] - 2025-22-10
+
+### Fixed
+- Fixed the `WordPress database error Illegal mix of collations (utf8mb4_bin,NONE) and (utf8mb4_unicode_520_ci,COERCIBLE) for operation '='` issue for subscribed status filter on the Contacts page.
+
+## [2.0.11] - 2025-23-10
+
+### Fixed
+- Change `All Contacts` to `All Subscribed Contacts` in the list options for better understanding.
+
+## [2.0.12] - 2025-24-10
+
+### Fixed
+- Fixed the `collation mismatch error` issue in the WordPress database.
