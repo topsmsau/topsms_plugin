@@ -345,7 +345,7 @@ const Verification = ({ onComplete, userData }) => {
 
                 {/* Info box */}
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4 mt-8">
-                    <p className="text-blue-700">
+                    <p className="text-blue-700 text-xs italic">
                         {__('All new accounts need to be manually verified before you can send campaigns.', 'topsms')}
                         {' '}
                         {__('Once you have registered, we will call you within 24 hours or Monday if on the weekend.', 'topsms')}

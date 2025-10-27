@@ -228,8 +228,8 @@ class Topsms_Campaigns_Admin extends WP_List_Table {
 				return $item[ $column_name ];
 			case 'datetime':
 				if ( ! empty( $item[ $column_name ] ) ) {
-					return wp_date( 'Y-m-d H:i:s', strtotime( $item[ $column_name ] ) );
-				}
+                    return $item[ $column_name ];
+                }
 				return '-';
 			default:
 				return isset( $item[ $column_name ] ) ? esc_html( $item[ $column_name ] ) : '-';

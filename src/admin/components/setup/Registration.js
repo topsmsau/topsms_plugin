@@ -4,6 +4,7 @@ import {
     CardBody, 
     Button, 
     Icon,
+    CheckboxControl 
 } from '@wordpress/components';
 import { useState, memo, useCallback } from '@wordpress/element';
 import PhoneInput from 'react-phone-input-2';
@@ -38,6 +39,8 @@ const Registration = ({ onComplete }) => {
     const [errors, setErrors] = useState({});
     const [otpError, setOtpError] = useState(null);
     const [isSending, setIsSending] = useState(false);
+    const [isChecked1, setIsChecked1] = useState(false);
+    const [isChecked2, setIsChecked2] = useState(false);
     
     // Use useCallback to create stable function references
     const handleChange = useCallback((field, value) => {
@@ -238,7 +241,7 @@ const Registration = ({ onComplete }) => {
         <Card className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-8">
              <StepIndicator currentStep={1} />
             
-            <CardBody className="p-8">
+            <CardBody className="p-6">
                 {/* Form header with icon */}
                 <div className="text-center mb-8">
                     <div className="mx-auto mb-4 flex items-center justify-center">
@@ -403,18 +406,41 @@ const Registration = ({ onComplete }) => {
                 </form>
 
                 <div className="mt-8 text-center">
-                {otpError && (
-                    <div className="text-red-500 text-sm mb-3">{otpError}</div>
-                )}
+                    {otpError && (
+                        <div className="text-red-500 text-sm mb-3">{otpError}</div>
+                    )}
 
-                <Button 
-                    primary
-                    className={`topsms-button w-full ${isSending ? 'animate-pulse' : ''}`}
-                    onClick={handleSubmit}
-                    disabled={isSending}
-                >
-                    {isSending ? __('Registering...', 'topsms') : __('Register', 'topsms')}
-                </Button>
+                    <div className="mb-8">
+                        <CheckboxControl
+                            className="mb-4 text-left"
+                            label={
+                                <span>
+                                    {__('I confirm that the sender name entered above is authorised by my business and may be verified by TopSMS for compliance. I understand my account will remain on hold until verification is complete.', 'topsms')}
+                                </span>
+                                }
+                            checked={ isChecked1 }
+                            onChange={ setIsChecked1 }
+                        />
+                        <CheckboxControl
+                            className="mb-4 text-left"
+                            label={
+                                <span>
+                                    {__('I authorise TopSMS to validate my business details and register my sender name with our SMS provider* on behalf of my organisation.', 'topsms')}
+                                </span>
+                                }
+                            checked={ isChecked2 }
+                            onChange={ setIsChecked2 }
+                        />
+                    </div>
+
+                    <Button 
+                        primary
+                        className={`topsms-button w-full ${isSending ? 'animate-pulse' : ''}`}
+                        onClick={handleSubmit}
+                        disabled={isSending || !isChecked1 || !isChecked2}
+                    >
+                        {isSending ? __('Registering...', 'topsms') : __('Register', 'topsms')}
+                    </Button>
                     
                     {/* <div className="mt-4">
                         <Text variant="body.small" className="text-gray-600" color="gray">
@@ -427,6 +453,24 @@ const Registration = ({ onComplete }) => {
                             </a>
                         </Text>
                     </div> */}
+
+                    {/* Info box */}
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4 mt-8">
+                        <div className="text-blue-700 space-y-3 text-left">
+                            <p className="text-xs italic">
+                                {__('All new accounts are manually reviewed by the TopSMS team before activation. We verify your business ABN and sender name to ensure compliance with Australian telecommunications regulations and our SMS provider.', 'topsms')}
+                            </p>
+                            <p className=" text-xs italic">
+                                {__('Your sender name will be registered through our SMS provider as part of this process. If the sender ID cannot be verified or does not meet compliance standards, your messages may be temporarily held or marked "Unverified" until corrected.', 'topsms')}
+                            </p>
+                            <p className=" text-xs italic">
+                                {__('By continuing, you authorise TopSMS to validate your business information and to register your sender name with our SMS provider on your behalf.', 'topsms')}
+                            </p>
+                            <p className=" text-xs italic">
+                                {__('SMS provider refers to Vonage.', 'topsms')}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </CardBody>
         </Card>

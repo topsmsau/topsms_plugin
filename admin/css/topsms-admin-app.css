@@ -779,6 +779,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   margin-right: calc(1rem * var(--tw-space-x-reverse));
   margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
 }
+.topsms-app .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
+}
 .topsms-app .self-stretch {
   align-self: stretch;
 }
@@ -1024,6 +1029,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .pt-8 {
   padding-top: 2rem;
 }
+.topsms-app .text-left {
+  text-align: left;
+}
 .topsms-app .text-center {
   text-align: center;
 }
@@ -1055,6 +1063,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .font-semibold {
   font-weight: 600;
+}
+.topsms-app .italic {
+  font-style: italic;
 }
 .topsms-app .text-amber-600 {
   --tw-text-opacity: 1;

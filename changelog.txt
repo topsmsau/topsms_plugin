@@ -146,3 +146,11 @@
 
 ### Fixed
 - Fixed the `collation mismatch error` issue in the WordPress database.
+
+## [2.0.13] - 2025-27-10
+
+### Added
+- Added checkboxes and additional information on the onboarding steps for compliance. 
+
+### Fixed
+- Fixed displayed datetime in the campaigns table to be in local timezone.
