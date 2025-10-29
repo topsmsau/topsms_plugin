@@ -154,3 +154,8 @@
 
 ### Fixed
 - Fixed displayed datetime in the campaigns table to be in local timezone.
+
+## [2.0.14] - 2025-29-10
+
+### Changed
+- Adjusted topup prices.

@@ -89,40 +89,40 @@ export const ORDERSTATUSES = [
 
 export const TOPUPOPTIONS = [
     { 
-        amount: 45, 
+        amount: 32.5, 
         sms: 500,
         discount: null,
-        link: 'https://buy.stripe.com/6oE5kZc3c3lI2Aw3cc' 
+        link: 'https://buy.stripe.com/28E9AS4W45WYfCh4FnbQY0a' 
     },
     { 
-        amount: 225, 
+        amount: 150, 
         sms: 2500,
-        discount: null,
-        link: 'https://buy.stripe.com/28ofZD3wG4pMb72eUV' 
+        discount: '8%',
+        link: 'https://buy.stripe.com/4gM7sKbks99a3Tzc7PbQY0b' 
     },
     { 
-        amount: 400, 
+        amount: 275, 
         sms: 5000,
-        discount: '11%',
-        link: 'https://buy.stripe.com/28oeVz0ku8G2a2Y9AC' 
+        discount: '15%',
+        link: 'https://buy.stripe.com/dRm00i2NWgBCgGl2xfbQY0c' 
     },
     { 
-        amount: 700, 
+        amount: 500, 
         sms: 10000,
-        discount: '22%',
-        link: 'https://buy.stripe.com/14k7t71oy3lIejeeUX' 
+        discount: '23%',
+        link: 'https://buy.stripe.com/fZu28qfAI1GIahX3BjbQY0d' 
     },
     { 
-        amount: 3000, 
+        amount: 2250, 
         sms: 50000,
-        discount: '33%',
-        link: 'https://buy.stripe.com/9B69ASgEM5WYdu9b3LbQY09' 
+        discount: '31%',
+        link: 'https://buy.stripe.com/28E5kC4W4etucq57RzbQY0e' 
     },
     { 
-        amount: 5000, 
+        amount: 4000, 
         sms: 100000,
-        discount: '44%',
-        link: 'https://buy.stripe.com/cNieVcewEgBCeyd0p7bQY08' 
+        discount: '38%',
+        link: 'https://buy.stripe.com/8x23cuagobhi2Pvc7PbQY0f' 
     },
 ];
 

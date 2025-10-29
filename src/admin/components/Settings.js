@@ -79,12 +79,24 @@ const Settings = () => {
     }, []);
 
     const getPricePerSms = (smsAmount, smsCount) => {
-        return (smsAmount / smsCount).toFixed(2);
+        return parseFloat(((smsAmount / smsCount) * 100).toFixed(2));
     }
 
     // Format number to have a comma after thousands
     const formatNumber = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    };
+
+    // Format topup amount currency
+    // If there's decimals, format to two dp; Otherwise no dp
+    const formatCurrency = (num) => {
+        // Check if the number has decimals
+        // Format with 2 decimals if it has decimals, otherwise no decimals
+        const hasDecimals = num % 1 !== 0;
+        const formatted = hasDecimals ? num.toFixed(2) : num.toString();
+        
+        // Add comma separator for thousands
+        return formatted.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
     // Fetch user data
@@ -197,7 +209,7 @@ const Settings = () => {
                                         discount={discount}
                                         className="w-[15%]"
                                     >
-                                        <span className="text-xl font-bold mb-1">${formatNumber(amount)}</span>
+                                        <span className="text-xl font-bold mb-1">${formatCurrency(amount)}</span>
                                         <span className="text-sm text-gray-600">{formatNumber(sms)} SMS</span>
                                         <span className="text-xs text-gray-600">{getPricePerSms(amount, sms)}c per SMS</span>
                                     </TopupBalanceButton>
