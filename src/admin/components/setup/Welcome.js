@@ -29,8 +29,14 @@ const Welcome = ({ }) => {
                     {__('Fantastic! Your account has been created and will be reviewed in the next 24 hours.', 'topsms')}
                 </h2>
                 
-                <p className="text-gray-600 mb-8 mt-8">
-                    {__('Lorem ipsum dolor sit amet consectetur. Arcu sed aliquam blandit ut magna nullam magna sagittis.', 'topsms')}
+                <p className="text-gray-600 mt-8">
+                    {__('Our team is reviewing your details.', 'topsms')}
+                </p>
+                <p className="text-gray-600 mt-2">
+                    {__('If you need urgent activation, call 02 9121 6234 to fast-track your verification.', 'topsms')}
+                </p>
+                <p className="text-gray-600 mb-8 mt-2 italic">
+                    {__('(Business hours Mon - Fri, 8 am - 5:30 pm AEST)', 'topsms')}
                 </p>
                 
                 {/* Action button */}
