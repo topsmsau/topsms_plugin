@@ -7,6 +7,7 @@ const CustomInput = ({
     value, 
     onChange, 
     error, 
+    children,
     ...props 
 }) => (
     <div className="mb-4">
@@ -24,6 +25,7 @@ const CustomInput = ({
                 {...props}
             />
         </div>
+        {children} 
         {error && (
             <div className="text-red-500 text-sm mt-1">{error}</div>
         )}

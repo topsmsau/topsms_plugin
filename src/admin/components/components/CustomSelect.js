@@ -7,6 +7,7 @@ const CustomSelect = ({
     options, 
     onChange, 
     error, 
+    children,
     ...props 
 }) => (
     <div className="mb-4">
@@ -20,6 +21,7 @@ const CustomSelect = ({
                 {...props}
             />
         </div>
+        {children} 
         {error && (
             <div className="text-red-500 text-sm mt-1">{error}</div>
         )}

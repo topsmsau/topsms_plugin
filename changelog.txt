@@ -159,3 +159,8 @@
 
 ### Changed
 - Adjusted topup prices.
+
+## [2.0.15] - 2025-30-10
+
+### Changed
+- Add infomative text on the Bulk SMS page.

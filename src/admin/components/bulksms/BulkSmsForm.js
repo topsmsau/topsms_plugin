@@ -362,7 +362,11 @@ const BulkSmsForm = ({
                     onChange={handleListChange}
                     error={errors.list}
                     required
-                />
+                >
+                    <p className="text-xs text-gray-600 italic">
+                        {__("Contacts who have been subscribed and have phone number", 'topsms')}
+                    </p>
+                </CustomSelect_>
             )}
             
             <div className="topsms-label">{__('From', 'topsms')}</div>
