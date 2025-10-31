@@ -368,9 +368,10 @@ class Topsms_Public {
 		// Get current setting.
 		$is_enabled = get_user_meta( $user_id, 'topsms_customer_consent', true );
 
-		// Display success message if any.
-		$message = '<div class="woocommerce-message">SMS notification preferences updated.</div>';
-		printf( '%s', wp_kses_post( $message ) );
+		// Display message if any.
+		if ( ! empty( $message ) ) {
+			printf( '%s', wp_kses_post( $message ) );
+		}
 
 		// Display the form.
 		?>

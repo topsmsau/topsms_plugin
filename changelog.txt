@@ -169,3 +169,9 @@
 
 ### Changed
 - Changed welcome message on onboarding.
+
+
+## [2.0.17] - 2025-10-31
+
+### Fixed
+- Fixed the notice shown on the My Account SMS Notifications page.
