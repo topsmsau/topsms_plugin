@@ -805,6 +805,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .rounded {
   border-radius: 0.25rem;
 }
+.topsms-app .rounded-\[10px\] {
+  border-radius: 10px;
+}
 .topsms-app .rounded-\[20px\] {
   border-radius: 20px;
 }
@@ -861,6 +864,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .bg-\[\#F25F7A\] {
   --tw-bg-opacity: 1;
   background-color: rgb(242 95 122 / var(--tw-bg-opacity, 1));
+}
+.topsms-app .bg-\[\#ff000026\] {
+  background-color: #ff000026;
 }
 .topsms-app .bg-blue-100 {
   --tw-bg-opacity: 1;
@@ -946,6 +952,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .p-\[0\.75rem\] {
   padding: 0.75rem;
 }
+.topsms-app .p-\[10px\] {
+  padding: 10px;
+}
 .topsms-app .px-0 {
   padding-left: 0px;
   padding-right: 0px;
@@ -1010,6 +1019,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .pb-2 {
   padding-bottom: 0.5rem;
+}
+.topsms-app .pl-2 {
+  padding-left: 0.5rem;
 }
 .topsms-app .pr-4 {
   padding-right: 1rem;
@@ -1296,6 +1308,13 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     height: auto !important;
     width: auto !important;
     color: white !important;
+}
+
+/* Setup permalinks */
+.topsms-app .configure-permalinks-steps {
+    max-width: 600px;
+    list-style-type: decimal;
+    list-style-position: outside;
 }
 
 

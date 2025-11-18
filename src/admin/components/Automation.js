@@ -78,7 +78,7 @@ const Automation = () => {
                         <AccordionItemStatus
                             key={status.key}
                             title={status.title}
-                            description={status.description}
+                            // description={status.description}
                             statusKey={status.key}
                             statusColor={status.color}
                             onSuccessMessage={handleSuccessMessage}
@@ -88,6 +88,7 @@ const Automation = () => {
                                 status={status.title} 
                                 statusKey={status.key}
                                 defaultTemplate={status.defaultTemplate}
+                                description={status.description}
                                 onSuccessMessage={handleSuccessMessage}
                                 onErrorMessage={handleErrorMessage}
                             />

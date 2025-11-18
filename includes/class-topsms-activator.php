@@ -52,7 +52,7 @@ class Topsms_Activator {
 	 */
 	private static function topsms_setup() {
 		// Default messages for each status.
-		$processing_msg = 'Hello [first_name], your order #[order_id] has been shipped and is on its way! Expected delivery within 3-5 business days. If you have any questions, feel free to contact us.';
+		$processing_msg = "Hi [first_name], your order #[order_id] is confirmed and being prepared. You'll get another SMS once it's on the way.";
 		$completed_msg  = 'Hello [first_name], your order #[order_id] has been successfully delivered. We hope you enjoy your purchase! Thank you for shopping with us.';
 		$failed_msg     = 'Hello [first_name], unfortunately, your order #[order_id] could not be processed due to a payment issue. Please try again or contact us for help.';
 		$refunded_msg   = 'Hello [first_name], your order #[order_id] has been refunded. The amount should reflect in your account shortly. Let us know if you have any questions.';

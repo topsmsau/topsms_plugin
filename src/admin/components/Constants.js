@@ -31,57 +31,57 @@ export const AUSTRALIAN_STATES = [
 export const ORDERSTATUSES = [
     {
         key: 'processing',
-        title: 'Processing',
-        description: 'lorem ipsum dolor sit amet condecture',
+        title: 'Processing (Order Confirmed)',
+        description: "WooCommerce uses this status to mean the customer's order is confirmed, paid, and being prepared.\nThis SMS lets your customers know everything is on track and their order is being packed for delivery or pickup.",
         color: '#17a34a', 
-        defaultTemplate: "Hello [first_name], your order #[order_id] has been shipped and is on its way! Expected delivery within 3-5 business days. If you have any questions, feel free to contact us."
+        defaultTemplate: "Hi [first_name], your order #[order_id] is confirmed and being prepared. You'll get another SMS once it's on the way."
     },
     {
         key: 'completed',
-        title: 'Completed',
-        description: 'lorem ipsum dolor sit amet condecture',
+        title: 'Completed (Order Delivered / Fulfilled)',
+        description: "WooCommerce uses Completed to mean the order has been delivered, picked up, or fully fulfilled.",
         color: '#365aed', 
         defaultTemplate: "Hello [first_name], your order #[order_id] has been successfully delivered. We hope you enjoy your purchase! Thank you for shopping with us."
     },
     {
         key: 'failed',
-        title: 'Failed',
-        description: 'lorem ipsum dolor sit amet condecture',
+        title: 'Failed (Payment Failed / Not Completed)',
+        description: "Use this when payment didn't go through or the order couldn't be processed.",
         color: '#ff3a44', 
         defaultTemplate: "Hello [first_name], unfortunately, your order #[order_id] could not be processed due to a payment issue. Please try again or contact us for help."
     },
     {
         key: 'refunded',
-        title: 'Refunded',
-        description: 'lorem ipsum dolor sit amet condecture',
+        title: 'Refunded (Partial or Full Refund Issued)',
+        description: "This is sent when a refund has been processed.",
         color: '#6a6f7a', 
         defaultTemplate: "Hello [first_name], your order #[order_id] has been refunded. The amount should reflect in your account shortly. Let us know if you have any questions."
     }, 
     {
         key: 'pending',
-        title: 'Pending Payment',
-        description: 'lorem ipsum dolor sit amet condecture',
+        title: 'Pending Payment (Order Placed but Payment Not Received)',
+        description: "This status appears when a customer submits the order but payment hasn't gone through yet.",
         color: '#f90', 
         defaultTemplate: "Hello [first_name], your order #[order_id] is awaiting payment. Please complete the payment to process your order. Contact us if you need assistance."
     },
     {
         key: 'cancelled',
-        title: 'Cancelled',
-        description: 'lorem ipsum dolor sit amet condecture',
+        title: 'Cancelled (Order Cancelled)',
+        description: "Sent when the customer or store cancels the order.",
         color: '#ff3a44',
         defaultTemplate: "Hello [first_name], your order #[order_id] has been cancelled. If this was a mistake or you need help placing a new order, feel free to reach out."
     },
     {
         key: 'on-hold',
-        title: 'On Hold',
-        description: 'lorem ipsum dolor sit amet condecture',
+        title: 'On Hold (Payment/Stock Issue / Awaiting Action)',
+        description: "WooCommerce uses On Hold for orders waiting for payment, stock, or admin review.",
         color: '#ff3a44',
         defaultTemplate: "Hello [first_name], your order #[order_id] is currently on hold. We'll notify you as soon as it's updated. Contact us if you need more information."
     },
     {
         key: 'draft',
-        title: 'Draft',
-        description: 'lorem ipsum dolor sit amet condecture',
+        title: 'Draft (Order Started but Not Submitted)',
+        description: "Use this when a customer began checkout but didn't finish (common for phone orders, saved carts, or manual orders created in Woo).",
         color: '#17a34a',
         defaultTemplate: "" 
     }

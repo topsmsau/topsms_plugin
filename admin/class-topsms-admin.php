@@ -527,6 +527,10 @@ class Topsms_Admin {
 	public function topsms_display_setup_page() {
 		$is_connected = $this->topsms_check_connection();
 
+        // Check permalink structure.
+        $permalink_structure = get_option('permalink_structure');
+        $empty_permalink = empty($permalink_structure) ? true : false;
+
 		// Pass data to JavaScript.
 		wp_localize_script(
 			'topsms-admin-app',
@@ -535,6 +539,7 @@ class Topsms_Admin {
 				'restUrl'     => esc_url_raw( rest_url() ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 				'isConnected' => $is_connected,
+                'emptyPermalink' => $empty_permalink
 			)
 		);
 

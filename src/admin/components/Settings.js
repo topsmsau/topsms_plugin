@@ -191,7 +191,7 @@ const Settings = () => {
                                 <p className="text-sm text-gray-600">
                                     {__('Select an amount to add to your account', 'topsms')}
                                 </p>
-                                <p variant='muted' className="text-sm text-amber-600 mt-2">
+                                <p variant='muted' className="text-sm text-black mt-2 p-[10px] rounded-[10px] bg-[#ff000026]">
                                     <span className="font-bold">Important: </span>
                                     {__('Please use the ') }
                                     <span className="font-bold">same email address and phone number you used when registering your account.</span>

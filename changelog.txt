@@ -170,8 +170,16 @@
 ### Changed
 - Changed welcome message on onboarding.
 
-
 ## [2.0.17] - 2025-10-31
 
 ### Fixed
 - Fixed the notice shown on the My Account SMS Notifications page.
+
+## [2.0.18] - 2025-11-18
+
+### Added
+- Added a new page on plugin onboarding for permalinks settings instructions.
+
+### Changed
+- Modified title and description of statuses settings in Automations page.
+- Changed font style of the important note in the Settings page.

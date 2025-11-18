@@ -148,6 +148,13 @@
     color: white !important;
 }
 
+/* Setup permalinks */
+.configure-permalinks-steps {
+    max-width: 600px;
+    list-style-type: decimal;
+    list-style-position: outside;
+}
+
 
 /* Snackbar styles */
 

@@ -11,7 +11,14 @@ import { chevronRight } from '@wordpress/icons';
 import TemplateTag from './SmsTemplateTag';
 import { MAX_CHARS_PER_SMS, CONCAT_FIXED_CHARS } from '../Constants';
 
-const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSuccessMessage, onErrorMessage }) => {
+const AutomationSettingsDetail = ({ 
+    status, 
+    statusKey, 
+    defaultTemplate, 
+    description,
+    onSuccessMessage, 
+    onErrorMessage 
+}) => {
 
     const [smsMessage, setSmsMessage] = useState(defaultTemplate);
     const [characterCount, setCharacterCount] = useState(smsMessage.length);
@@ -279,7 +286,7 @@ const AutomationSettingsDetail = ({ status, statusKey, defaultTemplate, onSucces
                                         <div className="w-full lg:w-1/2 px-4 mb-6">
                                             <h2 className="text-lg font-medium mb-1">{__('SMS Template', 'topsms')}</h2>
                                             <p className="text-gray-500 text-sm mb-4">
-                                                {__('Customize the message sent when an order status changes to ', 'topsms')} {status}
+                                                {description}
                                             </p>
                                             
                                             {/* Custom Textarea Control */}
