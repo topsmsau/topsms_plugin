@@ -93,8 +93,8 @@ This plugin connects to the TopSMS API (provided by EUX Digital Agency) to send 
 - EUX Digital Agency (Australia), the developer and maintainer of the TopSMS API.
 
 **Links:**
-- [TopSMS Terms of Service](https://www.topsms.com.au/terms)
-- [TopSMS Privacy Policy](https://www.topsms.com.au/privacy)
+- [TopSMS Terms of Service](https://topsms.com.au/terms-of-use/)
+- [TopSMS Privacy Policy](https://topsms.com.au/privacy-policy/)
 
 **Geographic Limitation:**
 - TopSMS is an Australia-only service and is not intended for international use.
