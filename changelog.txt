@@ -183,3 +183,14 @@
 ### Changed
 - Modified title and description of statuses settings in Automations page.
 - Changed font style of the important note in the Settings page.
+
+## [2.0.19] - 2025-11-18
+
+### Added
+- Added a new page on plugin onboarding for permalinks settings instructions.
+
+### Changed
+- Changed `add_option` to `update_option` on activation to make sure new option values are updated accordingly on activation/plugin update.
+
+### Removed
+- Removed implementation of plugin options, meta and tables deletion on plugin deletion.

@@ -63,46 +63,46 @@ class Topsms_Activator {
 
 		// Options for storing wc order data for topsms.
 		// Processing.
-		add_option( 'topsms_order_processing_enabled', 'no' );
-		add_option( 'topsms_order_processing_message', $processing_msg );
+		update_option( 'topsms_order_processing_enabled', 'no' );
+		update_option( 'topsms_order_processing_message', $processing_msg );
 
 		// Completed.
-		add_option( 'topsms_order_completed_enabled', 'no' );
-		add_option( 'topsms_order_completed_message', $completed_msg );
+		update_option( 'topsms_order_completed_enabled', 'no' );
+		update_option( 'topsms_order_completed_message', $completed_msg );
 
 		// Failed.
-		add_option( 'topsms_order_failed_enabled', 'no' );
-		add_option( 'topsms_order_failed_message', $failed_msg );
+		update_option( 'topsms_order_failed_enabled', 'no' );
+		update_option( 'topsms_order_failed_message', $failed_msg );
 
 		// Refunded.
-		add_option( 'topsms_order_refunded_enabled', 'no' );
-		add_option( 'topsms_order_refunded_message', $refunded_msg );
+		update_option( 'topsms_order_refunded_enabled', 'no' );
+		update_option( 'topsms_order_refunded_message', $refunded_msg );
 
 		// Pending payment.
-		add_option( 'topsms_order_pending_enabled', 'no' );
-		add_option( 'topsms_order_pending_message', $pending_msg );
+		update_option( 'topsms_order_pending_enabled', 'no' );
+		update_option( 'topsms_order_pending_message', $pending_msg );
 
 		// Cancelled.
-		add_option( 'topsms_order_cancelled_enabled', 'no' );
-		add_option( 'topsms_order_cancelled_message', $cancelled_msg );
+		update_option( 'topsms_order_cancelled_enabled', 'no' );
+		update_option( 'topsms_order_cancelled_message', $cancelled_msg );
 
 		// Onhold.
-		add_option( 'topsms_order_on-hold_enabled', 'no' );
-		add_option( 'topsms_order_on-hold_message', $onhold_msg );
+		update_option( 'topsms_order_on-hold_enabled', 'no' );
+		update_option( 'topsms_order_on-hold_message', $onhold_msg );
 
 		// Draft.
-		add_option( 'topsms_order_draft_enabled', 'no' );
-		add_option( 'topsms_order_draft_message', $draft_msg );
+		update_option( 'topsms_order_draft_enabled', 'no' );
+		update_option( 'topsms_order_draft_message', $draft_msg );
 
 		// Options for storing general topsms settings data.
-		add_option( 'topsms_settings_low_balance_alert', 'no' );
-		add_option( 'topsms_settings_customer_consent', 'yes' );
-		add_option( 'topsms_settings_sms_surcharge', 'no' );
-		add_option( 'topsms_settings_sms_surcharge_amount', '' );
-		add_option( 'topsms_sender', '' );
+		update_option( 'topsms_settings_low_balance_alert', 'no' );
+		update_option( 'topsms_settings_customer_consent', 'yes' );
+		update_option( 'topsms_settings_sms_surcharge', 'no' );
+		update_option( 'topsms_settings_sms_surcharge_amount', '' );
+		update_option( 'topsms_sender', '' );
 
 		// Options for bulksms.
-		add_option( 'topsms_contacts_list_saved_filters', array() );
+		update_option( 'topsms_contacts_list_saved_filters', array() );
 
 		global $wpdb;
 
