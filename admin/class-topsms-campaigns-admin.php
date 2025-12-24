@@ -338,20 +338,59 @@ class Topsms_Campaigns_Admin extends WP_List_Table {
 			}
 
 			if ( $is_disabled ) {
-				return sprintf(
-					'<a class="button wc-action-button wc-action-button-cancel cancel ivole-order cr-order-dimmed view ivole-order cr-order-dimmed" href="javascript:void(0);" aria-label="%s">%s</a>',
-					esc_attr( $title_text ),
-					esc_html( $title_text )
-				);
-			} else {
-				return sprintf(
-					'<a class="button wc-action-button wc-action-button-cancel cancel" href="%s" onclick="return confirm(\'Are you sure you want to cancel this campaign?\');" title="%s" aria-label="%s"></a>',
-					esc_url( $cancel_url ),
-					esc_attr( $title_text ),
-					esc_attr( $title_text )
-				);
-			}
+                $actions[] = sprintf(
+                    '<a class="button wc-action-button wc-action-button-cancel cancel ivole-order cr-order-dimmed view ivole-order cr-order-dimmed" href="javascript:void(0);" aria-label="%s" title="%s">Cancel</a>',
+                    esc_attr( $title_text ),
+                    esc_attr( $title_text )
+                );
+            } else {
+                $actions[] = sprintf(
+                    '<a class="button wc-action-button wc-action-button-cancel cancel" href="%s" onclick="return confirm(\'Are you sure you want to cancel this campaign?\');" title="%s" aria-label="%s">Cancel</a>',
+                    esc_url( $cancel_url ),
+                    esc_attr( $title_text ),
+                    esc_attr( $title_text )
+                );
+            }
 		}
+
+        
+        // Send again button.
+        $send_again_url = wp_nonce_url(
+			admin_url( 'admin.php?page=topsms-campaigns&action=send_again_campaign&campaign_id=' . $item['id'] ),
+			'send_again_campaign_' . $item['id']
+		);
+		$actions[] = sprintf(
+			'<a class="button wc-action-button wc-action-button-send-again send-again" href="%s" onclick="return confirm(\'Are you sure you want to send this campaign again?\');" title="Send Again" aria-label="Send Again">Send Again</a>',
+			esc_url( $send_again_url )
+		);
+
+        // Delete button.
+        $delete_url = wp_nonce_url(
+			admin_url( 'admin.php?page=topsms-campaigns&action=delete_campaign&campaign_id=' . $item['id'] ),
+			'delete_campaign_' . $item['id']
+		);
+		$actions[] = sprintf(
+			'<a class="button wc-action-button wc-action-button-delete delete" href="%s" onclick="return confirm(\'Are you sure you want to delete this campaign again?\');" title="Delete" aria-label="Delete">Delete</a>',
+			esc_url( $delete_url )
+		);
+
+        // View report button.
+        $view_report_url = wp_nonce_url(
+			admin_url( 'admin.php?page=topsms-campaigns&action=view_report&campaign_id=' . $item['id'] ),
+			'view_report_' . $item['id']
+		);
+
+		$actions[] = sprintf(
+			'<a class="button wc-action-button wc-action-button-view view" href="%s" title="View Report" aria-label="View Report">View Report</a>',
+			esc_url( $view_report_url )
+		);
+
+        // Return all actions joined together.
+        if ( ! empty( $actions ) ) {
+            return implode( ' ', $actions );
+        }
+
+        return '-';
 	}
 
 	/**

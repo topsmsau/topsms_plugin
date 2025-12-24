@@ -118,6 +118,10 @@
 .topsms-status-wrap {
     background-color: transparent;
 }
+.automation-tabs .components-tab-panel__tabs {
+    border-radius: 9999px;
+    border: 1px solid rgb(0 0 0 / 0.07);
+}
 
 /* General settings */
 .surcharge-dollar-sign {

@@ -4,6 +4,7 @@ import Setup from './components/Setup';
 import Automation from './components/Automation';
 import Settings from './components/Settings';
 import BulkSms from './components/BulkSms';
+import Report from './components/Report';
 
 import './css/topsms-admin-app.css';
 
@@ -33,5 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('topsms-admin-bulksms');
   if (container) {
     render(<BulkSms />, container);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('topsms-admin-report');
+  if (container) {
+    render(<Report />, container);
   }
 });

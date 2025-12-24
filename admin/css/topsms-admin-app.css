@@ -1280,6 +1280,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .topsms-status-wrap {
     background-color: transparent;
 }
+.topsms-app .automation-tabs .components-tab-panel__tabs {
+    border-radius: 9999px;
+    border: 1px solid rgb(0 0 0 / 0.07);
+}
 
 /* General settings */
 .topsms-app .surcharge-dollar-sign {

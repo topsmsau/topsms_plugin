@@ -506,6 +506,15 @@ class Topsms_Admin {
 			array( $this, 'topsms_display_campaigns_page' )
 		);
 
+        add_submenu_page(
+			'topsms',
+			__( 'Report', 'topsms' ),
+			__( 'Report', 'topsms' ),
+			'manage_options',
+			'topsms-report',
+			array( $this, 'topsms_display_report_page' )
+		);
+
 		add_submenu_page(
 			'topsms',
 			__( 'Analytics', 'topsms' ),
@@ -1634,5 +1643,82 @@ class Topsms_Admin {
 		}
 
 		return $unsubscribed;
+	}
+
+    /**
+	 * Render the campaign report page.
+	 *
+	 * @since    2.0.0
+	 */
+	public function topsms_display_report_page() {
+		// Check if connected, if not, redirect to the setup page.
+		$is_connected = $this->topsms_check_connection();
+		if ( ! $is_connected ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=topsms-setup' ) );
+			exit;
+		}
+
+		// Get campaign ID from url params if exists.
+		$campaign_id = isset( $_GET['campaign_id'] ) ? intval( $_GET['campaign_id'] ) : 0;
+
+		// Get campaign data if id is provided, and the status is draft.
+		$campaign_data = null;
+		if ( $campaign_id > 0 ) {
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'topsms_campaigns';
+			$cache_key  = 'topsms_campaign_' . $campaign_id;
+
+			// Get cache data if exists.
+			$campaign = wp_cache_get( $cache_key, 'topsms_campaigns' );
+
+			// Do an sql query if not cached.
+			if ( false === $campaign ) {
+				global $wpdb;
+				$table_name = $wpdb->prefix . 'topsms_campaigns';
+				$campaign   = $wpdb->get_row(
+					$wpdb->prepare(
+						'SELECT * FROM %1s WHERE id = %d AND status = %s',
+						$table_name,
+						$campaign_id,
+						'draft'
+					)
+				);
+
+				// Cache for 1 hr.
+				wp_cache_set( $cache_key, $campaign, 'topsms_campaigns', HOUR_IN_SECONDS );
+			}
+
+			$data          = json_decode( $campaign->data, true );
+			$campaign_data = array(
+				'id'                => $campaign->id,
+				'campaign_name'     => $campaign->job_name,
+				'action'            => $campaign->action,
+				'campaign_datetime' => $campaign->campaign_datetime,
+				'status'            => $campaign->status,
+				'list'              => isset( $data['list'] ) ? $data['list'] : '',
+				'sender'            => isset( $data['sender'] ) ? $data['sender'] : '',
+				'message'           => isset( $data['message'] ) ? $data['message'] : '',
+				'url'               => isset( $data['url'] ) ? $data['url'] : '',
+			);
+		}
+
+		// Pass data to JavaScript.
+		wp_localize_script(
+			'topsms-admin-app',
+			'topsmsNonce',
+			array(
+				'restUrl'      => esc_url_raw( rest_url() ),
+				'nonce'        => wp_create_nonce( 'wp_rest' ),
+				'pluginUrl'    => TOPSMS_MANAGER_PLUGIN_URL,
+				'campaignData' => $campaign_data, // Pass the campaign data if exist.
+			)
+		);
+
+		// Container for React app.
+		printf(
+			'<div class="wrap">
+                <div id="topsms-admin-report" class="topsms-app"></div>
+            </div>'
+		);
 	}
 }

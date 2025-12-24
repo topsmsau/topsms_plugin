@@ -4,6 +4,7 @@ import {
     CardBody,
     Button,
     Icon,
+    TabPanel,
 } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { chevronRight } from '@wordpress/icons';
@@ -23,7 +24,7 @@ const AutomationSettingsDetail = ({
     const [smsMessage, setSmsMessage] = useState(defaultTemplate);
     const [characterCount, setCharacterCount] = useState(smsMessage.length);
     const [smsCount, setSmsCount] = useState(0);
-    // const [activeTab, setActiveTab] = useState('shipping');
+    const [activeTab, setActiveTab] = useState('shipping');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [sender, setSender] = useState('');
@@ -96,18 +97,18 @@ const AutomationSettingsDetail = ({
         );
     };
 
-    // const tabs = [
-    //     {
-    //         name: 'shipping',
-    //         title: __('Shipping', 'topsms'),
-    //         className: 'automation-tab'
-    //     },
-    //     {
-    //         name: 'pickup',
-    //         title: __('Pickup', 'topsms'),
-    //         className: 'automation-tab'
-    //     }
-    // ];
+    const tabs = [
+        {
+            name: 'shipping',
+            title: __('Shipping', 'topsms'),
+            className: 'automation-tab flex-1 rounded-full justify-center'
+        },
+        {
+            name: 'pickup',
+            title: __('Pickup', 'topsms'),
+            className: 'automation-tab flex-1 rounded-full justify-center'
+        }
+    ];
 
     // Fetch status saved template from db
     const fetchTemplateSettings = async () => {
@@ -272,13 +273,13 @@ const AutomationSettingsDetail = ({
 
                 {/* Tabs Section */}
                 <div className="automation-tabs-container mb-6">
-                    {/* <TabPanel
+                    <TabPanel
                         className="automation-tabs"
                         activeClass="active-tab bg-blue-100"
                         tabs={tabs}
                         onSelect={(tabName) => setActiveTab(tabName)}
-                    > */}
-                        {/* {(tab) => ( */}
+                    >
+                        {(tab) => (
                             <div className="automation-tab-content">
                                 {/* SMS Template Section */}
                                 <div className="automation-template">
@@ -353,8 +354,8 @@ const AutomationSettingsDetail = ({
                                     </div>
                                 </div>
                             </div>
-                        {/* )} */}
-                    {/* </TabPanel> */}
+                     )} 
+                     </TabPanel>
                 </div>
 
                 {/* Footer */}
