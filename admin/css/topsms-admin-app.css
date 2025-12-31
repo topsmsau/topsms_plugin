@@ -1368,6 +1368,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
 }
 
+.topsms-app .hover\:bg-gray-200:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
+}
+
 .topsms-app .hover\:bg-gray-50:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));

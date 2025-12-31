@@ -821,11 +821,34 @@ class Topsms_Admin {
 			return;
 		}
 
+		// Get order items formatted
+		$order_items_text = $this->topsms_format_order_items( $order );
+
+		// Get billing address formatted
+		$billing_address = $this->topsms_format_address( $order, 'billing' );
+
+		// Get shipping address formatted
+		$shipping_address = $this->topsms_format_address( $order, 'shipping' );
+
+		// Get order notes
+		$order_notes = $order->get_customer_note();
+
 		// Replace placeholders.
 		$replacements = array(
-			'[order_id]'   => $order->get_order_number(),
-			'[first_name]' => $order->get_billing_first_name(),
-			'[last_name]'  => $order->get_billing_last_name(),
+			'[order_id]'            => $order->get_order_number(),
+			'[first_name]'          => $order->get_billing_first_name(),
+			'[last_name]'           => $order->get_billing_last_name(),
+			'[order_date]'          => $order->get_date_created() ? $order->get_date_created()->date_i18n( get_option( 'date_format' ) ) : '',
+			'[order_total]'         => strip_tags( wc_price( $order->get_total() ) ),
+			'[order_items]'         => $order_items_text,
+			'[order_notes]'         => $order_notes ? $order_notes : '',
+			//'[billing_full_name]'   => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
+			'[billing_address]'     => $billing_address,
+			//'[billing_phone]'       => $order->get_billing_phone(),
+			//'[shipping_full_name]'  => trim( $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name() ),
+			'[shipping_address]'    => $shipping_address,
+			'[customer_email]'      => $order->get_billing_email(),
+			'[customer_phone]'      => $order->get_billing_phone(),
 		);
 		$message      = str_replace( array_keys( $replacements ), array_values( $replacements ), $message_template );
 
@@ -1720,5 +1743,87 @@ class Topsms_Admin {
                 <div id="topsms-admin-report" class="topsms-app"></div>
             </div>'
 		);
+	}
+
+	/**
+	 * Format order items for SMS display.
+	 *
+	 * @since    2.0.20
+	 * @param    WC_Order $order    The order object.
+	 * @return   string             Formatted order items text.
+	 */
+	private function topsms_format_order_items( $order ) {
+		$items = $order->get_items();
+		if ( empty( $items ) ) {
+			return '';
+		}
+
+		$items_text = array();
+		foreach ( $items as $item ) {
+			$product      = $item->get_product();
+			$product_name = $item->get_name();
+			$sku          = $product ? $product->get_sku() : '';
+			$quantity     = $item->get_quantity();
+			$total        = strip_tags( wc_price( $item->get_total() ) );
+
+			// Format: Product Name (SKU: ABC123) x2 - $50.00
+			$item_text = $product_name;
+			if ( $sku ) {
+				$item_text .= ' (SKU: ' . $sku . ')';
+			}
+			$item_text   .= ' x' . $quantity . ' - ' . $total;
+			$items_text[] = $item_text;
+		}
+
+		return implode( "\n", $items_text );
+	}
+
+	/**
+	 * Format billing or shipping address for SMS display.
+	 *
+	 * @since    2.0.20
+	 * @param    WC_Order $order    The order object.
+	 * @param    string   $type     Address type: 'billing' or 'shipping'.
+	 * @return   string             Formatted address text.
+	 */
+	private function topsms_format_address( $order, $type = 'billing' ) {
+		$address_parts = array();
+
+		if ( 'billing' === $type ) {
+			$address_1 = $order->get_billing_address_1();
+			$address_2 = $order->get_billing_address_2();
+			$city      = $order->get_billing_city();
+			$state     = $order->get_billing_state();
+			$postcode  = $order->get_billing_postcode();
+			$country   = $order->get_billing_country();
+		} else {
+			$address_1 = $order->get_shipping_address_1();
+			$address_2 = $order->get_shipping_address_2();
+			$city      = $order->get_shipping_city();
+			$state     = $order->get_shipping_state();
+			$postcode  = $order->get_shipping_postcode();
+			$country   = $order->get_shipping_country();
+		}
+
+		if ( $address_1 ) {
+			$address_parts[] = $address_1;
+		}
+		if ( $address_2 ) {
+			$address_parts[] = $address_2;
+		}
+		if ( $city ) {
+			$address_parts[] = $city;
+		}
+		if ( $state ) {
+			$address_parts[] = $state;
+		}
+		if ( $postcode ) {
+			$address_parts[] = $postcode;
+		}
+		if ( $country ) {
+			$address_parts[] = WC()->countries->countries[ $country ] ?? $country;
+		}
+
+		return implode( ', ', array_filter( $address_parts ) );
 	}
 }
