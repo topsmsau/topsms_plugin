@@ -839,7 +839,7 @@ class Topsms_Admin {
 			'[first_name]'          => $order->get_billing_first_name(),
 			'[last_name]'           => $order->get_billing_last_name(),
 			'[order_date]'          => $order->get_date_created() ? $order->get_date_created()->date_i18n( get_option( 'date_format' ) ) : '',
-			'[order_total]'         => strip_tags( wc_price( $order->get_total() ) ),
+			'[order_total]'         => html_entity_decode( strip_tags( wc_price( $order->get_total() ) ), ENT_QUOTES, 'UTF-8' ),
 			'[order_items]'         => $order_items_text,
 			'[order_notes]'         => $order_notes ? $order_notes : '',
 			//'[billing_full_name]'   => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
@@ -909,6 +909,49 @@ class Topsms_Admin {
 		$balance = isset( $data['remainingBalance'] ) ? $data['remainingBalance'] : '';
 		if ( $balance ) {
 			$this->helper->topsms_low_balance_alert( (int) $balance );
+		}
+
+		// Send copy SMS if enabled.
+		$copy_enabled_option = 'topsms_order_' . $status_to . '_copy_sms_enabled';
+		$copy_numbers_option = 'topsms_order_' . $status_to . '_copy_sms_numbers';
+		$copy_sms_enabled    = get_option( $copy_enabled_option );
+		$copy_sms_numbers    = get_option( $copy_numbers_option );
+
+		if ( 'yes' === $copy_sms_enabled && ! empty( $copy_sms_numbers ) ) {
+			// Parse phone numbers (comma separated).
+			$numbers = array_map( 'trim', explode( ',', $copy_sms_numbers ) );
+			$numbers = array_filter( $numbers ); // Remove empty values.
+
+			// Send to each number.
+			foreach ( $numbers as $copy_number ) {
+				// Format phone number.
+				$formatted_copy_number = preg_replace( '/[^0-9]/', '', $copy_number );
+
+				// Skip if empty after formatting.
+				if ( empty( $formatted_copy_number ) ) {
+					continue;
+				}
+
+				// Send copy SMS.
+				$copy_body = array(
+					'phone_number' => $formatted_copy_number,
+					'from'         => $sender,
+					'message'      => $message,
+					'link'         => '',
+				);
+
+				wp_remote_post(
+					'https://api.topsms.com.au/functions/v1/sms',
+					array(
+						'headers' => array(
+							'Authorization' => 'Bearer ' . $access_token,
+							'Content-Type'  => 'application/json',
+						),
+						'body'    => wp_json_encode( $copy_body ),
+						'timeout' => 50,
+					)
+				);
+			}
 		}
 	}
 
@@ -1764,7 +1807,7 @@ class Topsms_Admin {
 			$product_name = $item->get_name();
 			$sku          = $product ? $product->get_sku() : '';
 			$quantity     = $item->get_quantity();
-			$total        = strip_tags( wc_price( $item->get_total() ) );
+			$total        = html_entity_decode( strip_tags( wc_price( $item->get_total() ) ), ENT_QUOTES, 'UTF-8' );
 
 			// Format: Product Name (SKU: ABC123) x2 - $50.00
 			$item_text = $product_name;

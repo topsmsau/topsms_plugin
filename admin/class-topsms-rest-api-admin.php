@@ -370,13 +370,29 @@ class Topsms_Rest_Api_Admin {
 			$template = '';
 		}
 
+		// Get copy SMS settings.
+		$copy_enabled_option = 'topsms_order_' . $status_key . '_copy_sms_enabled';
+		$copy_numbers_option = 'topsms_order_' . $status_key . '_copy_sms_numbers';
+		$copy_sms_enabled    = get_option( $copy_enabled_option );
+		$copy_sms_numbers    = get_option( $copy_numbers_option );
+
+		// Set defaults.
+		if ( false === $copy_sms_enabled ) {
+			$copy_sms_enabled = 'no';
+		}
+		if ( false === $copy_sms_numbers ) {
+			$copy_sms_numbers = '';
+		}
+
 		return new WP_REST_Response(
 			array(
 				'success' => true,
 				'data'    => array(
-					'status_key' => $status_key,
-					'enabled'    => 'yes' === $enabled,
-					'template'   => $template,
+					'status_key'        => $status_key,
+					'enabled'           => 'yes' === $enabled,
+					'template'          => $template,
+					'copy_sms_enabled'  => 'yes' === $copy_sms_enabled,
+					'copy_sms_numbers'  => $copy_sms_numbers,
 				),
 			),
 			200
@@ -450,20 +466,31 @@ class Topsms_Rest_Api_Admin {
 			);
 		}
 
-		$status_key = sanitize_text_field( $body_params['status_key'] );
-		$template   = $body_params['template'];
+		$status_key       = sanitize_text_field( $body_params['status_key'] );
+		$template         = $body_params['template'];
+		$copy_sms_enabled = isset( $body_params['copy_sms_enabled'] ) ? (bool) $body_params['copy_sms_enabled'] : false;
+		$copy_sms_numbers = isset( $body_params['copy_sms_numbers'] ) ? sanitize_text_field( $body_params['copy_sms_numbers'] ) : '';
 
+		
 		// Update the template.
 		$message_option_name = 'topsms_order_' . $status_key . '_message';
 		update_option( $message_option_name, $template );
+
+		// Update copy SMS settings.
+		$copy_enabled_option = 'topsms_order_' . $status_key . '_copy_sms_enabled';
+		$copy_numbers_option = 'topsms_order_' . $status_key . '_copy_sms_numbers';
+		update_option( $copy_enabled_option, $copy_sms_enabled ? 'yes' : 'no' );
+		update_option( $copy_numbers_option, $copy_sms_numbers );
 
 		return new WP_REST_Response(
 			array(
 				'success' => true,
 				'data'    => array(
-					'message'    => 'Status settings saved successfully',
-					'status_key' => $status_key,
-					'template'   => $template,
+					'message'           => 'Status settings saved successfully',
+					'status_key'        => $status_key,
+					'template'          => $template,
+					'copy_sms_enabled'  => $copy_sms_enabled,
+					'copy_sms_numbers'  => $copy_sms_numbers,
 				),
 			),
 			200
