@@ -340,8 +340,9 @@ class Topsms_Rest_Api_Admin {
 	 * @return WP_REST_Response The response.
 	 */
 	public function topsms_get_automations_status_settings( WP_REST_Request $request ) {
-		// Get status key from the url params.
+		// Get status key and delivery type from the url params.
 		$status_key = $request->get_param( 'status_key' );
+        $delivery_type = $request->get_param('delivery_type');
 		if ( empty( $status_key ) ) {
 			return new WP_REST_Response(
 				array(
@@ -362,8 +363,35 @@ class Topsms_Rest_Api_Admin {
 			$enabled = 'no';
 		}
 
-		// Get sms template for this status.
-		$message_option_name = 'topsms_order_' . $status_key . '_message';
+        // If delivery_type is not provided, only return the enabled status.
+        if ( empty( $delivery_type ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => true,
+                    'data'    => array(
+                        'status_key' => $status_key,
+                        'enabled'    => 'yes' === $enabled,
+                    ),
+                ),
+                200
+            );
+        }
+
+        // Validate delivery_type if provided.
+        if ( ! in_array( $delivery_type, array( 'shipping', 'pickup' ) ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data'    => array(
+                        'message' => 'Valid delivery type (shipping or pickup) is required.',
+                    ),
+                ),
+                400
+            );
+        }
+
+		// Get sms template for this status and delivery type.
+		$message_option_name = 'topsms_order_' . $status_key . '_' . $delivery_type . '_message';
 		$template            = get_option( $message_option_name );
 		// Set default to empty string.
 		if ( false === $template ) {
@@ -371,8 +399,8 @@ class Topsms_Rest_Api_Admin {
 		}
 
 		// Get copy SMS settings.
-		$copy_enabled_option = 'topsms_order_' . $status_key . '_copy_sms_enabled';
-		$copy_numbers_option = 'topsms_order_' . $status_key . '_copy_sms_numbers';
+		$copy_enabled_option = 'topsms_order_' . $status_key . '_' . $delivery_type . '_copy_sms_enabled';
+		$copy_numbers_option = 'topsms_order_' . $status_key . '_' . $delivery_type . '_copy_sms_numbers';
 		$copy_sms_enabled    = get_option( $copy_enabled_option );
 		$copy_sms_numbers    = get_option( $copy_numbers_option );
 
@@ -389,6 +417,7 @@ class Topsms_Rest_Api_Admin {
 				'success' => true,
 				'data'    => array(
 					'status_key'        => $status_key,
+                    'delivery_type'     => $delivery_type,
 					'enabled'           => 'yes' === $enabled,
 					'template'          => $template,
 					'copy_sms_enabled'  => 'yes' === $copy_sms_enabled,
@@ -454,12 +483,12 @@ class Topsms_Rest_Api_Admin {
 		// Get status key and enabled option.
 		$body_params = $request->get_json_params();
 
-		if ( ! isset( $body_params['status_key'] ) || ! isset( $body_params['template'] ) ) {
+		if ( ! isset( $body_params['status_key'] ) || ! isset( $body_params['template'] ) || ! isset( $body_params['delivery_type'] ) ) {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
 					'data'    => array(
-						'message' => 'Missing required parameters: status_key and template.',
+						'message' => 'Missing required parameters: status_key and template, and delivery_type.',
 					),
 				),
 				400
@@ -467,18 +496,31 @@ class Topsms_Rest_Api_Admin {
 		}
 
 		$status_key       = sanitize_text_field( $body_params['status_key'] );
+        $delivery_type    = sanitize_text_field( $body_params['delivery_type'] );
 		$template         = $body_params['template'];
 		$copy_sms_enabled = isset( $body_params['copy_sms_enabled'] ) ? (bool) $body_params['copy_sms_enabled'] : false;
 		$copy_sms_numbers = isset( $body_params['copy_sms_numbers'] ) ? sanitize_text_field( $body_params['copy_sms_numbers'] ) : '';
 
+        // Validate delivery type.
+        if ( ! in_array( $delivery_type, array( 'shipping', 'pickup' ) ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data'    => array(
+                        'message' => 'Invalid delivery type. Must be either "shipping" or "pickup".',
+                    ),
+                ),
+                400
+            );
+        }
 		
 		// Update the template.
-		$message_option_name = 'topsms_order_' . $status_key . '_message';
+		$message_option_name = 'topsms_order_' . $status_key . '_' . $delivery_type . '_message';
 		update_option( $message_option_name, $template );
 
 		// Update copy SMS settings.
-		$copy_enabled_option = 'topsms_order_' . $status_key . '_copy_sms_enabled';
-		$copy_numbers_option = 'topsms_order_' . $status_key . '_copy_sms_numbers';
+		$copy_enabled_option = 'topsms_order_' . $status_key . '_' . $delivery_type . '_copy_sms_enabled';
+		$copy_numbers_option = 'topsms_order_' . $status_key . '_' . $delivery_type . '_copy_sms_numbers';
 		update_option( $copy_enabled_option, $copy_sms_enabled ? 'yes' : 'no' );
 		update_option( $copy_numbers_option, $copy_sms_numbers );
 
@@ -488,6 +530,7 @@ class Topsms_Rest_Api_Admin {
 				'data'    => array(
 					'message'           => 'Status settings saved successfully',
 					'status_key'        => $status_key,
+                    'delivery_type'     => $delivery_type,
 					'template'          => $template,
 					'copy_sms_enabled'  => $copy_sms_enabled,
 					'copy_sms_numbers'  => $copy_sms_numbers,

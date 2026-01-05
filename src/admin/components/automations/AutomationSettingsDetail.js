@@ -1,459 +1,529 @@
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, Button, Icon, TabPanel } from '@wordpress/components';
+import { 
+    Card, 
+    CardBody, 
+    Button, 
+    Icon, 
+    TabPanel, 
+    ToggleControl 
+} from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { chevronRight } from '@wordpress/icons';
 
 import TemplateTag from './SmsTemplateTag';
 import {
-  MAX_CHARS_PER_SMS,
-  CONCAT_FIXED_CHARS,
-  ORDER_SHORTCODES,
+    MAX_CHARS_PER_SMS,
+    CONCAT_FIXED_CHARS,
+    ORDER_SHORTCODES,
 } from '../Constants';
 
 const AutomationSettingsDetail = ({
-  status,
-  statusKey,
-  defaultTemplate,
-  description,
-  onSuccessMessage,
-  onErrorMessage,
+    status,
+    statusKey,
+    defaultTemplate,
+    description,
+    onSuccessMessage,
+    onErrorMessage,
 }) => {
-  const [smsMessage, setSmsMessage] = useState(defaultTemplate);
-  const [characterCount, setCharacterCount] = useState(smsMessage.length);
-  const [smsCount, setSmsCount] = useState(0);
-  const [activeTab, setActiveTab] = useState('shipping');
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [sender, setSender] = useState('');
-  const [copySmsEnabled, setCopySmsEnabled] = useState(false);
-  const [copySmsNumbers, setCopySmsNumbers] = useState('');
+    const [shippingData, setShippingData] = useState({
+        smsMessage: defaultTemplate,
+        copySmsEnabled: false,
+        copySmsNumbers: '',
+    });
 
-  // Fetch saved status template from the db
-  useEffect(() => {
-    fetchSender();
-    fetchTemplateSettings();
-  }, [status]);
+    const [pickupData, setPickupData] = useState({
+        smsMessage: defaultTemplate,
+        copySmsEnabled: false,
+        copySmsNumbers: '',
+    });
 
-  // Notify parent when save is successful
-  useEffect(() => {
-    if (saveSuccess) {
-      // Send the success message to the parent component
-      onSuccessMessage(__(`${status} template saved successfully`, 'topsms'));
+    const [characterCount, setCharacterCount] = useState(defaultTemplate.length);
+    const [smsCount, setSmsCount] = useState(0);
+    const [activeTab, setActiveTab] = useState('shipping');
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [sender, setSender] = useState('');
 
-      // Reset local success state after notifying parent
-      setTimeout(() => {
+    // Get current tab data
+    const currentData = activeTab === 'shipping' ? shippingData : pickupData;
+    const setCurrentData = activeTab === 'shipping' ? setShippingData : setPickupData;
+
+    // Fetch saved status template from the db
+    useEffect(() => {
+        fetchSender();
+        fetchTemplateSettings('shipping');
+        fetchTemplateSettings('pickup');
+    }, [status]);
+
+    // Update character count when tab changes
+    useEffect(() => {
+        setCharacterCount(currentData.smsMessage.length);
+    }, [activeTab, currentData.smsMessage]);
+
+    // Notify parent when save is successful
+    useEffect(() => {
+        if (saveSuccess) {
+            const tabName = activeTab === 'shipping' ? 'Shipping' : 'Pickup';
+            // Send the success message to the parent component
+            onSuccessMessage(__(`${status} ${tabName} template saved successfully`, 'topsms'));
+
+            // Reset local success state after notifying parent
+            setTimeout(() => {
+                setSaveSuccess(false);
+            }, 100);
+        }
+    }, [saveSuccess, onSuccessMessage, status, activeTab]);
+
+    // Update sms count when character count changes
+    useEffect(() => {
+        let count;
+        if (characterCount <= MAX_CHARS_PER_SMS) {
+            count = characterCount > 0 ? 1 : 0;
+        } else {
+            count = Math.ceil(
+                characterCount / (MAX_CHARS_PER_SMS - CONCAT_FIXED_CHARS)
+            );
+        }
+        setSmsCount(count);
+    }, [characterCount]);
+
+    // Calculate the maximum allowed characters based on current SMS count
+    const getMaxCharactersForCurrentSms = () => {
+        if (smsCount <= 1) {
+            return MAX_CHARS_PER_SMS;
+        }
+        return smsCount * (MAX_CHARS_PER_SMS - CONCAT_FIXED_CHARS);
+    };
+    const maxCharsAllowed = getMaxCharactersForCurrentSms();
+
+    // Handle message/template change
+    const handleMessageChange = (value) => {
+        const cleanText = removeEmojis(value);
+        setCurrentData(prev => ({
+            ...prev,
+            smsMessage: cleanText
+        }));
+        setCharacterCount(cleanText.length);
         setSaveSuccess(false);
-      }, 100);
-    }
-  }, [saveSuccess, onSuccessMessage, status]);
+    };
 
-  // Update sms count when character count changes
-  useEffect(() => {
-    let count;
-    if (characterCount <= MAX_CHARS_PER_SMS) {
-      count = characterCount > 0 ? 1 : 0;
-    } else {
-      count = Math.ceil(
-        characterCount / (MAX_CHARS_PER_SMS - CONCAT_FIXED_CHARS)
-      );
-    }
-    setSmsCount(count);
-  }, [characterCount]);
-
-  // Calculate the maximum allowed characters based on current SMS count
-  const getMaxCharactersForCurrentSms = () => {
-    if (smsCount <= 1) {
-      return MAX_CHARS_PER_SMS;
-    }
-    return smsCount * (MAX_CHARS_PER_SMS - CONCAT_FIXED_CHARS);
-  };
-  const maxCharsAllowed = getMaxCharactersForCurrentSms();
-
-  // Handle message/template change
-  const handleMessageChange = (value) => {
-    const cleanText = removeEmojis(value);
-    setSmsMessage(cleanText);
-    setCharacterCount(cleanText.length);
-    setSaveSuccess(false);
-  };
-
-  // Insert sms template tag to the template
-  const insertTag = (tag) => {
-    // Check if tag already exists in the message
-    if (smsMessage.includes(tag)) {
-      onErrorMessage(__(`Tag ${tag} already exists in the message`, 'topsms'));
-      return;
-    }
-
-    setSmsMessage(smsMessage + tag);
-    setCharacterCount(smsMessage.length + tag.length);
-    setSaveSuccess(false);
-  };
-
-  // Sanitise the emojis from the text
-  const removeEmojis = (text) => {
-    return text.replace(
-      /([\u203C-\u3299]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]|[\u200D\uFE0F])/g,
-      ''
-    );
-  };
-
-  const tabs = [
-    {
-      name: 'shipping',
-      title: __('Shipping', 'topsms'),
-      className: 'automation-tab flex-1 rounded-full justify-center',
-    },
-    {
-      name: 'pickup',
-      title: __('Pickup', 'topsms'),
-      className: 'automation-tab flex-1 rounded-full justify-center',
-    },
-  ];
-
-  // Fetch status saved template from db
-  const fetchTemplateSettings = async () => {
-    try {
-      // Get the nonce from WordPress
-      const nonce = window.topsmsNonce?.nonce;
-      if (!nonce) {
-        console.error('WordPress REST API nonce not available');
-        return;
-      }
-
-      // Fetch status template from backend
-      const response = await fetch(
-        `/wp-json/topsms/v1/automations/status/${statusKey}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-WP-Nonce': nonce,
-          },
+    // Insert sms template tag to the template
+    const insertTag = (tag) => {
+        // Check if tag already exists in the message
+        if (currentData.smsMessage.includes(tag)) {
+            onErrorMessage(__(`Tag ${tag} already exists in the message`, 'topsms'));
+            return;
         }
-      );
 
-      // // Check if success
-      // if (!response.ok) {
-      //     const errorData = await response.json().catch(() => null);
-      //     throw new Error(
-      //         errorData?.message ||
-      //         `Failed to fetch status settings: ${response.status}`
-      //     );
-      // }
+        const newMessage = currentData.smsMessage + tag;
+        setCurrentData(prev => ({
+            ...prev,
+            smsMessage: newMessage
+        }));
+        setCharacterCount(newMessage.length);
+        setSaveSuccess(false);
+    };
 
-      const data = await response.json();
-      // console.log(`Status settings for ${statusKey}:`, data);
+    // Sanitise the emojis from the text
+    const removeEmojis = (text) => {
+        return text.replace(
+            /([\u203C-\u3299]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]|[\u200D\uFE0F])/g,
+            ''
+        );
+    };
 
-      if (!data.success) {
-        throw new Error(data.data.message || 'Unknown error');
-      }
-
-      // Get the status template and get it reflected on the frontend
-      const template = data.data.template;
-      const copyEnabled = data.data.copy_sms_enabled || false;
-      const copyNumbers = data.data.copy_sms_numbers || '';
-      // console.log(`Status ${statusKey} template:  ${template}`);
-
-      // Update the template and save default template for reset functionality
-      setSmsMessage(template || smsMessage);
-      setCopySmsEnabled(copyEnabled);
-      setCopySmsNumbers(copyNumbers);
-      // setDefaultTemplate(template || smsMessage);
-      setCharacterCount((template || smsMessage).length);
-    } catch (error) {
-      console.error('Error fetching status settings:', error);
-
-      // Notify parent of error
-      onErrorMessage(
-        __(
-          `Failed to load ${status} template. Please refresh and try again.`,
-          'topsms'
-        )
-      );
-    }
-  };
-
-  // Save status template to db
-  const saveTemplate = async () => {
-    setIsSaving(true);
-
-    try {
-      // Get the nonce from WordPress
-      const nonce = window.topsmsNonce?.nonce;
-      if (!nonce) {
-        throw new Error('WordPress REST API nonce not available');
-      }
-
-      // Data to send
-      const sendData = {
-        status_key: statusKey,
-        template: smsMessage,
-        copy_sms_enabled: copySmsEnabled,
-        copy_sms_numbers: copySmsNumbers,
-      };
-      // console.log(`Saving ${statusKey} template:`, sendData);
-      // Save status template to backend
-      const response = await fetch(
-        '/wp-json/topsms/v1/automations/status/save-template',
+    const tabs = [
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-WP-Nonce': nonce,
-          },
-          body: JSON.stringify(sendData),
-        }
-      );
-
-      // // Check if success
-      // if (!response.ok) {
-      //     const errorData = await response.json().catch(() => null);
-      //     throw new Error(
-      //         errorData?.message ||
-      //         `Failed to save status settings: ${response.status}`
-      //     );
-      // }
-
-      const data = await response.json();
-      // console.log('Status template saved successfully:', data);
-
-      if (!data.success) {
-        throw new Error(data.data.message || 'Unknown error');
-      }
-
-      setSaveSuccess(true);
-
-      // // Update the default template
-      // setDefaultTemplate(smsMessage);
-    } catch (error) {
-      console.error('Error saving status template:', error);
-
-      // Notify parent of error
-      onErrorMessage(
-        __(`Failed to save ${status} template. Please try again.`, 'topsms')
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Reset template to default
-  const resetTemplate = () => {
-    setSmsMessage(defaultTemplate);
-    setCharacterCount(defaultTemplate.length);
-  };
-
-  // Fetch sender name
-  const fetchSender = async () => {
-    try {
-      // Get the nonce from WordPress
-      const nonce = window.topsmsNonce?.nonce;
-      if (!nonce) {
-        console.error('WordPress REST API nonce not available');
-        return;
-      }
-
-      // Fetch sender name from backend
-      const response = await fetch('/wp-json/topsms/v1/user', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-WP-Nonce': nonce,
+            name: 'shipping',
+            title: __('Shipping', 'topsms'),
+            className: 'automation-tab flex-1 rounded-full justify-center',
         },
-      });
+        {
+            name: 'pickup',
+            title: __('Pickup', 'topsms'),
+            className: 'automation-tab flex-1 rounded-full justify-center',
+        },
+    ];
 
-      const data = await response.json();
-      // console.log(`Fetch sender name:  ${data.data.value}`);
+    // Fetch status saved template from db
+    const fetchTemplateSettings = async (deliveryType) => {
+        try {
+            // Get the nonce from WordPress
+            const nonce = window.topsmsNonce?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                return;
+            }
 
-      if (!data.success) {
-        throw new Error(data.data.message || 'Unknown error');
-      }
+            // Fetch status template from backend
+            const response = await fetch(
+                `/wp-json/topsms/v1/automations/status/${statusKey}?delivery_type=${deliveryType}`,
+                {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce,
+                },
+                }
+            );
 
-      // Update the sender state
-      setSender(data.data.data.sender || '');
-    } catch (error) {
-      console.error('Error fetching sender name:', error);
+            // // Check if success
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message ||
+            //         `Failed to fetch status settings: ${response.status}`
+            //     );
+            // }
 
-      // Notify parent of error
-      onErrorMessage(
-        __(
-          'Failed to load sender name. Please refresh and try again.',
-          'topsms'
-        )
-      );
-    }
-  };
+            const data = await response.json();
+            // console.log(`Status settings for ${statusKey}:`, data);
 
-  return (
-    <Card className='automation-card'>
-      <CardBody>
-        {/* Navigation */}
-        <div className='automation-navigation flex items-center text-gray-500 text-sm mb-6'>
-          <span>{__('Automation Setting', 'topsms')}</span>
-          <Icon icon={chevronRight} size={16} className='mx-1 w-5 h-5' />
-          <span className='text-blue-500'>{__('Detail', 'topsms')}</span>
-        </div>
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
 
-        {/* Tabs Section */}
-        <div className='automation-tabs-container mb-6'>
-          <TabPanel
-            className='automation-tabs'
-            activeClass='active-tab bg-blue-100'
-            tabs={tabs}
-            onSelect={(tabName) => setActiveTab(tabName)}
-          >
-            {(tab) => (
-              <div className='automation-tab-content'>
-                {/* SMS Template Section */}
-                <div className='automation-template'>
-                  <div className='flex flex-wrap -mx-4'>
-                    <div className='w-full lg:w-1/2 px-4 mb-6'>
-                      <h2 className='text-lg font-medium mb-1'>
-                        {__('SMS Template', 'topsms')}
-                      </h2>
-                      <p className='text-gray-500 text-sm mb-4'>
-                        {description}
-                      </p>
+            // Get the status template and get it reflected on the frontend
+            const template = data.data.template;
+            const copyEnabled = data.data.copy_sms_enabled || false;
+            const copyNumbers = data.data.copy_sms_numbers || '';
+            // console.log(`Status ${statusKey} template:  ${template}`);
 
-                      {/* Custom Textarea Control */}
-                      <div className='automation-textarea-container mb-4'>
-                        <textarea
-                          value={smsMessage}
-                          onChange={(e) => handleMessageChange(e.target.value)}
-                          className='automation-textarea w-full h-32 p-4 border border-gray-300 rounded-md'
-                          style={{ fontSize: '14px' }}
-                        />
-                      </div>
+            // Update the template and save default template for reset functionality
+            if (deliveryType === 'shipping') {
+                setShippingData({
+                    smsMessage: template || defaultTemplate,
+                    copySmsEnabled: copyEnabled,
+                    copySmsNumbers: copyNumbers,
+                });
+            } else {
+                setPickupData({
+                    smsMessage: template || defaultTemplate,
+                    copySmsEnabled: copyEnabled,
+                    copySmsNumbers: copyNumbers,
+                });
+            }
+            
+            // Update character count if this is the currently active tab
+            if (deliveryType === activeTab) {
+            setCharacterCount((template || defaultTemplate).length);
+            } 
+        } catch (error) {
+            console.error('Error fetching status settings:', error);
 
-                      <div className='automation-tags flex flex-wrap mb-4'>
-                        {ORDER_SHORTCODES.map((shortcode) => (
-                          <TemplateTag
-                            key={shortcode.tag}
-                            tag={shortcode.tag}
-                            label={shortcode.label}
-                            description={shortcode.description}
-                            onClick={insertTag}
-                          />
-                        ))}
-                      </div>
+            // Notify parent of error
+            onErrorMessage(
+                __(
+                `Failed to load ${status} ${deliveryType} template. Please refresh and try again.`,
+                'topsms'
+                )
+            );
+        }
+    };
 
-                      {/* Action Buttons */}
-                      <div className='automation-actions flex justify-between space-x-4 mt-12'>
-                        <Button
-                          variant='secondary'
-                          className='automation-button-reset px-6 py-2 border border-gray-300 rounded-full'
-                          onClick={resetTemplate}
-                        >
-                          {__('Reset to Default', 'topsms')}
-                        </Button>
-                        <Button
-                          variant='primary'
-                          className='automation-button-save px-6 py-2 bg-blue-500 text-white rounded-full'
-                          onClick={saveTemplate}
-                          isBusy={isSaving}
-                          disabled={isSaving}
-                        >
-                          {isSaving
-                            ? __('Saving...', 'topsms')
-                            : __('Save Settings', 'topsms')}
-                        </Button>
-                      </div>
-                    </div>
+    // Save status template to db
+    const saveTemplate = async () => {
+        setIsSaving(true);
 
-                    {/* Live preview */}
-                    <div className='w-full lg:w-1/2 px-4 mb-6'>
-                      <h2 className='text-lg font-medium mb-1'>
-                        {__('Live Preview', 'topsms')}
-                      </h2>
-                      <p className='text-gray-500 text-sm mb-4'>
-                        {__('How your message will appear', 'topsms')}
-                      </p>
+        try {
+            // Get the nonce from WordPress
+            const nonce = window.topsmsNonce?.nonce;
+            if (!nonce) {
+                throw new Error('WordPress REST API nonce not available');
+            }
 
-                      <div className='automation-preview bg-gray-100 rounded-md p-4 mb-2'>
-                        <div className='automation-preview-header flex space-x-1 mb-2'>
-                          <div className='flex space-x-1 mr-2 items-center'>
-                            <div className='w-3 h-3 rounded-full bg-red-500'></div>
-                            <div className='w-3 h-3 rounded-full bg-yellow-500'></div>
-                            <div className='w-3 h-3 rounded-full bg-green-500'></div>
-                          </div>
-                          <span className='text-sm font-medium text-gray-700'>
-                            Sender: {sender}
-                          </span>
-                        </div>
+            // Data to send
+            const sendData = {
+                status_key: statusKey,
+                delivery_type: activeTab,
+                template: currentData.smsMessage,
+                copy_sms_enabled: currentData.copySmsEnabled,
+                copy_sms_numbers: currentData.copySmsNumbers,
+            };
+            // console.log(`Saving ${statusKey} template:`, sendData);
+            // Save status template to backend
+            const response = await fetch(
+                '/wp-json/topsms/v1/automations/status/save-template',
+                {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce,
+                },
+                body: JSON.stringify(sendData),
+                }
+            );
 
-                        <div className='automation-preview-content bg-gray-200 p-4 rounded-md'>
-                          <div className='whitespace-pre-line'>
-                            {smsMessage}
-                          </div>
-                        </div>
-                      </div>
+            // // Check if success
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(
+            //         errorData?.message ||
+            //         `Failed to save status settings: ${response.status}`
+            //     );
+            // }
 
-                      <div className='automation-character-count text-sm text-gray-500'>
-                        {characterCount}/{maxCharsAllowed} characters :{' '}
-                        {smsCount} {__('SMS', 'topsms')}
-                      </div>
+            const data = await response.json();
+            // console.log('Status template saved successfully:', data);
 
-                      {/* Send Copy of SMS Section */}
-                      <div className='automation-copy-sms mt-8 p-4 border border-gray-200 rounded-md'>
-                        <div className='flex items-center justify-between mb-3'>
-                          <div>
-                            <h3 className='text-base font-medium'>
-                              {__('Send a copy of the SMS', 'topsms')}
-                            </h3>
-                            <p className='text-sm text-gray-500'>
-                              {__(
-                                'Add phone numbers separated by comma',
-                                'topsms'
-                              )}
-                            </p>
-                          </div>
-                          <label className='relative inline-flex items-center cursor-pointer'>
-                            <input
-                              type='checkbox'
-                              checked={copySmsEnabled}
-                              onChange={(e) =>
-                                setCopySmsEnabled(e.target.checked)
-                              }
-                              className='sr-only peer'
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                          </label>
-                        </div>
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
 
-                        {copySmsEnabled && (
-                          <div className='mt-3'>
-                            <input
-                              type='text'
-                              value={copySmsNumbers}
-                              onChange={(e) =>
-                                setCopySmsNumbers(e.target.value)
-                              }
-                              placeholder='Example: 0412715555, 041271556, 0412715557'
-                              className='w-full p-3 border border-gray-300 rounded-md text-sm'
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+            setSaveSuccess(true);
+
+            // // Update the default template
+            // setDefaultTemplate(smsMessage);
+        } catch (error) {
+            console.error('Error saving status template:', error);
+
+            // Notify parent of error
+            onErrorMessage(
+                __(`Failed to save ${status} ${activeTab} template. Please try again.`, 'topsms')
+            );
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Reset template to default
+    const resetTemplate = () => {
+        setCurrentData({
+            smsMessage: defaultTemplate,
+            copySmsEnabled: false,
+            copySmsNumbers: '',
+        });
+        setCharacterCount(defaultTemplate.length);
+    };
+
+    // Fetch sender name
+    const fetchSender = async () => {
+        try {
+            // Get the nonce from WordPress
+            const nonce = window.topsmsNonce?.nonce;
+            if (!nonce) {
+                console.error('WordPress REST API nonce not available');
+                return;
+            }
+
+            // Fetch sender name from backend
+            const response = await fetch('/wp-json/topsms/v1/user', {
+                    method: 'GET',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce,
+                },
+            });
+
+            const data = await response.json();
+            // console.log(`Fetch sender name:  ${data.data.value}`);
+
+            if (!data.success) {
+                throw new Error(data.data.message || 'Unknown error');
+            }
+
+            // Update the sender state
+            setSender(data.data.data.sender || '');
+        } catch (error) {
+            console.error('Error fetching sender name:', error);
+
+            // Notify parent of error
+            onErrorMessage(
+                __(
+                'Failed to load sender name. Please refresh and try again.',
+                'topsms'
+                )
+            );
+        }
+    };
+
+    return (
+        <Card className='automation-card'>
+            <CardBody>
+                {/* Navigation */}
+                <div className='automation-navigation flex items-center text-gray-500 text-sm mb-6'>
+                    <span>{__('Automation Setting', 'topsms')}</span>
+                    <Icon icon={chevronRight} size={16} className='mx-1 w-5 h-5' />
+                    <span className='text-blue-500'>{__('Detail', 'topsms')}</span>
                 </div>
-              </div>
-            )}
-          </TabPanel>
-        </div>
 
-        {/* Footer */}
-        {/* <div className="mt-12 pt-4 border-t border-gray-200 text-gray-500 text-sm flex justify-between">
-                    <div>© 2025 TopSMS All Right Reserved</div>
-                    <div>
-                        <a href="mailto:support@topsms.com.au" className="text-gray-500 hover:text-gray-700 mr-4">support@topsms.com.au</a>
-                        <span>+61 (0) 2 9121 6234</span>
-                    </div>
-                </div> */}
-      </CardBody>
-    </Card>
-  );
+                {/* Tabs Section */}
+                <div className='automation-tabs-container mb-6'>
+                    <TabPanel
+                        className='automation-tabs'
+                        activeClass='active-tab bg-blue-100'
+                        tabs={tabs}
+                        onSelect={(tabName) => setActiveTab(tabName)}
+                    >
+                        {(tab) => (
+                            <div className='automation-tab-content mt-4'>
+                                {/* SMS Template Section */}
+                                <div className='automation-template'>
+                                    <div className='flex gap-[20px] -mx-4'>
+                                        <div className='w-full lg:w-1/2 p-4 mb-6 border border-gray-100 rounded-md'>
+                                            <h2 className='text-lg font-medium mb-1'>
+                                                {__('SMS Template', 'topsms')}
+                                            </h2>
+                                            <p className='text-gray-500 text-sm mb-4'>
+                                                {description}
+                                            </p>
+
+                                            {/* Custom Textarea Control */}
+                                            <div className='automation-textarea-container mb-4'>
+                                                <textarea
+                                                value={currentData.smsMessage}
+                                                onChange={(e) => handleMessageChange(e.target.value)}
+                                                className='automation-textarea w-full h-32 p-4 border border-gray-300 rounded-md'
+                                                style={{ fontSize: '14px' }}
+                                                />
+                                            </div>
+
+                                            <div className='automation-tags flex flex-wrap mb-4'>
+                                                {ORDER_SHORTCODES.map((shortcode) => (
+                                                <TemplateTag
+                                                    key={shortcode.tag}
+                                                    tag={shortcode.tag}
+                                                    label={shortcode.label}
+                                                    description={shortcode.description}
+                                                    onClick={insertTag}
+                                                />
+                                                ))}
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className='automation-actions flex justify-between space-x-4 mt-12'>
+                                                <Button
+                                                    variant='secondary'
+                                                    className='automation-button-reset px-6 py-2 border border-gray-300 rounded-full'
+                                                    onClick={resetTemplate}
+                                                >
+                                                    {__('Reset to Default', 'topsms')}
+                                                </Button>
+                                                <Button
+                                                    variant='primary'
+                                                    className='automation-button-save px-6 py-2 bg-blue-500 text-white rounded-full'
+                                                    onClick={saveTemplate}
+                                                    isBusy={isSaving}
+                                                    disabled={isSaving}
+                                                >
+                                                    {isSaving
+                                                        ? __('Saving...', 'topsms')
+                                                        : __('Save Settings', 'topsms')
+                                                    }
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Live preview */}
+                                        <div className='w-full lg:w-1/2 p-4 mb-6 border border-gray-100 rounded-md'>
+                                            <h2 className='text-lg font-medium mb-1'>
+                                                {__('Live Preview', 'topsms')}
+                                            </h2>
+                                            <p className='text-gray-500 text-sm mb-4'>
+                                                {__('How your message will appear', 'topsms')}
+                                            </p>
+
+                                            <div className='automation-preview bg-gray-100 rounded-md p-4 mb-2'>
+                                                <div className='automation-preview-header flex space-x-1 mb-2'>
+                                                    <div className='flex space-x-1 mr-2 items-center'>
+                                                        <div className='w-3 h-3 rounded-full bg-red-500'></div>
+                                                        <div className='w-3 h-3 rounded-full bg-yellow-500'></div>
+                                                        <div className='w-3 h-3 rounded-full bg-green-500'></div>
+                                                    </div>
+                                                    <span className='text-sm font-medium text-gray-700'>
+                                                        Sender: {sender}
+                                                    </span>
+                                                </div>
+
+                                                <div className='automation-preview-content bg-gray-200 p-4 rounded-md'>
+                                                    <div className='whitespace-pre-line'>
+                                                        {currentData.smsMessage}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className='automation-character-count text-sm text-gray-500'>
+                                                {characterCount}/{maxCharsAllowed} characters :{' '}
+                                                {smsCount} {__('SMS', 'topsms')}
+                                            </div>
+
+                                            {/* Send Copy of SMS Section */}
+                                            <div className='automation-copy-sms mt-8 p-4 border border-gray-200 rounded-md'>
+                                                <div className='flex items-center justify-between mb-3'>
+                                                    <div>
+                                                        <h3 className='text-base font-medium'>
+                                                        {__('Send a copy of the SMS', 'topsms')}
+                                                        </h3>
+                                                        <p className='text-sm text-gray-500'>
+                                                        {__(
+                                                            'Add phone numbers separated by comma',
+                                                            'topsms'
+                                                        )}
+                                                        </p>
+                                                    </div>
+                                                    <ToggleControl
+                                                        __nextHasNoMarginBottom
+                                                        label=""
+                                                        checked={currentData.copySmsEnabled}
+                                                        onChange={(value) => 
+                                                            setCurrentData(prev => ({
+                                                                ...prev,
+                                                                copySmsEnabled: value
+                                                            }))
+                                                        }
+                                                    />
+                                                    {/* <label className='relative inline-flex items-center cursor-pointer'>
+                                                        <input
+                                                        type='checkbox'
+                                                        checked={currentData.copySmsEnabled}
+                                                        onChange={(e) =>
+                                                            setCurrentData(prev => ({
+                                                                ...prev,
+                                                                copySmsEnabled: e.target.checked
+                                                            }))
+                                                        }
+                                                        className='sr-only peer'
+                                                        />
+                                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                    </label> */}
+                                                </div>
+
+                                                {currentData.copySmsEnabled && (
+                                                    <div className='mt-3'>
+                                                        <input
+                                                        type='text'
+                                                        value={currentData.copySmsNumbers}
+                                                        onChange={(e) =>
+                                                            setCurrentData(prev => ({
+                                                                ...prev,
+                                                                copySmsNumbers: e.target.value
+                                                            }))
+                                                        }
+                                                        placeholder='Example: 0412715555, 041271556, 0412715557'
+                                                        className='w-full p-3 border border-gray-300 rounded-md text-sm'
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </TabPanel>
+                </div>
+
+                {/* Footer */}
+                {/* <div className="mt-12 pt-4 border-t border-gray-200 text-gray-500 text-sm flex justify-between">
+                            <div>© 2025 TopSMS All Right Reserved</div>
+                            <div>
+                                <a href="mailto:support@topsms.com.au" className="text-gray-500 hover:text-gray-700 mr-4">support@topsms.com.au</a>
+                                <span>+61 (0) 2 9121 6234</span>
+                            </div>
+                        </div> */}
+            </CardBody>
+        </Card>
+    );
 };
 
 export default AutomationSettingsDetail;

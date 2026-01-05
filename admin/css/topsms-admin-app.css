@@ -774,6 +774,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .gap-\[12px\] {
   gap: 12px;
 }
+.topsms-app .gap-\[20px\] {
+  gap: 20px;
+}
 .topsms-app .gap-\[2px\] {
   gap: 2px;
 }
@@ -866,6 +869,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .border-blue-500 {
   --tw-border-opacity: 1;
   border-color: rgb(59 130 246 / var(--tw-border-opacity, 1));
+}
+.topsms-app .border-gray-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
 }
 .topsms-app .border-gray-200 {
   --tw-border-opacity: 1;
@@ -984,10 +991,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .px-3 {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
-}
-.topsms-app .px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
 }
 .topsms-app .px-6 {
   padding-left: 1.5rem;
@@ -1301,6 +1304,8 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .automation-tabs .components-tab-panel__tabs {
     border-radius: 9999px;
     border: 1px solid rgb(0 0 0 / 0.07);
+    margin-left: -1rem;
+    margin-right: -1rem;
 }
 
 /* General settings */

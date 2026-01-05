@@ -518,4 +518,32 @@ class Topsms_Helper_Admin {
 
 		return $sql;
 	}
+
+    /**
+	 * Get the order shipping method by order id.
+	 *
+	 * @since  2.0.21
+     * @param  WC_Order $order         The order object.
+     * 
+	 * @return string $delivery_type   Delivery type/shipping method of the order.
+	 */
+    public function topsms_get_delivery_type($order) {
+        // Default to shipping.
+        $delivery_type = 'shipping';
+        $shipping_methods = $order->get_shipping_methods();
+	
+        if ( ! empty( $shipping_methods ) ) {
+            foreach ( $shipping_methods as $shipping_method ) {
+                $method_id = $shipping_method->get_method_id();
+                
+                // Check if it's a pickup method, by checking if there's pickup/local pickup in the id.
+                if ( strpos( $method_id, 'local_pickup' ) !== false || strpos( $method_id, 'pickup' ) !== false ) {
+                    $delivery_type = 'pickup';
+                    break;
+                }
+            }
+        }
+
+        return $delivery_type;
+    }
 }

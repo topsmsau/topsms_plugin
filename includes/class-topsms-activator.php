@@ -64,35 +64,44 @@ class Topsms_Activator {
 		// Options for storing wc order data for topsms.
 		// Processing.
 		update_option( 'topsms_order_processing_enabled', 'no' );
-		update_option( 'topsms_order_processing_message', $processing_msg );
+		update_option( 'topsms_order_processing_shipping_message', $processing_msg );
+        update_option( 'topsms_order_processing_pickup_message', $processing_msg );
 
 		// Completed.
 		update_option( 'topsms_order_completed_enabled', 'no' );
-		update_option( 'topsms_order_completed_message', $completed_msg );
+        update_option( 'topsms_order_completed_shipping_message', $completed_msg );
+        update_option( 'topsms_order_completed_pickup_message', $completed_msg );
 
 		// Failed.
 		update_option( 'topsms_order_failed_enabled', 'no' );
-		update_option( 'topsms_order_failed_message', $failed_msg );
+        update_option( 'topsms_order_failed_shipping_message', $failed_msg );
+        update_option( 'topsms_order_failed_pickup_message', $failed_msg );
+
 
 		// Refunded.
 		update_option( 'topsms_order_refunded_enabled', 'no' );
-		update_option( 'topsms_order_refunded_message', $refunded_msg );
+        update_option( 'topsms_order_refunded_shipping_message', $refunded_msg );
+        update_option( 'topsms_order_refunded_pickup_message', $refunded_msg );
 
 		// Pending payment.
 		update_option( 'topsms_order_pending_enabled', 'no' );
-		update_option( 'topsms_order_pending_message', $pending_msg );
+        update_option( 'topsms_order_pending_shipping_message', $pending_msg );
+        update_option( 'topsms_order_pending_pickup_message', $pending_msg );
 
 		// Cancelled.
 		update_option( 'topsms_order_cancelled_enabled', 'no' );
-		update_option( 'topsms_order_cancelled_message', $cancelled_msg );
+        update_option( 'topsms_order_cancelled_shipping_message', $cancelled_msg );
+        update_option( 'topsms_order_cancelled_pickup_message', $cancelled_msg );
 
 		// Onhold.
 		update_option( 'topsms_order_on-hold_enabled', 'no' );
-		update_option( 'topsms_order_on-hold_message', $onhold_msg );
+        update_option( 'topsms_order_on-hold_shipping_message', $onhold_msg );
+        update_option( 'topsms_order_on-hold_pickup_message', $onhold_msg );
 
 		// Draft.
 		update_option( 'topsms_order_draft_enabled', 'no' );
-		update_option( 'topsms_order_draft_message', $draft_msg );
+        update_option( 'topsms_order_draft_shipping_message', $draft_msg );
+        update_option( 'topsms_order_draft_pickup_message', $draft_msg );
 
 		// Options for storing general topsms settings data.
 		update_option( 'topsms_settings_low_balance_alert', 'no' );

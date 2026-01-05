@@ -797,8 +797,11 @@ class Topsms_Admin {
 		}
 
 		$sender           = $this->helper->topsms_fetch_sender_name();
+
+        // Get delivery type and corresponding data.
+        $delivery_type = $this->helper->topsms_get_delivery_type($order);
 		$is_enabled       = get_option( 'topsms_order_' . $status_to . '_enabled' );
-		$message_template = get_option( 'topsms_order_' . $status_to . '_message' );
+		$message_template = get_option( 'topsms_order_' . $status_to . '_' . $delivery_type . '_message' );
 
 		// Check if SMS is enabled for this status.
 		if ( ! $is_enabled || 'yes' !== $is_enabled ) {
@@ -821,16 +824,16 @@ class Topsms_Admin {
 			return;
 		}
 
-		// Get order items formatted
+		// Get order items formatted.
 		$order_items_text = $this->topsms_format_order_items( $order );
 
-		// Get billing address formatted
+		// Get billing address formatted.
 		$billing_address = $this->topsms_format_address( $order, 'billing' );
 
-		// Get shipping address formatted
+		// Get shipping address formatted.
 		$shipping_address = $this->topsms_format_address( $order, 'shipping' );
 
-		// Get order notes
+		// Get order notes.
 		$order_notes = $order->get_customer_note();
 
 		// Replace placeholders.
@@ -912,8 +915,8 @@ class Topsms_Admin {
 		}
 
 		// Send copy SMS if enabled.
-		$copy_enabled_option = 'topsms_order_' . $status_to . '_copy_sms_enabled';
-		$copy_numbers_option = 'topsms_order_' . $status_to . '_copy_sms_numbers';
+		$copy_enabled_option = 'topsms_order_' . $status_to . '_' . $delivery_type . '_copy_sms_enabled';
+		$copy_numbers_option = 'topsms_order_' . $status_to . '_' . $delivery_type . '_copy_sms_numbers';
 		$copy_sms_enabled    = get_option( $copy_enabled_option );
 		$copy_sms_numbers    = get_option( $copy_numbers_option );
 
