@@ -354,15 +354,17 @@ class Topsms_Campaigns_Admin extends WP_List_Table {
 		}
 
         
-        // Send again button.
+        // Send again button - only show for completed campaigns.
+        if ( 'completed' === $item['status'] ) {
         $send_again_url = wp_nonce_url(
-			admin_url( 'admin.php?page=topsms-campaigns&action=send_again_campaign&campaign_id=' . $item['id'] ),
+                admin_url( 'admin.php?page=topsms-campaigns&action=send_again&campaign_id=' . $item['id'] ),
 			'send_again_campaign_' . $item['id']
 		);
 		$actions[] = sprintf(
-			'<a class="button wc-action-button wc-action-button-send-again send-again" href="%s" onclick="return confirm(\'Are you sure you want to send this campaign again?\');" title="Send Again" aria-label="Send Again">Send Again</a>',
+                '<a class="button wc-action-button wc-action-button-send-again send-again" href="%s" title="Send Again" aria-label="Send Again">Send Again</a>',
 			esc_url( $send_again_url )
 		);
+        }
 
         // Delete button.
         $delete_url = wp_nonce_url(

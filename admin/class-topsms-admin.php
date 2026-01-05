@@ -988,12 +988,14 @@ class Topsms_Admin {
 			if ( false === $campaign ) {
 				global $wpdb;
 				$table_name = $wpdb->prefix . 'topsms_campaigns';
+				// Allow loading draft OR completed campaigns (for send again feature).
 				$campaign   = $wpdb->get_row(
 					$wpdb->prepare(
-						'SELECT * FROM %1s WHERE id = %d AND status = %s',
+						'SELECT * FROM %1s WHERE id = %d AND (status = %s OR status = %s)',
 						$table_name,
 						$campaign_id,
-						'draft'
+						'draft',
+						'completed'
 					)
 				);
 
@@ -1001,6 +1003,8 @@ class Topsms_Admin {
 				wp_cache_set( $cache_key, $campaign, 'topsms_campaigns', HOUR_IN_SECONDS );
 			}
 
+			// Only process if campaign was found.
+			if ( $campaign ) {
 			$data          = json_decode( $campaign->data, true );
 			$campaign_data = array(
 				'id'                => $campaign->id,
@@ -1013,6 +1017,18 @@ class Topsms_Admin {
 				'message'           => isset( $data['message'] ) ? $data['message'] : '',
 				'url'               => isset( $data['url'] ) ? $data['url'] : '',
 			);
+
+				// If this is a completed campaign (send again), clear the ID and status
+				// so it creates a new campaign instead of updating the existing one.
+				if ( 'completed' === $campaign->status ) {
+					$campaign_data['id']     = 0;
+					$campaign_data['status'] = 'draft';
+					// Remove timestamp from campaign name (underscore + everything after it).
+					$clean_name = preg_replace( '/_[^_]+$/', '', $campaign->job_name );
+					// Add "(Copy)" to campaign name to make it unique.
+					$campaign_data['campaign_name'] = $clean_name . ' (Copy)';
+				}
+			}
 		}
 
 		// Pass data to JavaScript.
@@ -1256,6 +1272,18 @@ class Topsms_Admin {
 					$redirect_url = add_query_arg( 'message', 'cancel_campaign_failed', $redirect_url );
 				}
 
+				wp_safe_redirect( $redirect_url );
+				exit;
+			}
+		}
+
+		// Handle send again campaign.
+		if ( isset( $_GET['action'] ) && 'send_again' === $_GET['action'] && isset( $_GET['campaign_id'] ) ) {
+			$campaign_id = intval( $_GET['campaign_id'] );
+
+			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'send_again_campaign_' . $campaign_id ) ) {
+				// Redirect to bulk SMS page with campaign_id to pre-fill data.
+				$redirect_url = admin_url( 'admin.php?page=topsms-bulksms&campaign_id=' . $campaign_id );
 				wp_safe_redirect( $redirect_url );
 				exit;
 			}
