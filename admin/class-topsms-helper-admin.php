@@ -520,6 +520,161 @@ class Topsms_Helper_Admin {
 	}
 
     /**
+	 * Filter contacts based on phone number and status.
+	 * Ensure no contacts with duplicate phone number,
+	 * and priotise contacts with status 'yes' over duplicates.
+	 *
+	 * @since 2.0.9
+	 * @param array $contacts Array of contact data.
+	 * @return array Filtered and deduplicated contacts.
+	 */
+	public function filter_contacts( $contacts ) {
+		$existed_phones    = array();
+		$filtered_contacts = array();
+
+		foreach ( $contacts as $contact ) {
+			// Skip contacts without valid phone.
+			if ( empty( $contact['phone'] ) || trim( $contact['phone'] ) === '' ) {
+				continue;
+			}
+
+			// Normalise phone number.
+			$normalised_phone = preg_replace( '/[^0-9]/', '', $contact['phone'] );
+			// Skip if normalised phone is empty.
+			if ( empty( $normalised_phone ) ) {
+				continue;
+			}
+
+			$contact_status = $contact['status'] ?? '';
+			// Check if phone exists before.
+			if ( isset( $existed_phones[ $normalised_phone ] ) ) {
+				// If phone exists, replace only if the current contact is subscribed and the previously stored one doesn't.
+				// Otherwise keep the existing one and skip this duplicate.
+				$stored_index  = $existed_phones[ $normalised_phone ];
+				$stored_status = $filtered_contacts[ $stored_index ]['status'] ? $filtered_contacts[ $stored_index ]['status'] : '';
+				if ( 'yes' === $contact_status && 'yes' !== $stored_status ) {
+					// Replace the contact.
+					$filtered_contacts[ $stored_index ] = $contact;
+				}
+				continue;
+			}
+
+			// Only add contacts with 'yes' status.
+			if ( 'yes' === $contact_status ) {
+				$index                               = count( $filtered_contacts );
+				$existed_phones[ $normalised_phone ] = $index;
+				$filtered_contacts[]                 = $contact;
+			}
+		}
+		return $filtered_contacts;
+	}
+
+    /**
+	 * Get the saved contacts lists from transient.
+	 * If transient not found, get contacts lists by the all saved filters.
+	 *
+	 * @since    2.0.0
+	 * @return array $lists The contacts lists with all information.
+	 */
+	public function get_contacts_lists() {
+		// Try to get lists from transient.
+		$lists = get_transient( 'topsms_contacts_lists' );
+
+		// If transient exists, return it.
+		if ( false !== $lists ) {
+			return $lists;
+		}
+
+		// Transient doesn't exist, do an sql query to get the contacts list and save to transient.
+		global $wpdb;
+
+		$lists   = array();
+		$filters = array();
+
+		// Add "All Contacts" as the first list (only subscribed users - if not set, default to subscribed).
+		$all_contacts_filter = array();
+
+		// Get the contacts by filter.
+		$sql          = $this->topsms_build_contacts_query_( $all_contacts_filter, null, false );
+		$all_contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
+
+		// Filter contacts: include those with status yes (default to unsubscribed) and have phone.
+		// Also make sure no duplicated phone.
+		$all_contacts = $this->filter_contacts( $all_contacts );
+		$all_count    = count( $all_contacts );
+
+		// For transient data.
+		$lists['all_contacts'] = array(
+			'filter_id'   => 'all_contacts',
+			'filter_name' => 'All Subscribed Contacts',
+			'count'       => $all_count,
+			'contacts'    => array_values( $all_contacts ),
+		);
+
+		// For return data.
+		$filters['all_contacts'] = array(
+			'id'    => 'all_contacts',
+			'name'  => 'All Subscribed Contacts',
+			'count' => $all_count,
+		);
+
+		// Get saved filters from options.
+		$saved_filters = get_option( 'topsms_contacts_list_saved_filters', array() );
+
+		// Extract contacts data by filters.
+		foreach ( $saved_filters as $filter_id => $filter ) {
+			// Skip filters if status filter is unsubscribed (don't send to unsubscribed contacts).
+			if ( isset( $filter['status'] ) && 'no' === $filter['status'] ) {
+				// For transient data.
+				$lists[ $filter_id ] = array(
+					'filter_id'   => $filter_id,
+					'filter_name' => $filter['name'],
+					'count'       => 0,
+					'contacts'    => array(),
+				);
+
+				// For return data.
+				$filters[ $filter_id ] = array(
+					'id'    => $filter_id,
+					'name'  => $filter['name'],
+					'count' => 0,
+				);
+				continue;
+			}
+
+			// Get the contacts by filter.
+			$sql      = $this->topsms_build_contacts_query_( $filter, null, false );
+			$contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
+
+			// Filter contacts: include those with status yes (default to unsubscribed) and have phone.
+			// Also make sure no duplicated phone.
+			$contacts = $this->filter_contacts( $contacts );
+			$count    = count( $contacts );
+
+			// For transient data.
+			$lists[ $filter_id ] = array(
+				'filter_id'   => $filter_id,
+				'filter_name' => $filter['name'],
+				'count'       => $count,
+				'contacts'    => array_values( $contacts ),
+			);
+
+			// For return data.
+			$filters[ $filter_id ] = array(
+				'id'    => $filter_id,
+				'name'  => $filter['name'],
+				'count' => $count,
+			);
+		}
+
+		// Store all contacts lists data in transient.
+		$transient_key = 'topsms_contacts_lists';
+		set_transient( $transient_key, $lists );
+
+		return $filters;
+	}
+
+    /**
 	 * Get the order shipping method by order id.
 	 *
 	 * @since  2.0.21

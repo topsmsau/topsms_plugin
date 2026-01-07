@@ -1673,7 +1673,7 @@ class Topsms_Rest_Api_Admin {
 	 */
 	public function topsms_get_saved_filters( WP_REST_Request $request ) {
 		// Get all filters.
-		$filters = $this->get_contacts_lists();
+		$filters = $this->helper->get_contacts_lists();
 
 		$transient_key = 'topsms_contacts_lists';
 
@@ -1715,7 +1715,7 @@ class Topsms_Rest_Api_Admin {
 		// If transient not found, do an sql query and get list data.
 		$lists = get_transient( 'topsms_contacts_lists' );
 		if ( false === $lists ) {
-			$lists = $this->get_contacts_lists();
+			$lists = $this->helper->get_contacts_lists();
 		}
 
 		// Check if the specified filter exists.
@@ -1741,111 +1741,6 @@ class Topsms_Rest_Api_Admin {
 			),
 			200
 		);
-	}
-
-	/**
-	 * Get the saved contacts lists from transient.
-	 * If transient not found, get contacts lists by the all saved filters.
-	 *
-	 * @since    2.0.0
-	 * @return array $lists The contacts lists with all information.
-	 */
-	private function get_contacts_lists() {
-		// Try to get lists from transient.
-		$lists = get_transient( 'topsms_contacts_lists' );
-
-		// If transient exists, return it.
-		if ( false !== $lists ) {
-			return $lists;
-		}
-
-		// Transient doesn't exist, do an sql query to get the contacts list and save to transient.
-		global $wpdb;
-
-		$lists   = array();
-		$filters = array();
-
-		// Add "All Contacts" as the first list (only subscribed users - if not set, default to subscribed).
-		$all_contacts_filter = array();
-
-		// Get the contacts by filter.
-		$sql          = $this->helper->topsms_build_contacts_query_( $all_contacts_filter, null, false );
-		$all_contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
-
-		// Filter contacts: include those with status yes (default to unsubscribed) and have phone.
-		// Also make sure no duplicated phone.
-		$all_contacts = $this->filter_contacts( $all_contacts );
-		$all_count    = count( $all_contacts );
-
-		// For transient data.
-		$lists['all_contacts'] = array(
-			'filter_id'   => 'all_contacts',
-			'filter_name' => 'All Subscribed Contacts',
-			'count'       => $all_count,
-			'contacts'    => array_values( $all_contacts ),
-		);
-
-		// For return data.
-		$filters['all_contacts'] = array(
-			'id'    => 'all_contacts',
-			'name'  => 'All Subscribed Contacts',
-			'count' => $all_count,
-		);
-
-		// Get saved filters from options.
-		$saved_filters = get_option( 'topsms_contacts_list_saved_filters', array() );
-
-		// Extract contacts data by filters.
-		foreach ( $saved_filters as $filter_id => $filter ) {
-			// Skip filters if status filter is unsubscribed (don't send to unsubscribed contacts).
-			if ( isset( $filter['status'] ) && 'no' === $filter['status'] ) {
-				// For transient data.
-				$lists[ $filter_id ] = array(
-					'filter_id'   => $filter_id,
-					'filter_name' => $filter['name'],
-					'count'       => 0,
-					'contacts'    => array(),
-				);
-
-				// For return data.
-				$filters[ $filter_id ] = array(
-					'id'    => $filter_id,
-					'name'  => $filter['name'],
-					'count' => 0,
-				);
-				continue;
-			}
-
-			// Get the contacts by filter.
-			$sql      = $this->helper->topsms_build_contacts_query_( $filter, null, false );
-			$contacts = $wpdb->get_results( $sql, ARRAY_A ); // Store as array.
-
-			// Filter contacts: include those with status yes (default to unsubscribed) and have phone.
-			// Also make sure no duplicated phone.
-			$contacts = $this->filter_contacts( $contacts );
-			$count    = count( $contacts );
-
-			// For transient data.
-			$lists[ $filter_id ] = array(
-				'filter_id'   => $filter_id,
-				'filter_name' => $filter['name'],
-				'count'       => $count,
-				'contacts'    => array_values( $contacts ),
-			);
-
-			// For return data.
-			$filters[ $filter_id ] = array(
-				'id'    => $filter_id,
-				'name'  => $filter['name'],
-				'count' => $count,
-			);
-		}
-
-		// Store all contacts lists data in transient.
-		$transient_key = 'topsms_contacts_lists';
-		set_transient( $transient_key, $lists );
-
-		return $filters;
 	}
 
 	/**
@@ -2525,7 +2420,7 @@ class Topsms_Rest_Api_Admin {
 	}
 
 	/**
-	 * Update campaign status from webhook
+	 * Update campaign status from webhook.
 	 *
 	 * @since    2.0.0
 	 * @param WP_REST_Request $request The request object.
@@ -2630,7 +2525,7 @@ class Topsms_Rest_Api_Admin {
 		);
 		$update_format = array( '%s' );
 
-		// Add any error message to details (if givem).
+		// Add any error message to details (if given).
 		if ( null !== $message ) {
 			$update_data['details'] = $message;
 			$update_format[]        = '%s';
@@ -2673,53 +2568,150 @@ class Topsms_Rest_Api_Admin {
 		);
 	}
 
-	/**
-	 * Filter contacts based on phone number and status.
-	 * Ensure no contacts with duplicate phone number,
-	 * and priotise contacts with status 'yes' over duplicates.
+    /**
+	 * Get campaign report data from db and stats from the Topsms API.
 	 *
-	 * @since 2.0.9
-	 * @param array $contacts Array of contact data.
-	 * @return array Filtered and deduplicated contacts.
+	 * @since    2.0.0
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response.
 	 */
-	private function filter_contacts( $contacts ) {
-		$existed_phones    = array();
-		$filtered_contacts = array();
-
-		foreach ( $contacts as $contact ) {
-			// Skip contacts without valid phone.
-			if ( empty( $contact['phone'] ) || trim( $contact['phone'] ) === '' ) {
-				continue;
-			}
-
-			// Normalise phone number.
-			$normalised_phone = preg_replace( '/[^0-9]/', '', $contact['phone'] );
-			// Skip if normalised phone is empty.
-			if ( empty( $normalised_phone ) ) {
-				continue;
-			}
-
-			$contact_status = $contact['status'] ?? '';
-			// Check if phone exists before.
-			if ( isset( $existed_phones[ $normalised_phone ] ) ) {
-				// If phone exists, replace only if the current contact is subscribed and the previously stored one doesn't.
-				// Otherwise keep the existing one and skip this duplicate.
-				$stored_index  = $existed_phones[ $normalised_phone ];
-				$stored_status = $filtered_contacts[ $stored_index ]['status'] ? $filtered_contacts[ $stored_index ]['status'] : '';
-				if ( 'yes' === $contact_status && 'yes' !== $stored_status ) {
-					// Replace the contact.
-					$filtered_contacts[ $stored_index ] = $contact;
-				}
-				continue;
-			}
-
-			// Only add contacts with 'yes' status.
-			if ( 'yes' === $contact_status ) {
-				$index                               = count( $filtered_contacts );
-				$existed_phones[ $normalised_phone ] = $index;
-				$filtered_contacts[]                 = $contact;
-			}
+    public function topsms_get_campaign_report(WP_REST_Request $request) {
+        // Get campaign id from the url params.
+		$campaign_id = $request->get_param( 'campaign_id' );
+		if ( empty( $campaign_id ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array(
+						'message' => 'Campaign Id is required',
+					),
+				),
+				400
+			);
 		}
-		return $filtered_contacts;
-	}
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'topsms_campaigns';
+        $cache_key  = 'topsms_campaign_' . $campaign_id;
+
+        // Get cache data if exists.
+        $campaign = wp_cache_get( $cache_key, 'topsms_campaigns' );
+
+        // Do an sql query if not cached.
+        if ( false === $campaign ) {
+            $campaign   = $wpdb->get_row(
+                $wpdb->prepare(
+                    'SELECT * FROM %1s WHERE id = %d',
+                    $table_name,
+                    $campaign_id
+                )
+            );
+
+            // Cache for 1 hr.
+            wp_cache_set( $cache_key, $campaign, 'topsms_campaigns', HOUR_IN_SECONDS );
+        }
+
+        // Campaign not found.
+		if ( ! $campaign ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => 'Campaign not found.',
+				),
+				404
+			);
+		}
+
+        // Get campaign uid.
+        $campaign_uid = $campaign->campaign_uid;
+        if ( empty( $campaign_uid ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data'    => array(
+                        'message' => 'Campaign UID not found',
+                    ),
+                ),
+                404
+            );
+        }
+
+        $campaign_data = json_decode( $campaign->data, true );
+
+        // Get the total contacts count.
+        $contact_id         = $campaign_data['list'];
+        $campaign_contacts  = $this->helper->get_contacts_lists();
+        $total_contacts     = isset( $campaign_contacts[ $contact_id ]['count'] ) ? $campaign_contacts[ $contact_id ]['count'] : 0;
+
+        // Fetch report data from the Topsms API.
+        $url      = 'https://api-app.topsms.com.au/functions/v1/reports/' . $campaign_uid;
+        $response = wp_remote_get(
+            $url,
+            array(
+                'headers' => array(
+                    'Content-Type'  => 'application/json',
+                ),
+                'timeout' => 50,
+            )
+        );
+
+        // Check for errors.
+        if ( is_wp_error( $response ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'data'    => array(
+                        'message' => $response->get_error_message(),
+                    ),
+                ),
+                500
+            );
+        }
+
+        $body = wp_remote_retrieve_body( $response );
+        $data = json_decode( $body, true );
+
+        // Check the status field in the response data.
+		if ( isset( $data['success'] ) && true === $data['success'] ) {
+            // Get the report summary.
+	        $report_summary = isset( $data['summary'] ) ? $data['summary'] : array();
+
+            // Get campaign name.
+            // Remove timestamp from the campaign/job name.
+            // Remove underscore + everything after it (if exists).
+            $job_name = $campaign->job_name;
+            $campaign_name = preg_replace( '/_[^_]+$/', '', $job_name );
+
+            $report_data = array(
+                'campaign_id'    => $campaign->id,
+                'campaign_name'   => $campaign_name,
+                'campaign_cost'  => $campaign->cost,
+                'total_contacts' => $total_contacts,
+                'sender'         => isset( $campaign_data['sender'] ) ? $campaign_data['sender'] : '',
+                'message'        => isset( $campaign_data['message'] ) ? $campaign_data['message'] : '',
+                'summary'        => $report_summary,
+            );
+
+			return new WP_REST_Response(
+				array(
+					'success' => true,
+					'data'    => $report_data,
+				),
+				200
+			);
+		} else {
+			// If status is not success or doesn't exist, send error.
+			$error_message = isset( $data['message'] ) ? $data['message'] : 'Failed to fetch report data from Topsms API.';
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array(
+						'message' => $error_message,
+					),
+				),
+				500
+			);
+		}
+
+    }
 }

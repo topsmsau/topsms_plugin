@@ -496,6 +496,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .z-10 {
   z-index: 10;
 }
+.topsms-app .col-span-2 {
+  grid-column: span 2 / span 2;
+}
 .topsms-app .m-0 {
   margin: 0px;
 }
@@ -636,6 +639,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .h-8 {
   height: 2rem;
 }
+.topsms-app .h-9 {
+  height: 2.25rem;
+}
 .topsms-app .h-\[350px\] {
   height: 350px;
 }
@@ -655,6 +661,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .max-h-\[450px\] {
   max-height: 450px;
 }
+.topsms-app .w-10 {
+  width: 2.5rem;
+}
 .topsms-app .w-11 {
   width: 2.75rem;
 }
@@ -666,6 +675,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 .topsms-app .w-16 {
   width: 4rem;
+}
+.topsms-app .w-24 {
+  width: 6rem;
 }
 .topsms-app .w-3 {
   width: 0.75rem;
@@ -886,12 +898,19 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-bg-opacity: 1;
   background-color: rgb(242 95 122 / var(--tw-bg-opacity, 1));
 }
+.topsms-app .bg-\[\#FAFAFA\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(250 250 250 / var(--tw-bg-opacity, 1));
+}
 .topsms-app .bg-\[\#ff000026\] {
   background-color: #ff000026;
 }
 .topsms-app .bg-blue-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));
+}
+.topsms-app .bg-blue-300\/20 {
+  background-color: rgb(147 197 253 / 0.2);
 }
 .topsms-app .bg-blue-50 {
   --tw-bg-opacity: 1;
@@ -992,6 +1011,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   padding-left: 0.75rem;
   padding-right: 0.75rem;
 }
+.topsms-app .px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
 .topsms-app .px-6 {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
@@ -1067,6 +1090,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .topsms-app .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
+}
+.topsms-app .text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
 }
 .topsms-app .text-base {
   font-size: 1rem;
@@ -1515,6 +1542,12 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 @media (min-width: 1024px) {
   .topsms-app .lg\:w-1\/2 {
     width: 50%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .topsms-app .xl\:min-w-\[45\%\] {
+    min-width: 45%;
   }
 }
 

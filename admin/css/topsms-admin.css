@@ -121,3 +121,8 @@
 .topsms_page_topsms-campaigns .wp-list-table th#status  {
     width: 200px;
 }
+
+#topsms-admin-footer .topsms-footer-wrap {
+    background-color: transparent !important;
+    padding-inline: 0;
+}

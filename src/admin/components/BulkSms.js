@@ -17,7 +17,7 @@ import CampaignFinalStep from './bulksms/FinalStep.js';
 import { COST_PER_SMS } from './Constants.js';
 
 const BulkSms = () => {
-    // Get campaign data from the localiz=sed script
+    // Get campaign data from the localised script
     const campaignData = window.topsmsNonce?.campaignData || null;
     const [campaignId, setCampaignId] = useState(campaignData?.id || 0);
 
@@ -539,12 +539,12 @@ const BulkSms = () => {
 
                                     {/* Right section - preview */}
                                     <div className="bulksms-preview w-full lg:w-1/2 px-8 mb-6 flex justify-center flex-col items-start">
-                                    <div className="bg-gray-100 rounded-[20px] pt-8 w-full flex justify-center items-start">
-                                        <SmsPreview 
-                                            sender={formData.sender}
-                                            smsMessage={formData.smsMessage}
-                                        />
-                                    </div>
+                                        <div className="bg-gray-100 rounded-[20px] pt-8 w-full flex justify-center items-start">
+                                            <SmsPreview 
+                                                sender={formData.sender}
+                                                smsMessage={formData.smsMessage}
+                                            />
+                                        </div>
 
                                         <TestMessage 
                                             message={formData.smsMessage} 
