@@ -361,7 +361,7 @@ class Topsms_Campaigns_Admin extends WP_List_Table {
 			'send_again_campaign_' . $item['id']
 		);
 		$actions[] = sprintf(
-                '<a class="button wc-action-button wc-action-button-send-again send-again" href="%s" title="Send Again" aria-label="Send Again">Send Again</a>',
+                '<a class="button wc-action-button wc-action-button-send-again send-again" href="%s" onclick="return confirm(\'Are you sure you want to send this campaign again?\');" title="Send Again" aria-label="Send Again">Send Again</a>',
 			esc_url( $send_again_url )
 		);
         }

@@ -1002,11 +1002,10 @@ class Topsms_Admin {
 				// Allow loading draft OR completed campaigns (for send again feature).
 				$campaign   = $wpdb->get_row(
 					$wpdb->prepare(
-						'SELECT * FROM %1s WHERE id = %d AND (status = %s OR status = %s)',
+						'SELECT * FROM %1s WHERE id = %d AND status = %s',
 						$table_name,
 						$campaign_id,
-						'draft',
-						'completed'
+						'draft'
 					)
 				);
 
@@ -1014,8 +1013,6 @@ class Topsms_Admin {
 				wp_cache_set( $cache_key, $campaign, 'topsms_campaigns', HOUR_IN_SECONDS );
 			}
 
-			// Only process if campaign was found.
-			if ( $campaign ) {
 			$data          = json_decode( $campaign->data, true );
 			$campaign_data = array(
 				'id'                => $campaign->id,
@@ -1028,18 +1025,6 @@ class Topsms_Admin {
 				'message'           => isset( $data['message'] ) ? $data['message'] : '',
 				'url'               => isset( $data['url'] ) ? $data['url'] : '',
 			);
-
-				// If this is a completed campaign (send again), clear the ID and status
-				// so it creates a new campaign instead of updating the existing one.
-				if ( 'completed' === $campaign->status ) {
-					$campaign_data['id']     = 0;
-					$campaign_data['status'] = 'draft';
-					// Remove timestamp from campaign name (underscore + everything after it).
-					$clean_name = preg_replace( '/_[^_]+$/', '', $campaign->job_name );
-					// Add "(Copy)" to campaign name to make it unique.
-					$campaign_data['campaign_name'] = $clean_name . ' (Copy)';
-				}
-			}
 		}
 
 		// Pass data to JavaScript.
@@ -1308,14 +1293,46 @@ class Topsms_Admin {
 			$campaign_id = intval( $_GET['campaign_id'] );
 
 			if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'send_again_campaign_' . $campaign_id ) ) {
-				// Redirect to bulk SMS page with campaign_id to pre-fill data.
-				$redirect_url = admin_url( 'admin.php?page=topsms-bulksms&campaign_id=' . $campaign_id );
+				// Load the campaign data.
+				global $wpdb;
+				$table_name = $wpdb->prefix . 'topsms_campaigns';
+				$campaign   = $wpdb->get_row(
+					$wpdb->prepare(
+						'SELECT * FROM %1s WHERE id = %d AND status = %s',
+						$table_name,
+						$campaign_id,
+						'completed'
+					)
+				);
+
+				if ( ! $campaign ) {
+					$redirect_url = remove_query_arg( array( 'action', 'campaign_id', '_wpnonce' ) );
+					$redirect_url = add_query_arg( 'message', 'send_again_failed', $redirect_url );
+                    wp_safe_redirect( $redirect_url );
+                    exit;
+                }
+
+				// Resend the campaign using the REST API method.
+				$result = $this->topsms_resend_campaign( $campaign );
+
+				// Remove the previous filter args and add message for displaying notice.
+				$redirect_url = remove_query_arg( array( 'action', 'campaign_id', '_wpnonce' ) );
+				if ( $result['success'] ) {
+					$redirect_url = add_query_arg( 'message', 'campaign_sent_again', $redirect_url );
+				} else {
+					$redirect_url = add_query_arg( 'message', 'send_again_failed', $redirect_url );
+					// Pass the actual error message from API if available.
+					if ( ! empty( $result['message'] ) ) {
+						$redirect_url = add_query_arg( 'error_detail', urlencode( $result['message'] ), $redirect_url );
+					}
+				}
+
 				wp_safe_redirect( $redirect_url );
 				exit;
 			}
 		}
 
-        // Handle view report..
+        // Handle view report.
 		if ( isset( $_GET['action'] ) && 'view_report' === $_GET['action'] && isset( $_GET['campaign_id'] ) ) {
 			$campaign_id = intval( $_GET['campaign_id'] );
 
@@ -1345,6 +1362,18 @@ class Topsms_Admin {
 					echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Campaign cancelled successfully.', 'topsms' ) . '</p></div>';
 				} elseif ( 'cancel_campaign_failed' === $_GET['message'] ) {
 					echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Failed to cancel campaign. Please try again later.', 'topsms' ) . '</p></div>';
+				} elseif ( 'campaign_sent_again' === $_GET['message'] ) {
+					echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Campaign has been sent again successfully!', 'topsms' ) . '</p></div>';
+				} elseif ( 'send_again_failed' === $_GET['message'] ) {
+					$error_message = __( 'Failed to send campaign again.', 'topsms' );
+					// Display actual API error if available.
+					if ( isset( $_GET['error_detail'] ) ) {
+						$api_error = sanitize_text_field( wp_unslash( $_GET['error_detail'] ) );
+						$error_message .= ' ' . sprintf( __( 'Error: %s', 'topsms' ), $api_error );
+					} else {
+						$error_message .= ' ' . __( 'Please try again later.', 'topsms' );
+					}
+					echo '<div class="notice notice-error is-dismissible"><p>' . esc_html( $error_message ) . '</p></div>';
 				}
 			}
 			?>
@@ -1606,6 +1635,55 @@ class Topsms_Admin {
 
 			return false;
 		}
+	}
+
+	/**
+	 * Resend a completed campaign via TopSms API.
+	 *
+	 * @since    2.0.20
+	 * @param object $campaign The campaign object from database.
+	 * @return array Array with 'success' boolean and 'message' string.
+	 */
+	private function topsms_resend_campaign( $campaign ) {
+		
+		if ( ! $campaign ) {
+			return array(
+				'success' => false,
+				'message' => 'Campaign not found',
+			);
+		}
+
+		// Parse campaign data.
+		$data = json_decode( $campaign->data, true );
+		if ( ! $data ) {
+			return array(
+				'success' => false,
+				'message' => 'Invalid campaign data',
+			);
+		}
+
+		// Extract campaign details.
+		$list_id       = isset( $data['list'] ) ? $data['list'] : '';
+		$sender        = isset( $data['sender'] ) ? $data['sender'] : '';
+		$message       = isset( $data['message'] ) ? $data['message'] : '';
+		$link          = isset( $data['url'] ) ? $data['url'] : '';
+		$campaign_name = $campaign->job_name;
+
+		// Remove timestamp from campaign name and add (Copy).
+		$clean_name        = preg_replace( '/_[^_]+$/', '', $campaign_name );
+		$new_campaign_name = $clean_name . ' (Copy)';
+
+		// Call the REST API method to resend campaign.
+		$result = $this->rest_api->topsms_resend_campaign(
+			$list_id,
+			$sender,
+			$message,
+			$link,
+			$new_campaign_name,
+			$campaign->cost
+		);
+
+		return $result;
 	}
 
 	/**

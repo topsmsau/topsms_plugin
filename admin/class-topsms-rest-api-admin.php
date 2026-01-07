@@ -2098,6 +2098,161 @@ class Topsms_Rest_Api_Admin {
 	}
 
 	/**
+	 * Resend a completed campaign instantly.
+	 *
+	 * @since    2.0.20
+	 * @param string $list_id The contact list ID.
+	 * @param string $sender The sender name.
+	 * @param string $message The SMS message.
+	 * @param string $link The URL link.
+	 * @param string $campaign_name The campaign name.
+	 * @param int    $cost The campaign cost.
+	 * @return array Array with 'success' boolean, 'message' string, and optional 'job_name'.
+	 */
+	public function topsms_resend_campaign( $list_id, $sender, $message, $link, $campaign_name, $cost ) {
+
+		error_log(123);
+		// Get access token for API request.
+		$access_token = get_option( 'topsms_access_token' );
+		if ( ! $access_token ) {
+			return array(
+				'success' => false,
+				'message' => 'Access token not found',
+			);
+		}
+
+		// Validate cost.
+		if ( $cost < 1 ) {
+			return array(
+				'success' => false,
+				'message' => 'Invalid cost. Campaign cost should be at least 1.',
+			);
+		}
+
+		// Get list from transient or fetch fresh.
+		$lists = get_transient( 'topsms_contacts_lists' );
+		if ( false === $lists ) {
+			$lists = $this->get_contacts_lists();
+		}
+
+		// Check if the selected list exists.
+		if ( ! isset( $lists[ $list_id ] ) ) {
+			return array(
+				'success' => false,
+				'message' => 'List not found',
+			);
+		}
+
+		$list = $lists[ $list_id ];
+
+		// Get contacts data (phone numbers and shortcodes).
+		$contacts_data = $this->get_contacts_data( $list, $link );
+		if ( empty( $contacts_data ) ) {
+			return array(
+				'success' => false,
+				'message' => 'No contacts found in list',
+			);
+		}
+
+		$phone_numbers = $contacts_data['phone_numbers'];
+		$shortcodes    = $contacts_data['shortcodes'];
+
+		// Generate unique job name.
+		$job_name = $campaign_name . '_' . time();
+
+		// Current datetime in UTC (instant send).
+		$scheduled_datetime_utc   = gmdate( 'Y-m-d\TH:i:s\Z' );
+		$scheduled_datetime_local = current_time( 'Y-m-d H:i:s' );
+
+		// Webhook url for campaign status.
+		$website_url   = get_home_url();
+		$webhook_url   = $website_url . '/wp-json/topsms/v2/bulksms/campaign-status';
+		$webhook_token = hash_hmac( 'sha256', $job_name, SECURE_AUTH_KEY );
+
+		// Send campaign instantly.
+		$url  = 'https://api.topsms.com.au/functions/v1/schedule';
+		$body = array(
+			'action'            => 'instant',
+			'scheduledDateTime' => $scheduled_datetime_utc,
+			'jobName'           => $job_name,
+			'token'             => $access_token,
+			'smsPayload'        => array(
+				'phoneNumbers' => $phone_numbers,
+				'message'      => $message,
+				'shortcodes'   => $shortcodes,
+				'link'         => $link,
+				'sender'       => $sender,
+				'cost'         => $cost,
+			),
+			'webhook_url'       => $webhook_url,
+			'webhook_token'     => $webhook_token,
+		);
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $access_token,
+					'Content-Type'  => 'application/json',
+				),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 50,
+			)
+		);
+
+		$response_body = wp_remote_retrieve_body( $response );
+		$response_data = json_decode( $response_body, true );
+
+		// Check for errors.
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'success' => false,
+				'message' => $response->get_error_message(),
+			);
+		}
+
+		$campaign_uid = isset( $response_data['campaign_uid'] ) ? $response_data['campaign_uid'] : '';
+
+		if ( isset( $response_data['success'] ) && $response_data['success'] ) {
+			// Save new campaign to database.
+			$campaign_data = array(
+				'campaign_id'       => '', // New campaign.
+				'job_name'          => $job_name,
+				'campaign_uid'      => $campaign_uid,
+				'list'              => $list_id,
+				'message'           => $message,
+				'url'               => $link,
+				'sender'            => $sender,
+				'action'            => 'instant',
+				'status'            => 'processing',
+				'campaign_datetime' => $scheduled_datetime_local,
+				'cost'              => $cost,
+				'webhook_token'     => $webhook_token,
+			);
+
+			$this->save_campaigns_to_db( $campaign_data );
+
+			return array(
+				'success'  => true,
+				'message'  => 'Campaign sent successfully',
+				'job_name' => $job_name,
+			);
+		} else {
+			$error_message = '';
+			if ( isset( $response_data['error'] ) ) {
+				$error_message = $response_data['error'];
+			} elseif ( isset( $response_data['message'] ) ) {
+				$error_message = $response_data['message'];
+			}
+
+			return array(
+				'success' => false,
+				'message' => $error_message ? $error_message : 'Failed to send campaign',
+			);
+		}
+	}
+
+	/**
 	 * Get contacts data from list by extracting phone numbers and creating shortcodes.
 	 *
 	 * @since    2.0.0
