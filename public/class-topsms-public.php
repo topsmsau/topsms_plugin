@@ -55,6 +55,7 @@ class Topsms_Public {
 
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
+        $this->load_dependencies();
 	}
 
 	/**
@@ -78,6 +79,11 @@ class Topsms_Public {
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/topsms-public.css', array(), $version, 'all' );
 	}
+
+    public function load_dependencies() {
+        require_once plugin_dir_path( __DIR__ ) . 'public/class-topsms-utm-tracker.php';
+		$this->utm_tracker = new Topsms_Utm_Tracker_Public( $this->plugin_name, $this->version );
+    }
 
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
