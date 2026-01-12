@@ -107,8 +107,8 @@ class Topsms_Utm_Tracker_Public {
             // Logged-in users: Set expiration to 1 year (will be cleared when user is logged out).
             $expiry = time() + YEAR_IN_SECONDS;
         } else {
-            // Guests: Session cookie (expires when browser closes).
-            $expiry = 0;
+            // Guests: 24 hours
+            $expiry = time() + DAY_IN_SECONDS;
         }
         
         // Set cookie.
@@ -167,11 +167,40 @@ class Topsms_Utm_Tracker_Public {
                         return null;
                     }
                 }
+
+                // Return utm data if current user is a guest/logged-in and the user id match.
                 return $utm_data;
             }
         }
 
         // Return null if topsms utm cookie is not found.
         return null;
+    }
+
+    public function save_utm_to_order($order_id) {
+        // Get utm data from cookie.
+        $utm_data = $this->get_utm_cookie();
+        
+        // Return if no utm found.
+        if (!$utm_data) {
+            return; 
+        }
+
+        // Return if no utm id found.
+        if (!isset($utm_data['utm_id'])) {
+            return;
+        }
+        
+        // Get order by order id.
+        $order = wc_get_order($order_id);
+        if (!$order) {
+            return;
+        }
+        
+        // Save individual utm id (campaign id) for easy access (when reporting).
+        $order->update_meta_data('_topsms_utm_id', $utm_data['utm_id']);
+        $order->update_meta_data('_topsms_utm_data', json_encode($utm_data));
+
+        $order->save();
     }
 }
