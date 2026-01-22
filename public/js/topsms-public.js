@@ -61,4 +61,36 @@
 		}
 	);
 
+    jQuery( document ).ready(
+        function($) {
+            // Get url params.
+            function getUrlParameter(name) {
+                name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+                var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+                var results = regex.exec(location.search);
+                return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            }
+
+            // Check if utm parameters exist and if source is topsms.
+            var utmSource = getUrlParameter('utm_source');
+            if (utmSource && utmSource.toLowerCase() === 'topsms') {
+                var utmData = {
+                    utm_campaign: getUrlParameter('utm_campaign'),
+                    utm_id: getUrlParameter('utm_id'),
+                };
+
+                // Use AJAX to set utm cookie.
+                $.ajax({
+                    type: 'POST',
+                    url: topsmsPublic.adminAjaxUrl,
+                    data: {
+                        'action': 'topsms_capture_utm_parameters',
+                        'utm_data': utmData,
+                        'security': topsmsPublic.nonce
+                    }
+                });
+            }
+        }
+    );
+
 })( jQuery );

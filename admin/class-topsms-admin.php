@@ -831,7 +831,7 @@ class Topsms_Admin {
 		}
 
 		// Check if user has enough sms balance.
-		if ( ! $this->helper->check_user_balance() ) {
+		if ( ! $this->helper->topsms_check_user_balance() ) {
 			return;
 		}
 

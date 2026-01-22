@@ -118,13 +118,18 @@ const Report = () => {
         const smsDelivered = statusCount.delivered || 0;
         const smsNotDelivered = total_sms_count - smsDelivered;
 
+        const utmData = reportData.utm;
+        const totalOrders = utmData.total_orders || 0;
+        const revenue = utmData.total_revenue || 0;
+        const conversionRate = utmData.conversion_rate || 0;
+
         return {
             campaignCost: parseFloat(reportData.campaign_cost) || 0,
             totalContacts: parseInt(reportData.total_contacts) || 0,
             clicks: parseInt(clicks.total_clicks) || 0,
-            orders: 6, // TBD
-            revenue: 5268, // TBD
-            conversionRate: 2, // TBD
+            orders: totalOrders,
+            revenue: revenue,
+            conversionRate: conversionRate,
             smsSent: parseInt(total_sms_count) || 0,
             smsNotDelivered: parseInt(smsNotDelivered) || 0,
             smsDelivered: parseInt(smsDelivered) || 0,
@@ -191,7 +196,7 @@ const Report = () => {
                             />
                             <StatCard 
                                 label={__('Revenue $', 'topsms')}
-                                value={stats ? `$${stats.revenue.toLocaleString()}` : ''}
+                                value={stats ? `$${stats.revenue.toLocaleString()} AUD` : ''}
                                 icon={RevenueLogo}
                                 loading={loading}
                             />

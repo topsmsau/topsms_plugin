@@ -182,7 +182,7 @@ class Topsms_Helper_Admin {
 	 * @since  1.0.8
 	 * @return boolean    True if enough balance, false otherwise.
 	 */
-	public function check_user_balance() {
+	public function topsms_check_user_balance() {
 		$access_token = get_option( 'topsms_access_token' );
 
 		// Make api request to Topsms.
@@ -528,7 +528,7 @@ class Topsms_Helper_Admin {
 	 * @param array $contacts Array of contact data.
 	 * @return array Filtered and deduplicated contacts.
 	 */
-	public function filter_contacts( $contacts ) {
+	public function topsms_filter_contacts( $contacts ) {
 		$existed_phones    = array();
 		$filtered_contacts = array();
 
@@ -576,7 +576,7 @@ class Topsms_Helper_Admin {
 	 * @since    2.0.0
 	 * @return array $lists The contacts lists with all information.
 	 */
-	public function get_contacts_lists() {
+	public function topsms_get_contacts_lists() {
 		// Try to get lists from transient.
 		$lists = get_transient( 'topsms_contacts_lists' );
 
@@ -600,7 +600,7 @@ class Topsms_Helper_Admin {
 
 		// Filter contacts: include those with status yes (default to unsubscribed) and have phone.
 		// Also make sure no duplicated phone.
-		$all_contacts = $this->filter_contacts( $all_contacts );
+		$all_contacts = $this->topsms_filter_contacts( $all_contacts );
 		$all_count    = count( $all_contacts );
 
 		// For transient data.
@@ -648,7 +648,7 @@ class Topsms_Helper_Admin {
 
 			// Filter contacts: include those with status yes (default to unsubscribed) and have phone.
 			// Also make sure no duplicated phone.
-			$contacts = $this->filter_contacts( $contacts );
+			$contacts = $this->topsms_filter_contacts( $contacts );
 			$count    = count( $contacts );
 
 			// For transient data.

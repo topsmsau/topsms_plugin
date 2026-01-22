@@ -356,14 +356,14 @@ class Topsms_Campaigns_Admin extends WP_List_Table {
         
         // Send again button - only show for completed campaigns.
         if ( 'completed' === $item['status'] ) {
-        $send_again_url = wp_nonce_url(
-                admin_url( 'admin.php?page=topsms-campaigns&action=send_again&campaign_id=' . $item['id'] ),
-			'send_again_campaign_' . $item['id']
-		);
-		$actions[] = sprintf(
-                '<a class="button wc-action-button wc-action-button-send-again send-again" href="%s" onclick="return confirm(\'Are you sure you want to send this campaign again?\');" title="Send Again" aria-label="Send Again">Send Again</a>',
-			esc_url( $send_again_url )
-		);
+            $send_again_url = wp_nonce_url(
+                    admin_url( 'admin.php?page=topsms-campaigns&action=send_again&campaign_id=' . $item['id'] ),
+                'send_again_campaign_' . $item['id']
+            );
+            $actions[] = sprintf(
+                    '<a class="button wc-action-button wc-action-button-send-again send-again" href="%s" onclick="return confirm(\'Are you sure you want to send this campaign again?\');" title="Send Again" aria-label="Send Again">Send Again</a>',
+                esc_url( $send_again_url )
+            );
         }
 
         // Delete button.
@@ -376,16 +376,18 @@ class Topsms_Campaigns_Admin extends WP_List_Table {
 			esc_url( $delete_url )
 		);
 
-        // View report button.
-        $view_report_url = wp_nonce_url(
-			admin_url( 'admin.php?page=topsms-campaigns&action=view_report&campaign_id=' . $item['id'] ),
-			'view_report_' . $item['id']
-		);
+        // View report button - not showing for draft campaigns.
+        if ( 'draft' !== $item['status'] ) {
+            $view_report_url = wp_nonce_url(
+                admin_url( 'admin.php?page=topsms-campaigns&action=view_report&campaign_id=' . $item['id'] ),
+                'view_report_' . $item['id']
+            );
 
-		$actions[] = sprintf(
-			'<a class="button wc-action-button wc-action-button-view view" href="%s" title="View Report" aria-label="View Report">View Report</a>',
-			esc_url( $view_report_url )
-		);
+            $actions[] = sprintf(
+                '<a class="button wc-action-button wc-action-button-view view" href="%s" title="View Report" aria-label="View Report">View Report</a>',
+                esc_url( $view_report_url )
+            );
+        }
 
         // Return all actions joined together.
         if ( ! empty( $actions ) ) {

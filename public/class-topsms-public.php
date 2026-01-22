@@ -104,7 +104,16 @@ class Topsms_Public {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-public.js', array( 'jquery' ), $version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/topsms-public.js', array( 'jquery' ), time(), false );
+
+        wp_localize_script(
+            $this->plugin_name,
+            'topsmsPublic',
+            array(
+                'nonce'    => wp_create_nonce( 'topsmsPublic' ),
+				'adminAjaxUrl' => admin_url( 'admin-ajax.php' ),
+            )
+        );
 	}
 
 	/**

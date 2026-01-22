@@ -194,9 +194,10 @@ class Topsms {
 		$this->loader->add_action( 'woocommerce_account_sms-notifications_endpoint', $plugin_public, 'topsms_sms_notifications_content' );
 
         // Utm tracking.
-        $this->loader->add_action('init', $plugin_public->utm_tracker, 'capture_utm_parameters');
-        $this->loader->add_action('wp_logout', $plugin_public->utm_tracker, 'clear_utm_cookie');
-        $this->loader->add_action('woocommerce_checkout_update_order_meta', $plugin_public->utm_tracker, 'save_utm_to_order');
+        $this->loader->add_action('wp_ajax_topsms_capture_utm_parameters', $plugin_public->utm_tracker, 'topsms_capture_utm_parameters');
+        $this->loader->add_action('wp_ajax_nopriv_topsms_capture_utm_parameters', $plugin_public->utm_tracker, 'topsms_capture_utm_parameters');
+        $this->loader->add_action('wp_logout', $plugin_public->utm_tracker, 'topsms_clear_utm_cookie');
+        $this->loader->add_action('woocommerce_checkout_update_order_meta', $plugin_public->utm_tracker, 'topsms_save_utm_to_order');
 	}
 
 	/**

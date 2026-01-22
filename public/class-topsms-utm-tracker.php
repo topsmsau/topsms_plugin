@@ -72,24 +72,43 @@ class Topsms_Utm_Tracker_Public {
 	 *
 	 * @since  2.0.21
 	 */
-	public function capture_utm_parameters() {
-        // Check if url has Topsms utm parameters.
-        if (isset($_GET['utm_source']) && 'topsms' === strtolower($_GET['utm_source'])) {
-            
-            // Capture utm_campaign (job name/campaign name) and utm_id (campaign uid).
-            $cookie_data = array(
-                'utm_campaign' => sanitize_text_field($_GET['utm_campaign'] ?? ''),
-                'utm_id' => sanitize_text_field($_GET['utm_id'] ?? ''),
-                'captured_at' => current_time('mysql'),
-            );
-            
-            // If user is logged in, store the user id.
-            if (is_user_logged_in()) {
-                $cookie_data['user_id'] = get_current_user_id();
-            }
-            
-            // Save to user session cookie.
-            $this->set_utm_cookie($cookie_data);
+	public function topsms_capture_utm_parameters() {
+        // Verify nonce.
+        if (!isset($_POST['security']) || !wp_verify_nonce($_POST['security'], 'topsmsPublic')) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+            return;
+        }
+
+        // Check if utm data exists.
+        if (!isset($_POST['utm_data']) || !is_array($_POST['utm_data'])) {
+            wp_send_json_error(array('message' => 'No UTM data provided'));
+            return;
+        }
+
+        $utm_data = $_POST['utm_data'];
+
+        // Capture utm_campaign (job name/campaign name) and utm_id (campaign uid).
+        $cookie_data = array(
+            'utm_campaign' => sanitize_text_field($utm_data['utm_campaign'] ?? ''),
+            'utm_id' => sanitize_text_field($utm_data['utm_id'] ?? ''),
+            'captured_at' => current_time('mysql'),
+        );
+        
+        // If user is logged in, store the user id.
+        if (is_user_logged_in()) {
+            $cookie_data['user_id'] = get_current_user_id();
+        }
+        
+        // Save to user session cookie.
+        $result = $this->topsms_set_utm_cookie($cookie_data);
+    
+        if ($result) {
+            wp_send_json_success(array(
+                'message' => 'UTM data saved successfully',
+                'data' => $cookie_data
+            ));
+        } else {
+            wp_send_json_error(array('message' => 'Failed to set cookie'));
         }
     }
 
@@ -99,7 +118,7 @@ class Topsms_Utm_Tracker_Public {
      * @since    2.0.21
      * @param array $utm_data UTM parameters
      */
-    private function set_utm_cookie($utm_data) {
+    private function topsms_set_utm_cookie($utm_data) {
         $cookie_value = json_encode($utm_data);
     
         // Set cookie expiration duration.
@@ -112,7 +131,7 @@ class Topsms_Utm_Tracker_Public {
         }
         
         // Set cookie.
-        setcookie(
+        $result = setcookie(
             $this->cookie_name,
             $cookie_value,
             $expiry,
@@ -122,8 +141,12 @@ class Topsms_Utm_Tracker_Public {
             true
         );
         
-        // Set in $_COOKIE for immediate availabiltiy.
-        $_COOKIE[$this->cookie_name] = $cookie_value;
+        // Set in $_COOKIE for immediate availability.
+        if ($result) {
+            $_COOKIE[$this->cookie_name] = $cookie_value;
+        } 
+        
+        return $result;
     }
 
     /**
@@ -131,7 +154,7 @@ class Topsms_Utm_Tracker_Public {
      *
      * @since    2.0.21
      */
-    public function clear_utm_cookie() {
+    public function topsms_clear_utm_cookie() {
         // Clear cookie.
         setcookie(
             $this->cookie_name,
@@ -152,7 +175,7 @@ class Topsms_Utm_Tracker_Public {
      * 
      * @return array|null UTM data or null if not found.
      */
-    private function get_utm_cookie() {
+    private function topsms_get_utm_cookie() {
         // If topsms utm cookie is found.
         if (isset($_COOKIE[$this->cookie_name])) {
             // Get utm data from session cookie.
@@ -177,9 +200,9 @@ class Topsms_Utm_Tracker_Public {
         return null;
     }
 
-    public function save_utm_to_order($order_id) {
+    public function topsms_save_utm_to_order($order_id) {
         // Get utm data from cookie.
-        $utm_data = $this->get_utm_cookie();
+        $utm_data = $this->topsms_get_utm_cookie();
         
         // Return if no utm found.
         if (!$utm_data) {
