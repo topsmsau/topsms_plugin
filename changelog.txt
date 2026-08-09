@@ -194,3 +194,20 @@
 
 ### Removed
 - Removed implementation of plugin options, meta and tables deletion on plugin deletion.
+
+## [2.0.20] - 2026-08-09
+
+### Added
+- Added campaign report page with delivery stats and UTM attribution (orders, revenue, conversion).
+- Added shipping vs pickup SMS templates and copy-SMS recipients per order status.
+- Added UTM click tracking for campaign links.
+- Added Send Again and Delete actions on the Campaigns table.
+
+### Fixed
+- Fixed white screen when loading reports for large campaigns (e.g. 50k contacts) by no longer hydrating the full contacts list for report totals.
+- Fixed Bulk SMS lists API returning full contact payloads to the browser on cache hit.
+- Fixed campaign resend calling a missing contacts-list method.
+- Migrated legacy automation message options to shipping/pickup keys without wiping existing settings or saved segments.
+- Fixed missing Snackbar import on the Report page.
+- Removed leftover debug logging from campaign resend.
+

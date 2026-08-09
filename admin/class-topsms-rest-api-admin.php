@@ -1711,16 +1711,14 @@ class Topsms_Rest_Api_Admin {
 			);
 		}
 
-		// Get lists from transient.
-		// If transient not found, do an sql query and get list data.
+		// Get lists from transient (count only — never rebuild full payload here).
 		$lists = get_transient( 'topsms_contacts_lists' );
 		if ( false === $lists ) {
 			$lists = $this->helper->topsms_get_contacts_lists();
 		}
 
 		// Check if the specified filter exists.
-		$list = $lists[ $filter_id ];
-		if ( ! isset( $list ) ) {
+		if ( ! isset( $lists[ $filter_id ] ) ) {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
@@ -1732,11 +1730,13 @@ class Topsms_Rest_Api_Admin {
 			);
 		}
 
+		$list = $lists[ $filter_id ];
+
 		return new WP_REST_Response(
 			array(
 				'success' => true,
 				'data'    => array(
-					'count' => $list['count'],
+					'count' => isset( $list['count'] ) ? absint( $list['count'] ) : 0,
 				),
 			),
 			200
@@ -1957,8 +1957,21 @@ class Topsms_Rest_Api_Admin {
 
 		// Get contacts data (phone numbers and shortcodes).
 		$contacts_data = $this->topsms_get_contacts_data( $list, $link );
-		$phone_numbers = $contacts_data['phone_numbers'];
-		$shortcodes    = $contacts_data['shortcodes'];
+		if ( empty( $contacts_data ) || empty( $contacts_data['phone_numbers'] ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'data'    => array(
+						'message' => 'No contacts found in list',
+					),
+				),
+				400
+			);
+		}
+
+		$phone_numbers  = $contacts_data['phone_numbers'];
+		$shortcodes     = $contacts_data['shortcodes'];
+		$total_contacts = isset( $list['count'] ) ? absint( $list['count'] ) : count( $phone_numbers );
 
 		// Generate unique job name.
 		// Campaign name concat with current timestamp.
@@ -2034,6 +2047,7 @@ class Topsms_Rest_Api_Admin {
 				'message'           => $message,
 				'url'               => $link,
 				'sender'            => $sender,
+				'total_contacts'    => $total_contacts,
 				'action'            => $action,
 				'status'            => $status,
 				'campaign_datetime' => $scheduled_datetime_local,
@@ -2073,6 +2087,7 @@ class Topsms_Rest_Api_Admin {
 				'message'           => $message,
 				'url'               => $link,
 				'sender'            => $sender,
+				'total_contacts'    => $total_contacts,
 				'action'            => $action,
 				'status'            => $status,
 				'campaign_datetime' => $scheduled_datetime_local,
@@ -2111,7 +2126,6 @@ class Topsms_Rest_Api_Admin {
 	 */
 	public function topsms_resend_campaign( $list_id, $sender, $message, $link, $campaign_name, $cost ) {
 
-		error_log(123);
 		// Get access token for API request.
 		$access_token = get_option( 'topsms_access_token' );
 		if ( ! $access_token ) {
@@ -2129,14 +2143,9 @@ class Topsms_Rest_Api_Admin {
 			);
 		}
 
-		// Get list from transient or fetch fresh.
-		$lists = get_transient( 'topsms_contacts_lists' );
-		if ( false === $lists ) {
-			$lists = $this->topsms_get_contacts_lists();
-		}
-
-		// Check if the selected list exists.
-		if ( ! isset( $lists[ $list_id ] ) ) {
+		// Get full list payload (with contacts) from transient.
+		$lists = $this->helper->topsms_get_contacts_lists_full();
+		if ( false === $lists || ! isset( $lists[ $list_id ] ) ) {
 			return array(
 				'success' => false,
 				'message' => 'List not found',
@@ -2147,15 +2156,16 @@ class Topsms_Rest_Api_Admin {
 
 		// Get contacts data (phone numbers and shortcodes).
 		$contacts_data = $this->topsms_get_contacts_data( $list, $link );
-		if ( empty( $contacts_data ) ) {
+		if ( empty( $contacts_data ) || empty( $contacts_data['phone_numbers'] ) ) {
 			return array(
 				'success' => false,
 				'message' => 'No contacts found in list',
 			);
 		}
 
-		$phone_numbers = $contacts_data['phone_numbers'];
-		$shortcodes    = $contacts_data['shortcodes'];
+		$phone_numbers  = $contacts_data['phone_numbers'];
+		$shortcodes     = $contacts_data['shortcodes'];
+		$total_contacts = isset( $list['count'] ) ? absint( $list['count'] ) : count( $phone_numbers );
 
 		// Generate unique job name.
 		$job_name = $campaign_name . '_' . time();
@@ -2223,6 +2233,7 @@ class Topsms_Rest_Api_Admin {
 				'message'           => $message,
 				'url'               => $link,
 				'sender'            => $sender,
+				'total_contacts'    => $total_contacts,
 				'action'            => 'instant',
 				'status'            => 'processing',
 				'campaign_datetime' => $scheduled_datetime_local,
@@ -2324,10 +2335,11 @@ class Topsms_Rest_Api_Admin {
 		$campaign_id = isset( $campaign_data['campaign_id'] ) ? intval( $campaign_data['campaign_id'] ) : 0;
 
 		$data = array(
-			'list'    => isset( $campaign_data['list'] ) ? $campaign_data['list'] : '',
-			'message' => isset( $campaign_data['message'] ) ? $campaign_data['message'] : '',
-			'url'     => isset( $campaign_data['url'] ) ? $campaign_data['url'] : '',
-			'sender'  => isset( $campaign_data['sender'] ) ? $campaign_data['sender'] : '',
+			'list'           => isset( $campaign_data['list'] ) ? $campaign_data['list'] : '',
+			'message'        => isset( $campaign_data['message'] ) ? $campaign_data['message'] : '',
+			'url'            => isset( $campaign_data['url'] ) ? $campaign_data['url'] : '',
+			'sender'         => isset( $campaign_data['sender'] ) ? $campaign_data['sender'] : '',
+			'total_contacts' => isset( $campaign_data['total_contacts'] ) ? absint( $campaign_data['total_contacts'] ) : 0,
 		);
 
 		// Fields to update/insert.
@@ -2791,14 +2803,14 @@ class Topsms_Rest_Api_Admin {
             );
         }
 
-        $campaign_data = json_decode( $campaign->data, true );
-
-        // Get the total contacts count.
-        $contact_id         = $campaign_data['list'];
-        $campaign_contacts  = $this->helper->topsms_get_contacts_lists();
-        $total_contacts     = isset( $campaign_contacts[ $contact_id ]['count'] ) ? $campaign_contacts[ $contact_id ]['count'] : 0;
+		$campaign_data = json_decode( $campaign->data, true );
+		if ( ! is_array( $campaign_data ) ) {
+			$campaign_data = array();
+		}
 
         // Fetch report data from the Topsms API.
+		// Do not call topsms_get_contacts_lists() here — that loads every contact
+		// into memory and whitescreens large (e.g. 50k) campaigns.
         $url      = 'https://api-app.topsms.com.au/functions/v1/reports/' . $campaign_uid;
         $response = wp_remote_get(
             $url,
@@ -2830,6 +2842,14 @@ class Topsms_Rest_Api_Admin {
 		if ( isset( $data['success'] ) && true === $data['success'] ) {
             // Get the report summary.
 	        $report_summary = isset( $data['summary'] ) ? $data['summary'] : array();
+
+			// Prefer the contact count stored at send time; fall back to API SMS count.
+			$total_contacts = 0;
+			if ( isset( $campaign_data['total_contacts'] ) ) {
+				$total_contacts = absint( $campaign_data['total_contacts'] );
+			} elseif ( isset( $report_summary['total_sms_count'] ) ) {
+				$total_contacts = absint( $report_summary['total_sms_count'] );
+			}
 
             // Get campaign name.
             // Remove timestamp from the campaign/job name.
@@ -2882,44 +2902,49 @@ class Topsms_Rest_Api_Admin {
      * @return array UTM statistics array.
      */
     private function topsms_get_campaign_utm_stats($campaign_uid, $total_contacts) {
-        // Get all orders with the campaign utm id (campaign uid).
-        $orders = wc_get_orders(
-            array(
-                'limit'      => -1,
-                'meta_key'   => '_topsms_utm_id',
-                'meta_value' => $campaign_uid,
-                'return'     => 'ids',
-            )
-        );
+		// Count attributed orders (all statuses).
+		$all_orders = wc_get_orders(
+			array(
+				'limit'      => -1,
+				'meta_key'   => '_topsms_utm_id',
+				'meta_value' => $campaign_uid,
+				'return'     => 'ids',
+			)
+		);
 
-        $total_orders   = count( $orders );
-        $total_revenue  = 0;
-        $paid_orders    = 0;
+		$total_orders  = is_array( $all_orders ) ? count( $all_orders ) : 0;
+		$total_revenue = 0.0;
 
-        // Calculate revenue from paid orders (total amount of all orders).
-        foreach ( $orders as $order_id ) {
-            $order = wc_get_order( $order_id );
-            if ( ! $order ) {
-                continue;
-            }
+		// Revenue only from paid statuses — fetch those orders only.
+		$paid_orders = wc_get_orders(
+			array(
+				'limit'      => -1,
+				'status'     => array( 'completed', 'processing' ),
+				'meta_key'   => '_topsms_utm_id',
+				'meta_value' => $campaign_uid,
+				'return'     => 'ids',
+			)
+		);
 
-            // Only include completed and processing orders.
-            if ( in_array( $order->get_status(), array( 'completed', 'processing' ) ) ) {
-                $total_revenue += (float) $order->get_total();
-            }
-        }
+		if ( is_array( $paid_orders ) ) {
+			foreach ( $paid_orders as $order_id ) {
+				$order = wc_get_order( $order_id );
+				if ( $order ) {
+					$total_revenue += (float) $order->get_total();
+				}
+			}
+		}
 
-        // Calculate conversion rate (% of contacts who made an order).
-        // total orders / total contacts.
-        $conversion_rate = 0;
-        if ( $total_contacts > 0 ) {
-            $conversion_rate = ( $total_orders / $total_contacts ) * 100;
-        }
+		// Conversion rate = attributed orders / campaign contacts.
+		$conversion_rate = 0;
+		if ( $total_contacts > 0 ) {
+			$conversion_rate = ( $total_orders / $total_contacts ) * 100;
+		}
 
-        return array(
-            'total_orders'        => $total_orders, // Include all orders.
-            'total_revenue'       => number_format( $total_revenue, 2, '.', '' ),
-            'conversion_rate'     => number_format( $conversion_rate, 2, '.', '' ),
-        );
+		return array(
+			'total_orders'    => $total_orders,
+			'total_revenue'   => number_format( $total_revenue, 2, '.', '' ),
+			'conversion_rate' => number_format( $conversion_rate, 2, '.', '' ),
+		);
     }
 }

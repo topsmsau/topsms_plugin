@@ -573,16 +573,20 @@ class Topsms_Helper_Admin {
 	 * Get the saved contacts lists from transient.
 	 * If transient not found, get contacts lists by the all saved filters.
 	 *
+	 * Always returns a lightweight list metadata shape (id/name/count).
+	 * Full contact payloads stay in the transient for send/resend only —
+	 * never serialize them into REST responses (whitescreens large lists).
+	 *
 	 * @since    2.0.0
-	 * @return array $lists The contacts lists with all information.
+	 * @return array $filters The contacts lists metadata.
 	 */
 	public function topsms_get_contacts_lists() {
 		// Try to get lists from transient.
 		$lists = get_transient( 'topsms_contacts_lists' );
 
-		// If transient exists, return it.
+		// If transient exists, return lightweight metadata only.
 		if ( false !== $lists ) {
-			return $lists;
+			return $this->topsms_format_lists_metadata( $lists );
 		}
 
 		// Transient doesn't exist, do an sql query to get the contacts list and save to transient.
@@ -672,6 +676,48 @@ class Topsms_Helper_Admin {
 		set_transient( $transient_key, $lists );
 
 		return $filters;
+	}
+
+	/**
+	 * Convert full contact-list payloads into lightweight metadata for API responses.
+	 *
+	 * @since 2.0.20
+	 * @param array $lists Full lists from transient.
+	 * @return array Lightweight list metadata keyed by list id.
+	 */
+	private function topsms_format_lists_metadata( $lists ) {
+		$filters = array();
+
+		if ( ! is_array( $lists ) ) {
+			return $filters;
+		}
+
+		foreach ( $lists as $list_id => $list ) {
+			$filters[ $list_id ] = array(
+				'id'    => isset( $list['filter_id'] ) ? $list['filter_id'] : $list_id,
+				'name'  => isset( $list['filter_name'] ) ? $list['filter_name'] : $list_id,
+				'count' => isset( $list['count'] ) ? absint( $list['count'] ) : 0,
+			);
+		}
+
+		return $filters;
+	}
+
+	/**
+	 * Ensure the contacts lists transient exists and return the full payload.
+	 *
+	 * @since 2.0.20
+	 * @return array|false Full lists with contacts, or false on failure.
+	 */
+	public function topsms_get_contacts_lists_full() {
+		$lists = get_transient( 'topsms_contacts_lists' );
+		if ( false === $lists ) {
+			// Rebuild transient (return value is metadata only).
+			$this->topsms_get_contacts_lists();
+			$lists = get_transient( 'topsms_contacts_lists' );
+		}
+
+		return $lists;
 	}
 
     /**

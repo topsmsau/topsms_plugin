@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'TOPSMS_VERSION', '2.0.20' );
-define( 'TOPSMS_DB_VERSION', '2.0.3' );
+define( 'TOPSMS_DB_VERSION', '2.0.4' );
 define( 'TOPSMS_MANAGER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Define path to the included plugin.
 define( 'TOPSMS_ANALYTICS_PATH', plugin_dir_path( __FILE__ ) . 'topsms-analytics/' );

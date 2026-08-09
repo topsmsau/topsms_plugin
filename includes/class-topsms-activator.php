@@ -52,66 +52,42 @@ class Topsms_Activator {
 	 */
 	private static function topsms_setup() {
 		// Default messages for each status.
-		$processing_msg = "Hi [first_name], your order #[order_id] is confirmed and being prepared. You'll get another SMS once it's on the way.";
-		$completed_msg  = 'Hello [first_name], your order #[order_id] has been successfully delivered. We hope you enjoy your purchase! Thank you for shopping with us.';
-		$failed_msg     = 'Hello [first_name], unfortunately, your order #[order_id] could not be processed due to a payment issue. Please try again or contact us for help.';
-		$refunded_msg   = 'Hello [first_name], your order #[order_id] has been refunded. The amount should reflect in your account shortly. Let us know if you have any questions.';
-		$pending_msg    = 'Hello [first_name], your order #[order_id] is awaiting payment. Please complete the payment to process your order. Contact us if you need assistance.';
-		$cancelled_msg  = 'Hello [first_name], your order #[order_id] has been cancelled. If this was a mistake or you need help placing a new order, feel free to reach out.';
-		$onhold_msg     = "Hello [first_name], your order #[order_id] is currently on hold. We'll notify you as soon as it's updated. Contact us if you need more information.";
-		$draft_msg      = '';
+		$defaults = array(
+			'processing' => "Hi [first_name], your order #[order_id] is confirmed and being prepared. You'll get another SMS once it's on the way.",
+			'completed'  => 'Hello [first_name], your order #[order_id] has been successfully delivered. We hope you enjoy your purchase! Thank you for shopping with us.',
+			'failed'     => 'Hello [first_name], unfortunately, your order #[order_id] could not be processed due to a payment issue. Please try again or contact us for help.',
+			'refunded'   => 'Hello [first_name], your order #[order_id] has been refunded. The amount should reflect in your account shortly. Let us know if you have any questions.',
+			'pending'    => 'Hello [first_name], your order #[order_id] is awaiting payment. Please complete the payment to process your order. Contact us if you need assistance.',
+			'cancelled'  => 'Hello [first_name], your order #[order_id] has been cancelled. If this was a mistake or you need help placing a new order, feel free to reach out.',
+			'on-hold'    => "Hello [first_name], your order #[order_id] is currently on hold. We'll notify you as soon as it's updated. Contact us if you need more information.",
+			'draft'      => '',
+		);
 
-		// Options for storing wc order data for topsms.
-		// Processing.
-		update_option( 'topsms_order_processing_enabled', 'no' );
-		update_option( 'topsms_order_processing_shipping_message', $processing_msg );
-        update_option( 'topsms_order_processing_pickup_message', $processing_msg );
+		// Migrate legacy single-template options to shipping/pickup variants without wiping custom copy.
+		foreach ( $defaults as $status => $default_message ) {
+			$enabled_key  = 'topsms_order_' . $status . '_enabled';
+			$legacy_key   = 'topsms_order_' . $status . '_message';
+			$shipping_key = 'topsms_order_' . $status . '_shipping_message';
+			$pickup_key   = 'topsms_order_' . $status . '_pickup_message';
 
-		// Completed.
-		update_option( 'topsms_order_completed_enabled', 'no' );
-        update_option( 'topsms_order_completed_shipping_message', $completed_msg );
-        update_option( 'topsms_order_completed_pickup_message', $completed_msg );
+			self::topsms_add_option_if_missing( $enabled_key, 'no' );
 
-		// Failed.
-		update_option( 'topsms_order_failed_enabled', 'no' );
-        update_option( 'topsms_order_failed_shipping_message', $failed_msg );
-        update_option( 'topsms_order_failed_pickup_message', $failed_msg );
+			$legacy_message = get_option( $legacy_key, false );
+			$seed_message   = ( false !== $legacy_message && '' !== $legacy_message ) ? $legacy_message : $default_message;
 
-
-		// Refunded.
-		update_option( 'topsms_order_refunded_enabled', 'no' );
-        update_option( 'topsms_order_refunded_shipping_message', $refunded_msg );
-        update_option( 'topsms_order_refunded_pickup_message', $refunded_msg );
-
-		// Pending payment.
-		update_option( 'topsms_order_pending_enabled', 'no' );
-        update_option( 'topsms_order_pending_shipping_message', $pending_msg );
-        update_option( 'topsms_order_pending_pickup_message', $pending_msg );
-
-		// Cancelled.
-		update_option( 'topsms_order_cancelled_enabled', 'no' );
-        update_option( 'topsms_order_cancelled_shipping_message', $cancelled_msg );
-        update_option( 'topsms_order_cancelled_pickup_message', $cancelled_msg );
-
-		// Onhold.
-		update_option( 'topsms_order_on-hold_enabled', 'no' );
-        update_option( 'topsms_order_on-hold_shipping_message', $onhold_msg );
-        update_option( 'topsms_order_on-hold_pickup_message', $onhold_msg );
-
-		// Draft.
-		update_option( 'topsms_order_draft_enabled', 'no' );
-        update_option( 'topsms_order_draft_shipping_message', $draft_msg );
-        update_option( 'topsms_order_draft_pickup_message', $draft_msg );
+			self::topsms_add_option_if_missing( $shipping_key, $seed_message );
+			self::topsms_add_option_if_missing( $pickup_key, $seed_message );
+		}
 
 		// Options for storing general topsms settings data.
-		update_option( 'topsms_settings_low_balance_alert', 'no' );
-		update_option( 'topsms_settings_customer_consent', 'yes' );
-		update_option( 'topsms_settings_sms_surcharge', 'no' );
-		update_option( 'topsms_settings_sms_surcharge_amount', '' );
-		update_option( 'topsms_sender', '' );
+		self::topsms_add_option_if_missing( 'topsms_settings_low_balance_alert', 'no' );
+		self::topsms_add_option_if_missing( 'topsms_settings_customer_consent', 'yes' );
+		self::topsms_add_option_if_missing( 'topsms_settings_sms_surcharge', 'no' );
+		self::topsms_add_option_if_missing( 'topsms_settings_sms_surcharge_amount', '' );
+		self::topsms_add_option_if_missing( 'topsms_sender', '' );
 
-		// Options for bulksms.
-		update_option( 'topsms_contacts_list_saved_filters', array() );
+		// Options for bulksms — never wipe existing saved segments on update.
+		self::topsms_add_option_if_missing( 'topsms_contacts_list_saved_filters', array() );
 
 		global $wpdb;
 
@@ -158,6 +134,19 @@ class Topsms_Activator {
 
 		// Add db version to options.
 		update_option( 'topsms_db_version', TOPSMS_DB_VERSION );
+	}
+
+	/**
+	 * Add an option only when it does not already exist.
+	 *
+	 * @since 2.0.20
+	 * @param string $name    Option name.
+	 * @param mixed  $default Default value.
+	 */
+	private static function topsms_add_option_if_missing( $name, $default ) {
+		if ( false === get_option( $name, false ) ) {
+			add_option( $name, $default );
+		}
 	}
 
 	/**

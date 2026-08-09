@@ -372,7 +372,7 @@ class Topsms_Campaigns_Admin extends WP_List_Table {
 			'delete_campaign_' . $item['id']
 		);
 		$actions[] = sprintf(
-			'<a class="button wc-action-button wc-action-button-delete delete" href="%s" onclick="return confirm(\'Are you sure you want to delete this campaign again?\');" title="Delete" aria-label="Delete">Delete</a>',
+			'<a class="button wc-action-button wc-action-button-delete delete" href="%s" onclick="return confirm(\'Are you sure you want to delete this campaign?\');" title="Delete" aria-label="Delete">Delete</a>',
 			esc_url( $delete_url )
 		);
 

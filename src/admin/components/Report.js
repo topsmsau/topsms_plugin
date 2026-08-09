@@ -1,5 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
+import { Snackbar } from '@wordpress/components';
 
 import Layout from './components/Layout';
 import StatCard from './components/StatCard';
@@ -118,7 +119,7 @@ const Report = () => {
         const smsDelivered = statusCount.delivered || 0;
         const smsNotDelivered = total_sms_count - smsDelivered;
 
-        const utmData = reportData.utm;
+        const utmData = reportData.utm || {};
         const totalOrders = utmData.total_orders || 0;
         const revenue = utmData.total_revenue || 0;
         const conversionRate = utmData.conversion_rate || 0;
